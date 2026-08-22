@@ -3,14 +3,24 @@ import type { Ntrp, Surface } from './types.ts'
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 
+/**
+ * 一律用「本地」的年月日組字串，不要用 toISOString()——那是 UTC。
+ * 台灣是 UTC+8，本地午夜換算成 UTC 會掉到前一天，日期條就會從昨天開始排。
+ */
+function toISO(d: Date): string {
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0')
+}
+
 export function todayISO(): string {
-  return new Date().toISOString().slice(0, 10)
+  return toISO(new Date())
 }
 
 export function addDaysISO(iso: string, days: number): string {
   const d = new Date(iso + 'T00:00:00')
   d.setDate(d.getDate() + days)
-  return d.toISOString().slice(0, 10)
+  return toISO(d)
 }
 
 /** 「今天 (五)」「8/25 (一)」——列表上要一眼看得出是不是今天。 */
@@ -41,7 +51,7 @@ export function hourRange(h: number): string {
 }
 
 export const SURFACE_LABEL: Record<Surface, string> = {
-  hard: '硬地', clay: '紅土', grass: '草地', carpet: '地毯',
+  hard: '硬地', clay: '紅土', grass: '草地',
 }
 
 export function ntrpLabel(n: Ntrp): string {

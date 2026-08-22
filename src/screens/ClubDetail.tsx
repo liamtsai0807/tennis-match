@@ -20,7 +20,6 @@ export default function ClubDetail() {
 
   const [date, setDate] = useState(todayISO())
   const [hour, setHour] = useState<number | null>(null)
-  const [players, setPlayers] = useState(2)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -41,7 +40,7 @@ export default function ClubDetail() {
     if (hour === null || !club) return
     setSaving(true)
     try {
-      await createBooking({ club_id: club.id, date, hour, players })
+      await createBooking({ club_id: club.id, date, hour })
       setConfirming(false)
       setHour(null)
       toast('訂場成功！已加進你的行程')
@@ -129,16 +128,6 @@ export default function ClubDetail() {
 
         {hour !== null && (
           <div style={{ marginTop: 18 }} className="stack">
-            <div className="card pad">
-              <div className="eyebrow" style={{ marginBottom: 8 }}>幾個人打</div>
-              <div className="segmented">
-                {[2, 3, 4].map((n) => (
-                  <button key={n} aria-pressed={players === n} onClick={() => setPlayers(n)}>
-                    {n} 人{n === 2 ? '（單打）' : n === 4 ? '（雙打）' : ''}
-                  </button>
-                ))}
-              </div>
-            </div>
             <button className="btn primary block" onClick={() => setConfirming(true)}>
               預約 {hourRange(hour)}・{money(club.price_per_hour)}
             </button>
@@ -151,7 +140,6 @@ export default function ClubDetail() {
           <KV k="球館" v={club.name} />
           <KV k="日期" v={friendlyDate(date)} />
           <KV k="時間" v={hour !== null ? hourRange(hour) : '—'} />
-          <KV k="人數" v={players + ' 人'} />
           <KV k="場地費" v={money(club.price_per_hour)} />
         </div>
         <p className="note" style={{ marginBottom: 14 }}>

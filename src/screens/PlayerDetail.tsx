@@ -1,25 +1,22 @@
 /** ===== PlayerDetail.tsx ===== */
 import { Link, useParams } from 'react-router-dom'
 import { Header, Avatar, Empty, KV } from '../components/ui.tsx'
-import { useToast } from '../components/Toast.tsx'
-import { IconChevron } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
-import { getPlayer, listClubs, listOpenMatches, ME } from '../lib/db.ts'
-import { friendlyDate, hourRange, ntrpLabel } from '../lib/format.ts'
+import { getMe, getPlayer, listClubs, ME } from '../lib/db.ts'
+import { BLOCKS, WEEKDAY_LABEL } from '../lib/match.ts'
+import { distanceKm, km } from '../lib/geo.ts'
+import { ntrpLabel } from '../lib/format.ts'
 
 export default function PlayerDetail() {
   const { playerId = '' } = useParams()
-  const toast = useToast()
 
   const { data } = useData(async () => {
-    const [player, matches, clubs] = await Promise.all([
-      getPlayer(playerId), listOpenMatches(), listClubs(),
-    ])
-    return { player, matches, clubs }
+    const [player, me, clubs] = await Promise.all([getPlayer(playerId), getMe(), listClubs()])
+    return { player, me, clubs }
   }, [playerId])
 
   const p = data?.player
-  if (!p) {
+  if (!p || !data?.me) {
     return (
       <>
         <Header title="球友" onBack />
@@ -28,11 +25,11 @@ export default function PlayerDetail() {
     )
   }
 
-  const theirMatches = (data?.matches ?? []).filter(
-    (m) => m.joined.includes(p.id) && m.status !== 'cancelled',
-  )
+  const me = data.me
+  const isMe = p.id === ME
   const total = p.wins + p.losses
   const winRate = total > 0 ? Math.round((p.wins / total) * 100) : 0
+  const shared = me.pref_club_ids.filter((id) => p.pref_club_ids.includes(id))
 
   return (
     <>
@@ -43,41 +40,44 @@ export default function PlayerDetail() {
             <Avatar player={p} size="lg" />
           </div>
           <b style={{ fontSize: 21, fontWeight: 800 }}>{p.name}</b>
-          <div className="note" style={{ marginTop: 4 }}>{ntrpLabel(p.ntrp)}・{p.district}</div>
+          <div className="note" style={{ marginTop: 4 }}>
+            {ntrpLabel(p.ntrp)}・{p.district}
+            {!isMe && '・離你 ' + km(distanceKm(me, p))}
+          </div>
           {p.bio && <p className="note" style={{ marginTop: 12 }}>{p.bio}</p>}
         </div>
 
         <div className="card pad" style={{ marginBottom: 14 }}>
           <KV k="慣用手" v={p.hand === 'left' ? '左手' : '右手'} />
-          <KV k="戰績" v={p.wins + ' 勝 ' + p.losses + ' 敗'} />
-          <KV k="勝率" v={winRate + '%'} />
+          <KV k="戰績" v={p.wins + ' 勝 ' + p.losses + ' 敗（' + winRate + '%）'} />
+          <KV
+            k="有空的時間"
+            v={p.availability.weekdays.map((d) => WEEKDAY_LABEL[d]).join('、') + ' ' +
+               p.availability.blocks.map((b) => BLOCKS[b].label).join('、')}
+          />
+          <KV k="想找的程度" v={'NTRP ' + p.pref_ntrp_min + ' – ' + p.pref_ntrp_max} />
         </div>
 
-        {theirMatches.length > 0 && (
-          <>
-            <div className="eyebrow" style={{ marginBottom: 8 }}>接下來的球局</div>
-            <div className="card" style={{ marginBottom: 16 }}>
-              {theirMatches.map((m) => {
-                const club = data!.clubs.find((c) => c.id === m.club_id)
-                return (
-                  <Link key={m.id} to={'/partners/' + m.id} className="list-row">
-                    <div className="grow">
-                      <b className="truncate">{club?.name}</b>
-                      <small>{friendlyDate(m.date)} {hourRange(m.hour)}・{m.kind === 'singles' ? '單打' : '雙打'}</small>
-                    </div>
-                    {m.status === 'open' && <span className="pill warn">缺 {m.slots - m.joined.length}</span>}
-                    <IconChevron size={18} />
-                  </Link>
-                )
-              })}
-            </div>
-          </>
-        )}
+        <div className="eyebrow" style={{ marginBottom: 8 }}>常去的球場</div>
+        <div className="card" style={{ marginBottom: 16 }}>
+          {p.pref_club_ids.map((id) => {
+            const club = data.clubs.find((c) => c.id === id)
+            if (!club) return null
+            const isShared = shared.includes(id)
+            return (
+              <Link key={id} to={'/clubs/' + id} className="list-row">
+                <div className="grow">
+                  <b className="truncate">{club.name}</b>
+                  <small>{club.district}・離{isMe ? '你' : '他'} {km(distanceKm(p, club))}</small>
+                </div>
+                {isShared && !isMe && <span className="pill blue">你也常去</span>}
+              </Link>
+            )
+          })}
+        </div>
 
-        {p.id !== ME && (
-          <button className="btn primary block" onClick={() => toast('已送出邀請，等對方回覆')}>
-            邀他一起打球
-          </button>
+        {!isMe && (
+          <Link className="btn primary block" to={'/match/' + p.id}>約他打球</Link>
         )}
       </div>
     </>

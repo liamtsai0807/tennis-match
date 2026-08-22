@@ -1,25 +1,27 @@
 /** ===== db.ts =====
  * 唯一的資料進出口。畫面只認這裡的函式，不直接碰 Supabase 也不直接碰 localStorage。
- * 沒設定 Supabase 時自動退回離線模式，兩邊的函式簽名完全一樣，所以之後接上真後端
- * 不需要動任何畫面程式碼。
+ * 沒設定 Supabase 時自動退回離線模式，兩邊的函式簽名完全一樣，
+ * 之後接上真後端不需要動任何畫面程式碼。
  */
 import { supabase, isSupabaseConfigured } from './supabase.ts'
-import { CLUBS, COURTS, PLAYERS, OPEN_MATCHES, SEED_BOOKINGS, ME } from './mockData.ts'
-import type { Booking, Club, Court, LiveMatch, OpenMatch, Player, ScoreState } from './types.ts'
+import { CLUBS, COURTS, PLAYERS, SEED_BOOKINGS, SEED_INVITES, ME } from './mockData.ts'
+import type { Booking, Club, Court, Invite, Player } from './types.ts'
 
 export { ME }
 export const OFFLINE = !isSupabaseConfigured
 
-const KEY = 'tennispal.v1'
+const KEY = 'tennispal.v2'
 
 /**
- * 只存「使用者產生的」資料。球場與球友屬於參考資料，直接讀常數，
- * 否則改了 mockData 卻被舊快取蓋掉，會debug到懷疑人生。
+ * 只存「使用者產生的」資料，外加我自己的偏好設定。
+ * 球場與其他球友屬於參考資料，直接讀常數——否則改了 mockData 卻被舊快取蓋掉，
+ * 會 debug 到懷疑人生。
  */
 interface LocalStore {
+  onboarded: boolean
+  me: Player | null          // null = 還沒填過偏好，用 mockData 的預設值
   bookings: Booking[]
-  openMatches: OpenMatch[]
-  liveMatches: LiveMatch[]
+  invites: Invite[]
 }
 
 function uid(prefix: string): string {
@@ -31,14 +33,17 @@ function seed(): LocalStore {
     id: 'seed-' + i,
     club_id: b.club_id,
     court_id: b.club_id + '-court-' + b.court,
-    user_id: 'p-other',
+    user_id: b.user,
     date: b.date,
     hour: b.hour,
-    players: 4,
     created_at: new Date().toISOString(),
     status: 'confirmed' as const,
   }))
-  return { bookings, openMatches: [...OPEN_MATCHES], liveMatches: [] }
+  const invites: Invite[] = SEED_INVITES.map((i) => ({
+    ...i,
+    created_at: new Date().toISOString(),
+  }))
+  return { onboarded: false, me: null, bookings, invites }
 }
 
 function read(): LocalStore {
@@ -49,7 +54,7 @@ function read(): LocalStore {
       localStorage.setItem(KEY, JSON.stringify(fresh))
       return fresh
     }
-    return JSON.parse(raw) as LocalStore
+    return { ...seed(), ...(JSON.parse(raw) as Partial<LocalStore>) } as LocalStore
   } catch {
     return seed()
   }
@@ -57,18 +62,42 @@ function read(): LocalStore {
 
 function write(s: LocalStore) {
   localStorage.setItem(KEY, JSON.stringify(s))
-  channel?.postMessage('changed')
   window.dispatchEvent(new Event('tennispal:changed'))
 }
-
-/** 離線模式下也要能「即時分享賽況」：同一台裝置開兩個分頁就能看到比分同步。 */
-const channel: BroadcastChannel | null =
-  typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('tennispal') : null
-channel?.addEventListener('message', () => window.dispatchEvent(new Event('tennispal:changed')))
 
 export function resetDemoData() {
   localStorage.removeItem(KEY)
   write(seed())
+}
+
+// ---------- 登錄狀態與我的偏好 ----------
+
+export function isOnboarded(): boolean {
+  return read().onboarded
+}
+
+/** 還沒設定過偏好時，回傳 mockData 裡的預設值當草稿。 */
+export async function getMe(): Promise<Player> {
+  const s = read()
+  if (s.me) return s.me
+  return PLAYERS.find((p) => p.id === ME)!
+}
+
+export async function saveMe(me: Player, markOnboarded = true): Promise<Player> {
+  if (supabase) {
+    const { data, error } = await supabase.from('players').upsert(me).select().single()
+    if (error) throw error
+    const s = read()
+    s.me = data as Player
+    if (markOnboarded) s.onboarded = true
+    write(s)
+    return data as Player
+  }
+  const s = read()
+  s.me = me
+  if (markOnboarded) s.onboarded = true
+  write(s)
+  return me
 }
 
 // ---------- 球場 ----------
@@ -83,8 +112,7 @@ export async function listClubs(): Promise<Club[]> {
 }
 
 export async function getClub(id: string): Promise<Club | null> {
-  const all = await listClubs()
-  return all.find((c) => c.id === id) ?? null
+  return (await listClubs()).find((c) => c.id === id) ?? null
 }
 
 export async function listCourts(clubId: string): Promise<Court[]> {
@@ -96,6 +124,23 @@ export async function listCourts(clubId: string): Promise<Court[]> {
   return COURTS.filter((c) => c.club_id === clubId)
 }
 
+// ---------- 球友 ----------
+
+/** 其他球友。我自己的資料一律走 getMe()，避免兩份不同步。 */
+export async function listPlayers(): Promise<Player[]> {
+  if (supabase) {
+    const { data, error } = await supabase.from('players').select('*').neq('id', ME)
+    if (error) throw error
+    return data as Player[]
+  }
+  return PLAYERS.filter((p) => p.id !== ME)
+}
+
+export async function getPlayer(id: string): Promise<Player | null> {
+  if (id === ME) return getMe()
+  return (await listPlayers()).find((p) => p.id === id) ?? null
+}
+
 // ---------- 預約 ----------
 
 export interface Slot {
@@ -103,10 +148,9 @@ export interface Slot {
   total: number
   taken: number
   free: number
-  minePresent: boolean
 }
 
-/** 某球館某一天每個整點還剩幾面場。畫面只需要這個結果，不需要知道細節。 */
+/** 某球館某一天每個整點還剩幾面場。 */
 export async function getAvailability(clubId: string, date: string): Promise<Slot[]> {
   const club = await getClub(clubId)
   if (!club) return []
@@ -114,14 +158,8 @@ export async function getAvailability(clubId: string, date: string): Promise<Slo
   const bookings = await bookingsFor(clubId, date)
   const slots: Slot[] = []
   for (let h = club.open_hour; h < club.close_hour; h++) {
-    const atHour = bookings.filter((b) => b.hour === h && b.status === 'confirmed')
-    slots.push({
-      hour: h,
-      total: courts.length,
-      taken: atHour.length,
-      free: Math.max(0, courts.length - atHour.length),
-      minePresent: atHour.some((b) => b.user_id === ME),
-    })
+    const taken = bookings.filter((b) => b.hour === h && b.status === 'confirmed').length
+    slots.push({ hour: h, total: courts.length, taken, free: Math.max(0, courts.length - taken) })
   }
   return slots
 }
@@ -136,7 +174,7 @@ async function bookingsFor(clubId: string, date: string): Promise<Booking[]> {
 }
 
 export async function createBooking(input: {
-  club_id: string; date: string; hour: number; players: number
+  club_id: string; date: string; hour: number
 }): Promise<Booking> {
   const courts = await listCourts(input.club_id)
   const taken = (await bookingsFor(input.club_id, input.date))
@@ -152,7 +190,6 @@ export async function createBooking(input: {
     user_id: ME,
     date: input.date,
     hour: input.hour,
-    players: input.players,
     created_at: new Date().toISOString(),
     status: 'confirmed',
   }
@@ -175,9 +212,7 @@ export async function listMyBookings(): Promise<Booking[]> {
     if (error) throw error
     return data as Booking[]
   }
-  return read().bookings
-    .filter((b) => b.user_id === ME)
-    .sort((a, b) => (a.date + String(a.hour).padStart(2, '0')).localeCompare(b.date + String(b.hour).padStart(2, '0')))
+  return read().bookings.filter((b) => b.user_id === ME).sort(byDateHour)
 }
 
 export async function cancelBooking(id: string): Promise<void> {
@@ -192,170 +227,98 @@ export async function cancelBooking(id: string): Promise<void> {
   write(s)
 }
 
-// ---------- 球伴與開放球局 ----------
-
-export async function listPlayers(): Promise<Player[]> {
-  if (supabase) {
-    const { data, error } = await supabase.from('players').select('*')
-    if (error) throw error
-    return data as Player[]
-  }
-  return PLAYERS
+function byDateHour(a: { date: string; hour: number }, b: { date: string; hour: number }) {
+  return (a.date + String(a.hour).padStart(2, '0')).localeCompare(b.date + String(b.hour).padStart(2, '0'))
 }
 
-export async function getPlayer(id: string): Promise<Player | null> {
-  return (await listPlayers()).find((p) => p.id === id) ?? null
-}
-
-export async function listOpenMatches(): Promise<OpenMatch[]> {
-  if (supabase) {
-    const { data, error } = await supabase.from('open_matches').select('*')
-      .neq('status', 'cancelled').order('date').order('hour')
-    if (error) throw error
-    return data as OpenMatch[]
-  }
-  return read().openMatches
-    .filter((m) => m.status !== 'cancelled')
-    .sort((a, b) => (a.date + String(a.hour).padStart(2, '0')).localeCompare(b.date + String(b.hour).padStart(2, '0')))
-}
-
-export async function getOpenMatch(id: string): Promise<OpenMatch | null> {
-  return (await listOpenMatches()).find((m) => m.id === id) ?? null
-}
-
-export async function createOpenMatch(input: Omit<OpenMatch, 'id' | 'joined' | 'status' | 'host_id'>): Promise<OpenMatch> {
-  const m: OpenMatch = { ...input, id: uid('m'), host_id: ME, joined: [ME], status: 'open' }
-  if (supabase) {
-    const { data, error } = await supabase.from('open_matches').insert(m).select().single()
-    if (error) throw error
-    return data as OpenMatch
-  }
-  const s = read()
-  s.openMatches.unshift(m)
-  write(s)
-  return m
-}
-
-/** 加入 / 退出同一個入口，避免兩邊各寫一次名額判斷。 */
-export async function toggleJoin(matchId: string): Promise<OpenMatch> {
-  const m = await getOpenMatch(matchId)
-  if (!m) throw new Error('找不到這場球局')
-  const inIt = m.joined.includes(ME)
-  if (!inIt && m.joined.length >= m.slots) throw new Error('人已經滿了')
-  const joined = inIt ? m.joined.filter((x) => x !== ME) : [...m.joined, ME]
-  const status: OpenMatch['status'] = joined.length >= m.slots ? 'full' : 'open'
-
-  if (supabase) {
-    const { data, error } = await supabase.from('open_matches')
-      .update({ joined, status }).eq('id', matchId).select().single()
-    if (error) throw error
-    return data as OpenMatch
-  }
-  const s = read()
-  const target = s.openMatches.find((x) => x.id === matchId)!
-  target.joined = joined
-  target.status = status
-  write(s)
-  return target
-}
-
-export async function cancelOpenMatch(id: string): Promise<void> {
-  if (supabase) {
-    const { error } = await supabase.from('open_matches').update({ status: 'cancelled' }).eq('id', id)
-    if (error) throw error
-    return
-  }
-  const s = read()
-  const m = s.openMatches.find((x) => x.id === id)
-  if (m) m.status = 'cancelled'
-  write(s)
-}
-
-// ---------- 即時賽況 ----------
-
-export async function listLiveMatches(): Promise<LiveMatch[]> {
-  if (supabase) {
-    const { data, error } = await supabase.from('live_matches').select('*')
-      .order('started_at', { ascending: false })
-    if (error) throw error
-    return data as LiveMatch[]
-  }
-  return [...read().liveMatches].sort((a, b) => b.started_at.localeCompare(a.started_at))
-}
-
-export async function getLiveMatch(id: string): Promise<LiveMatch | null> {
-  if (supabase) {
-    const { data, error } = await supabase.from('live_matches').select('*').eq('id', id).maybeSingle()
-    if (error) throw error
-    return (data as LiveMatch) ?? null
-  }
-  return read().liveMatches.find((m) => m.id === id) ?? null
-}
-
-export async function createLiveMatch(m: Omit<LiveMatch, 'id'>): Promise<LiveMatch> {
-  const full: LiveMatch = { ...m, id: uid('live') }
-  if (supabase) {
-    const { data, error } = await supabase.from('live_matches').insert(full).select().single()
-    if (error) throw error
-    return data as LiveMatch
-  }
-  const s = read()
-  s.liveMatches.unshift(full)
-  write(s)
-  return full
-}
-
-export async function updateLiveScore(id: string, state: ScoreState): Promise<void> {
-  const finished = state.winner !== null ? new Date().toISOString() : null
-  if (supabase) {
-    const { error } = await supabase.from('live_matches')
-      .update({ state, finished_at: finished }).eq('id', id)
-    if (error) throw error
-    return
-  }
-  const s = read()
-  const m = s.liveMatches.find((x) => x.id === id)
-  if (m) {
-    m.state = state
-    m.finished_at = finished
-  }
-  write(s)
-}
-
-export async function bumpSpectators(id: string): Promise<void> {
-  if (supabase) {
-    await supabase.rpc('bump_spectators', { match_id: id })
-    return
-  }
-  const s = read()
-  const m = s.liveMatches.find((x) => x.id === id)
-  if (m) m.spectators++
-  write(s)
-}
+// ---------- 邀約 ----------
 
 /**
- * 訂閱一場比賽的比分變化。
- * Supabase 走 Realtime；離線模式走 BroadcastChannel，所以同一台電腦開兩個分頁
- * （一個計分、一個觀戰）就能實際看到即時同步。
+ * 送出邀約 = 先把場地訂下來，再把邀請寄出去。
+ * 順序反過來（等對方答應才訂場）常常會撲空，好時段撐不到對方回覆。
+ * 對方拒絕的話 declineInvite() 會把場地退掉。
  */
-export function subscribeLiveMatch(id: string, onChange: (m: LiveMatch) => void): () => void {
-  const client = supabase
-  if (client) {
-    const ch = client
-      .channel('live-' + id)
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'live_matches', filter: 'id=eq.' + id },
-        (payload) => onChange(payload.new as LiveMatch))
-      .subscribe()
-    return () => { client.removeChannel(ch) }
+export async function sendInvite(input: {
+  to_id: string; club_id: string; date: string; hour: number; message: string
+}): Promise<Invite> {
+  const booking = await createBooking({
+    club_id: input.club_id, date: input.date, hour: input.hour,
+  })
+
+  const invite: Invite = {
+    id: uid('inv'),
+    from_id: ME,
+    to_id: input.to_id,
+    club_id: input.club_id,
+    booking_id: booking.id,
+    date: input.date,
+    hour: input.hour,
+    message: input.message,
+    status: 'pending',
+    created_at: new Date().toISOString(),
   }
-  const handler = () => {
-    const m = read().liveMatches.find((x) => x.id === id)
-    if (m) onChange(m)
+
+  if (supabase) {
+    const { data, error } = await supabase.from('invites').insert(invite).select().single()
+    if (error) {
+      // 場地已經訂了但邀約寄不出去，把場地退掉，不要留下孤兒預約
+      await cancelBooking(booking.id)
+      throw error
+    }
+    return data as Invite
   }
-  window.addEventListener('tennispal:changed', handler)
-  return () => window.removeEventListener('tennispal:changed', handler)
+  const s = read()
+  s.invites.unshift(invite)
+  write(s)
+  return invite
 }
+
+export async function listInvites(): Promise<Invite[]> {
+  if (supabase) {
+    const { data, error } = await supabase.from('invites').select('*')
+      .or('from_id.eq.' + ME + ',to_id.eq.' + ME)
+    if (error) throw error
+    return (data as Invite[]).sort(byDateHour)
+  }
+  return read().invites
+    .filter((i) => i.from_id === ME || i.to_id === ME)
+    .sort(byDateHour)
+}
+
+export async function getInvite(id: string): Promise<Invite | null> {
+  return (await listInvites()).find((i) => i.id === id) ?? null
+}
+
+async function setInviteStatus(id: string, status: Invite['status']): Promise<void> {
+  if (supabase) {
+    const { error } = await supabase.from('invites').update({ status }).eq('id', id)
+    if (error) throw error
+    return
+  }
+  const s = read()
+  const inv = s.invites.find((x) => x.id === id)
+  if (inv) inv.status = status
+  write(s)
+}
+
+export async function acceptInvite(id: string): Promise<void> {
+  await setInviteStatus(id, 'accepted')
+}
+
+/** 拒絕或取消時把場地一起退掉，不然球場會被沒人要打的球局佔著。 */
+export async function declineInvite(id: string): Promise<void> {
+  const inv = await getInvite(id)
+  await setInviteStatus(id, 'declined')
+  if (inv) await cancelBooking(inv.booking_id)
+}
+
+export async function cancelInvite(id: string): Promise<void> {
+  const inv = await getInvite(id)
+  await setInviteStatus(id, 'cancelled')
+  if (inv) await cancelBooking(inv.booking_id)
+}
+
+// ---------- 訂閱 ----------
 
 /** 給列表頁用的粗粒度訂閱：任何資料變動都重抓。 */
 export function subscribeAll(onChange: () => void): () => void {

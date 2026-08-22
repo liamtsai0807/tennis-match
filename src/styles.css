@@ -105,6 +105,8 @@ a { color: inherit; text-decoration: none; }
 /* ---------- 卡片 ---------- */
 
 .card {
+  /* <a> 預設是 inline，背景只會包住文字行，整張卡看起來會破掉 */
+  display: block;
   background: var(--card);
   border-radius: var(--r);
   box-shadow: var(--shadow);
@@ -341,6 +343,7 @@ a { color: inherit; text-decoration: none; }
 
 /* ---------- 底部導覽 ---------- */
 
+.tabbar.four { grid-template-columns: repeat(4, 1fr); }
 .tabbar {
   position: fixed; z-index: 40;
   left: 50%; transform: translateX(-50%);
@@ -417,3 +420,22 @@ a { color: inherit; text-decoration: none; }
 .kv + .kv { border-top: 1px solid var(--line); }
 .kv span { color: var(--ink-2); }
 .kv b { font-weight: 700; text-align: right; }
+
+/* ---------- 登錄流程 ---------- */
+
+.steps { display: flex; gap: 6px; }
+.step-dot {
+  height: 4px; flex: 1; border-radius: 2px;
+  background: #dde1e8; transition: background .2s ease;
+}
+.step-dot.on { background: var(--blue); }
+
+/* 日期條上標「這天我有空」，比另外寫一行字省空間 */
+.day .dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--blue); margin-top: 2px;
+}
+.day[aria-pressed='true'] .dot { background: var(--ball); }
+
+/* 偏好球場那種整張卡可點的按鈕，要跟一般 button 的預設樣式脫鉤 */
+button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
