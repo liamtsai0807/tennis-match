@@ -1,0 +1,839 @@
+<title>TennisPal 產品需求文件</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper: #fbfcfe;
+    --surface: #ffffff;
+    --surface-2: #f4f7fb;
+    --ink: #131c28;
+    --ink-2: #48566a;
+    --ink-3: #7c8a9d;
+    --line: #e2e8f1;
+    --line-strong: #cfd8e5;
+    --accent: #0a5fd4;
+    --accent-soft: #eaf2ff;
+    --ball: #a8cc14;
+    --ok-bg: #e4f4ea;   --ok-fg: #146c42;
+    --warn-bg: #fdf0dc; --warn-fg: #8a5500;
+    --off-bg: #edf1f6;  --off-fg: #5c6a7c;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC",
+            "Microsoft JhengHei", "Segoe UI", system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0d1219;
+      --surface: #141b25;
+      --surface-2: #19212d;
+      --ink: #e7edf5;
+      --ink-2: #a8b5c6;
+      --ink-3: #7a8798;
+      --line: #263141;
+      --line-strong: #354356;
+      --accent: #6cadff;
+      --accent-soft: #16283f;
+      --ball: #c2e63a;
+      --ok-bg: #14301f;   --ok-fg: #7fd6a3;
+      --warn-bg: #33260f; --warn-fg: #e5b76a;
+      --off-bg: #1e2733;  --off-fg: #93a1b3;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #0d1219;
+    --surface: #141b25;
+    --surface-2: #19212d;
+    --ink: #e7edf5;
+    --ink-2: #a8b5c6;
+    --ink-3: #7a8798;
+    --line: #263141;
+    --line-strong: #354356;
+    --accent: #6cadff;
+    --accent-soft: #16283f;
+    --ball: #c2e63a;
+    --ok-bg: #14301f;   --ok-fg: #7fd6a3;
+    --warn-bg: #33260f; --warn-fg: #e5b76a;
+    --off-bg: #1e2733;  --off-fg: #93a1b3;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 22px 120px; }
+
+  /* ---------- 頁首 ---------- */
+
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    padding: 56px 0 30px;
+    margin-bottom: 46px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-size: clamp(30px, 6vw, 42px);
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 17.5px;
+    color: var(--ink-2);
+    margin: 0 0 26px;
+    max-width: 62ch;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 26px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+  .meta b { color: var(--ink-2); font-weight: 500; }
+
+  /* ---------- 章節 ---------- */
+
+  section { margin: 0 0 60px; position: relative; }
+
+  h2 {
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -.01em;
+    margin: 0 0 6px;
+    padding-top: 22px;
+    border-top: 2px solid var(--ink);
+    text-wrap: balance;
+  }
+  .secno {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .08em;
+    display: block;
+    margin-bottom: 4px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 34px 0 8px;
+    letter-spacing: -.005em;
+  }
+  h3 .num {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-3);
+    margin-right: 9px;
+  }
+  h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 22px 0 6px;
+    color: var(--ink-2);
+  }
+
+  p { margin: 0 0 14px; max-width: 72ch; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; max-width: 72ch; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--ink-3); }
+
+  strong { font-weight: 700; }
+  em { font-style: normal; background: var(--accent-soft); color: var(--accent);
+       padding: 1px 5px; border-radius: 4px; font-size: .95em; }
+
+  code {
+    font-family: var(--mono);
+    font-size: .875em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 1px 5px;
+    border-radius: 5px;
+    color: var(--ink-2);
+  }
+
+  a { color: var(--accent); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px;
+  }
+
+  /* ---------- 狀態標記 ---------- */
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 500;
+    letter-spacing: .04em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    vertical-align: 2px;
+  }
+  .chip.done { background: var(--ok-bg); color: var(--ok-fg); }
+  .chip.todo { background: var(--off-bg); color: var(--off-fg); }
+  .chip.open { background: var(--warn-bg); color: var(--warn-fg); }
+  h3 .chip { margin-left: 8px; vertical-align: 3px; }
+
+  /* ---------- 表格 ---------- */
+
+  .tablewrap { overflow-x: auto; margin: 0 0 20px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 460px;
+    font-size: 14.5px;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 14px 9px 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom-color: var(--line-strong);
+    white-space: nowrap;
+  }
+  td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ---------- 區塊 ---------- */
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px 10px 10px 4px;
+    padding: 16px 18px;
+    margin: 0 0 20px;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .label {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent);
+    display: block; margin-bottom: 6px;
+  }
+  .callout.why { border-left-color: var(--ball); }
+  .callout.why .label { color: var(--ink-2); }
+
+  /* ---------- 流程 ---------- */
+
+  .flow {
+    display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px;
+    margin: 0 0 22px;
+  }
+  .flow .step {
+    flex: 1 1 132px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 13px;
+  }
+  .flow .step .k {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-3);
+    letter-spacing: .1em; display: block; margin-bottom: 3px;
+  }
+  .flow .step b { font-size: 14.5px; font-weight: 700; display: block; }
+  .flow .step small { font-size: 12px; color: var(--ink-2); line-height: 1.5; display: block; margin-top: 2px; }
+
+  /* ---------- 驗收條件 ---------- */
+
+  .ac { list-style: none; padding: 0; margin: 10px 0 18px; }
+  .ac li {
+    position: relative;
+    padding-left: 26px;
+    margin-bottom: 9px;
+    font-size: 14.5px;
+    color: var(--ink-2);
+  }
+  .ac li::before {
+    content: "";
+    position: absolute; left: 4px; top: 10px;
+    width: 7px; height: 7px; border-radius: 2px;
+    background: var(--ball);
+  }
+  .ac li b { color: var(--ink); font-weight: 600; }
+
+  hr.rule { border: 0; border-top: 1px solid var(--line); margin: 42px 0; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    margin-top: 60px; padding-top: 24px;
+    font-size: 13.5px; color: var(--ink-3);
+  }
+
+  @media (max-width: 620px) {
+    body { font-size: 15.5px; }
+    .wrap { padding: 0 18px 90px; }
+    .masthead { padding-top: 38px; }
+  }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">產品需求文件 · PRD</p>
+  <h1>TennisPal 網球夥伴</h1>
+  <p class="standfirst">
+    幫網球愛好者找到程度相近的球伴，約一個對兩個人都方便的球場打球。
+  </p>
+  <div class="meta">
+    <span><b>版本</b> v0.3</span>
+    <span><b>日期</b> 2026-08-22</span>
+    <span><b>狀態</b> MVP 已可操作，未上線</span>
+    <span><b>對應程式碼</b> commit 64ec596</span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="secno">§0</span>這份文件怎麼讀</h2>
+  <p>
+    這不是先寫規格再開發的 PRD。順序是反過來的：先做出可操作的原型，
+    再把當中的決策與取捨寫下來。所以文件裡的每一條規格都對得上實際跑得起來的程式碼，
+    也標了哪些是<strong>還沒做</strong>、哪些是<strong>需要你決定</strong>。
+  </p>
+  <p>三種標記貫穿全文：</p>
+  <p>
+    <span class="chip done">已實作</span>
+    程式碼裡有，而且在瀏覽器實際點過。
+    <br>
+    <span class="chip todo">未實作</span>
+    有明確規格，但還沒寫。
+    <br>
+    <span class="chip open">待決</span>
+    需要產品決策才能往下，寫在 <a href="#open">§9</a>。
+  </p>
+</section>
+
+<section>
+  <h2><span class="secno">§1</span>要解決的問題</h2>
+
+  <p>
+    想打網球的人，卡在兩件事上：<strong>找不到人</strong>，或<strong>找到的人程度差太多</strong>。
+  </p>
+  <p>
+    第二件比第一件嚴重。網球是一對一的隔網運動，兩個人的程度差距會直接毀掉整場球——
+    強的那方在餵球、弱的那方在撿球，雙方都不會想再約第二次。這跟籃球、羽球團體或多人的場合不同，
+    那些場合程度不齊還能靠人數稀釋掉。
+  </p>
+  <p>
+    台灣現況是：訂場走球館各自的網站或電話，找人走 LINE 群組和社群貼文，兩件事完全分開。
+    既有工具解決的是「訂場」，沒有人解決「媒合」。而媒合失敗的成本，
+    使用者是在球場上才付的。
+  </p>
+
+  <div class="callout why">
+    <span class="label">產品的核心賭注</span>
+    <p>
+      把「找人」和「訂場」合成同一個動作，並且讓程度媒合準到使用者願意相信它。
+      如果媒合不準，這個產品就只是一個比較難用的訂場網站。
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="secno">§2</span>目標使用者</h2>
+
+  <h3>主要</h3>
+  <p>
+    都會區的休閒球友，NTRP 2.5–4.0，每週打 0.5–2 次，心裡有兩三個固定會去的球場。
+    有一起打球的人，但不夠穩定——約不到人的那週就不打了。
+  </p>
+
+  <h3>次要</h3>
+  <p>
+    剛上完初學課程、想找人對打練習的人。他們最痛，因為完全沒有球友圈，
+    但也最難服務——程度太低，願意陪打的人少。
+  </p>
+
+  <h3>明確不服務</h3>
+  <ul>
+    <li><strong>競賽選手</strong>。他們有教練和固定訓練夥伴，不需要媒合。</li>
+    <li><strong>純社團揪團</strong>。「四個人打雙打」是另一種產品（多人揪團看板），
+      機制和一對一媒合不一樣，硬做在一起兩邊都做不好。</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="secno">§3</span>核心使用者故事</h2>
+  <div class="callout">
+    <span class="label">User Story</span>
+    <p>
+      使用者想找與他程度相當或相近的網球同伴約網球場打球。
+      登錄時可以先設定自己偏好的球場、偏好的時段、偏好的球伴等級。
+    </p>
+  </div>
+  <p>整個 MVP 就是這一句話，沒有別的。完整流程五步：</p>
+
+  <div class="flow">
+    <div class="step"><span class="k">01</span><b>登錄設偏好</b><small>程度、時段、球場</small></div>
+    <div class="step"><span class="k">02</span><b>找球伴</b><small>選一天 + 一個時段</small></div>
+    <div class="step"><span class="k">03</span><b>選球場</b><small>對兩人都方便</small></div>
+    <div class="step"><span class="k">04</span><b>送出邀約</b><small>同時把場地訂下來</small></div>
+    <div class="step"><span class="k">05</span><b>成局</b><small>對方接受</small></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="secno">§4</span>範圍</h2>
+
+  <h3>MVP 包含</h3>
+  <ul>
+    <li>登錄流程：四步，設定程度、活動範圍、想找的球伴程度、有空時段、常去球場</li>
+    <li>程度評估：三題推算 NTRP，不要使用者自評</li>
+    <li>球伴媒合：依程度、共同球場、時段、雙向合適、距離排序，並說明理由</li>
+    <li>球場推薦：對兩個人都方便，不是只看發起人</li>
+    <li>邀約：送出時同時訂場，對方拒絕自動退訂</li>
+    <li>直接訂場：不透過媒合，自己挑時段訂</li>
+    <li>PWA：可安裝到主畫面、離線可用、有版本更新提示</li>
+  </ul>
+
+  <h3>MVP 明確排除</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>不做</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td>即時計分 / 賽況分享</td><td>做過了，完整計分引擎加 24 個測試，但它不解決核心問題。已從程式碼移除，保留在 commit <code>eb9aa1a</code></td></tr>
+        <tr><td>多人揪團看板</td><td>另一種產品機制，見 §2</td></tr>
+        <tr><td>賽事報名</td><td>需要與協會或球館合作，不是軟體問題</td></tr>
+        <tr><td>課程預約</td><td>同上，且供給端是教練不是球館</td></tr>
+        <tr><td>線上付款</td><td>場地費現場付。收錢會引入金流、退費、爭議處理，量級完全不同</td></tr>
+        <tr><td>聊天室</td><td>邀約帶一句留言就夠。做聊天就要處理封鎖、檢舉、內容審核</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="secno">§5</span>功能規格</h2>
+
+  <h3><span class="num">5.1</span>登錄與偏好設定<span class="chip done">已實作</span></h3>
+  <p>
+    第一次開啟一律導到登錄流程，填完才放行到主畫面。四個步驟，每一步沒填完不能往下——
+    最後一步才發現前面填錯很煩。
+  </p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>步驟</th><th>欄位</th><th>可往下的條件</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>名字、程度三題</td><td>名字非空 <em>且</em> 三題都答完</td></tr>
+        <tr><td class="num">2</td><td>活動範圍（行政區）、想找的球伴程度區間</td><td>下限 ≤ 上限</td></tr>
+        <tr><td class="num">3</td><td>有空的星期、有空的時段</td><td>兩者各至少選一個</td></tr>
+        <tr><td class="num">4</td><td>常去球場（可複選）</td><td>至少選一個</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="ac">
+    <li><b>偏好一律留白。</b>不預先勾選任何球場或時段——預先勾好等於幫使用者決定，
+      他會直接按下一步，然後拿著一組不是自己的偏好去媒合。</li>
+    <li><b>活動範圍只到行政區。</b>存的是該區中心座標，不問完整地址。
+      問地址會嚇跑一半的人，而媒合只需要粗略位置就夠準。</li>
+    <li><b>之後可改。</b>「我的 → 我的偏好」用的是同一份欄位元件，
+      不會出現設定頁改了、登錄流程沒改的情況。</li>
+  </ul>
+
+  <h3><span class="num">5.2</span>程度評估：三題推算<span class="chip done">已實作</span></h3>
+  <p>
+    <strong>不問「你的 NTRP 是多少」。</strong>沒打過分級賽的人不知道 3.0 和 3.5 差在哪，
+    自評的結果有人虛報有人謙虛——而整個媒合都建立在這個數字上，這是最脆弱的一環。
+  </p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>題目</th><th>選項</th><th class="num">在演算法中</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>跟程度差不多的人對打，通常能來回幾球？</td>
+          <td>三球內失誤 / 五到十球 / 十球以上還能控落點 / 能主動變速變旋轉進攻</td>
+          <td class="num">定基準<br>2.0 / 3.0 / 4.0 / 5.0</td>
+        </tr>
+        <tr>
+          <td>打多久了？</td>
+          <td>半年內 / 半年–2年 / 2–5年 / 5年以上</td>
+          <td class="num">+0 / +1 / +2 / +3</td>
+        </tr>
+        <tr>
+          <td>多常打？</td>
+          <td>一個月幾次 / 每週一次 / 每週兩次以上</td>
+          <td class="num">×2 權重<br>+0 / +2 / +4</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    練習量 = 頻率×2 + 年資，範圍 0–7。<em>≤2 扣半級</em>，<em>≥5 加半級</em>，中間不動。
+    結果夾在 NTRP 2.0–4.5。
+  </p>
+
+  <div class="callout why">
+    <span class="label">兩個權重上的取捨</span>
+    <p>
+      <strong>回合數的四個等級刻意隔開一整級，而練習量只做半級微調。</strong>
+      隔半級的話，球齡就能整個抵銷回合數，等於讓推測值蓋過實際觀察到的行為。
+      第一版兩者都設 ±0.5，測試立刻抓到「打五年但三球失誤」和「打半年但能來回十球」同分。
+    </p>
+    <p>
+      <strong>頻率權重是年資的兩倍。</strong>每週兩次打半年，打得贏每月一次打五年的。
+    </p>
+  </div>
+
+  <ul class="ac">
+    <li><b>上限壓在 4.5。</b>再上去的差別（發球威脅、戰術層次）自評問不出來，
+      硬推上去只會讓強手被配到打不動的對手。</li>
+    <li><b>逃生路徑。</b>打過聯賽、真的知道自己分級的人，可點「我知道自己的 NTRP」直接選。
+      資料上記為 <code>level_answers: 'manual'</code>。</li>
+    <li><b>顯示白話優先。</b>畫面上主要顯示「能控制球路」，NTRP 數字降級成括號附註。</li>
+  </ul>
+
+  <h3><span class="num">5.3</span>球伴媒合<span class="chip done">已實作</span></h3>
+  <p>選一天 + 一個時段，系統列出候選人。預設值直接吃登錄時填的偏好，多數情況打開就有結果。</p>
+
+  <h4>合適度計算</h4>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>訊號</th><th class="num">權重</th><th>為什麼</th></tr></thead>
+      <tbody>
+        <tr><td>程度接近</td><td class="num">0.30</td><td>程度差太多兩邊都打得不開心，見 §1</td></tr>
+        <tr><td>共同偏好球場</td><td class="num">0.25</td><td>決定「約不約得成」</td></tr>
+        <tr><td>那天那個時段有空</td><td class="num">0.25</td><td>同上</td></tr>
+        <tr><td>雙向合適</td><td class="num">0.10</td><td>我也在對方想找的程度範圍內，成功率高很多</td></tr>
+        <tr><td>距離</td><td class="num">0.10</td><td>已經有共同球場的話，住哪沒那麼要緊</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ul class="ac">
+    <li><b>硬過濾：</b>對方程度不在「我設定的區間」內就不出現。結果少於三筆時，
+      畫面提供「放寬程度範圍」一鍵切換。</li>
+    <li><b>那天沒空的一律排在有空的後面</b>，即使分數更高——再合適，約不到也沒用。</li>
+    <li><b>每一筆都附理由。</b>「程度跟你一樣」「有 2 個共同常去的球場」「晚上通常有空」
+      「對方也在找你這個程度」。媒合結果不解釋的話，使用者不會信它。</li>
+    <li><b>距離用直線距離</b>（Haversine），不是路程。要接路網 API 才算得出路程，
+      而拿來排序的結果幾乎一樣。</li>
+  </ul>
+
+  <h3><span class="num">5.4</span>球場推薦<span class="chip done">已實作</span></h3>
+  <p>
+    <strong>球場不是依「離你多近」排序，而是對兩個人都方便。</strong>
+    只顧自己的話永遠約在自家門口，對方跑到厭世就不會想再約第二次。
+  </p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>因子</th><th class="num">權重</th><th>算法</th></tr></thead>
+      <tbody>
+        <tr><td>雙方偏好</td><td class="num">0.40</td><td>兩人都常來 = 1.0；只有一人 = 0.25；都不是 = 0</td></tr>
+        <tr><td>較遠那方的距離</td><td class="num">0.40</td><td><code>1/(1+worst/15km)</code>，worst = max(兩人距離)</td></tr>
+        <tr><td>公平性</td><td class="num">0.20</td><td><code>1/(1+gap/10km)</code>，gap = 兩人距離差</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout why">
+    <span class="label">兩個非顯而易見的決定</span>
+    <p>
+      <strong>用雙曲線衰減，不用「超過 N 公里就歸零」。</strong>
+      歸零會讓所有遠距離同分——對方在新竹時，30 公里和 60 公里的球場得分一樣，
+      排序就只剩偏好在作用，會推薦出很荒謬的結果。這是測試抓到的。
+    </p>
+    <p>
+      <strong>單方偏好只給四分之一權重。</strong>「我常去」是順便，
+      不該壓過「對方要多跑二十公里」這種硬成本。
+    </p>
+  </div>
+
+  <ul class="ac">
+    <li><b>每張球場卡同時顯示兩個人各自要跑多遠</b>，並標「兩人都常來 / 你常來 / 對方常來」。</li>
+    <li><b>對調兩人身分，推薦順序不變。</b>有測試釘住這個對稱性。</li>
+  </ul>
+
+  <h3><span class="num">5.5</span>邀約與訂場<span class="chip done">已實作</span></h3>
+
+  <div class="callout">
+    <span class="label">關鍵決定</span>
+    <p>
+      <strong>送出邀約的同時就把場地訂下來。</strong>
+      反過來（等對方答應才訂場）常常撲空，好時段撐不到對方回覆。
+      代價是要處理退訂，這由狀態機保證。
+    </p>
+  </div>
+
+  <h4>邀約狀態轉換</h4>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>從</th><th>動作</th><th>到</th><th>對場地的影響</th></tr></thead>
+      <tbody>
+        <tr><td class="num">—</td><td>發起人送出</td><td class="num">pending</td><td><strong>建立預約</strong>（自動配一面沒被佔用的場）</td></tr>
+        <tr><td class="num">pending</td><td>收件人接受</td><td class="num">accepted</td><td>不變，預約保留</td></tr>
+        <tr><td class="num">pending</td><td>收件人婉拒</td><td class="num">declined</td><td><strong>自動退訂</strong></td></tr>
+        <tr><td class="num">pending</td><td>發起人取消</td><td class="num">cancelled</td><td><strong>自動退訂</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ul class="ac">
+    <li><b>不會留下孤兒場地。</b>任何非成局的結束路徑都會退訂，球場不會被沒人要打的球局佔著。</li>
+    <li><b>防重複訂場的最後一道防線在資料庫。</b>
+      <code>bookings</code> 上有 <code>(court_id, date, hour) where status='confirmed'</code>
+      的唯一索引。前端檢查一定有 race condition，資料庫這層沒有。</li>
+    <li><b>邀約若建立失敗，剛才訂的場要退掉</b>，不能留下沒有邀約指向的預約。</li>
+  </ul>
+
+  <h3><span class="num">5.6</span>PWA、離線與版本更新<span class="chip done">已實作</span></h3>
+  <ul class="ac">
+    <li><b>可安裝。</b>manifest 帶 192/512/maskable PNG 圖示。
+      Android 接 <code>beforeinstallprompt</code> 給安裝鈕；iOS 沒有這個事件，
+      改成教使用者按「分享 → 加入主畫面」。</li>
+    <li><b>離線可用。</b>Service worker：帶雜湊檔名的資源快取優先，其餘先連網。
+      查快取必須 <code>ignoreVary: true</code>——靜態主機會回 <code>Vary</code> 標頭，
+      而 <code>caches.match()</code> 預設要比對它，離線時請求標頭對不上就整個失效。</li>
+    <li><b>版本可見。</b>每次建置產生「日期-git短雜湊」，顯示在「我的」頁最下面。
+      測試者回報問題時，第一個要問的就是「你哪一版」。</li>
+    <li><b>更新提示。</b>App 回到前景時比對 <code>version.json</code>，不一樣才提示。
+      不用 service worker 的 waiting 狀態判斷——導覽走 network-first，
+      有網路時冷啟動拿到的本來就是最新的，那時再提示是騙人的。</li>
+  </ul>
+
+  <h3><span class="num">5.7</span>帳號與登入<span class="chip todo">未實作</span></h3>
+  <p>
+    目前寫死一個使用者（<code>ME = 'p-me'</code>），「登錄」只是填偏好，不是註冊。
+    這是<strong>上線前的最大缺口</strong>：沒有帳號就沒有雙向互動，
+    你送出去的邀約永遠不會有人回。
+  </p>
+  <ul class="ac">
+    <li>需要：註冊、登入、身分驗證、以及把 <code>schema.sql</code> 註解裡那組綁
+      <code>auth.uid()</code> 的 RLS 政策換上去。現在的政策是「誰都能讀寫」，只適合自己玩。</li>
+    <li>登入方式待決，見 <a href="#open">§9</a>。</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="secno">§6</span>資料模型</h2>
+  <p>
+    欄位名稱刻意與 <code>src/lib/types.ts</code> 一字不差，程式碼可以直接寫入整個物件，不用做欄位對應。
+  </p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>表</th><th>關鍵欄位</th><th>備註</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>clubs</code></td>
+          <td>id, name, district, lat, lng, surface, indoor, lights, price_per_hour, courts, open_hour, close_hour</td>
+          <td>座標是媒合的必要條件，沒有就算不出距離</td>
+        </tr>
+        <tr>
+          <td><code>courts</code></td>
+          <td>id, club_id, name</td>
+          <td>一個球館多面場，訂場配到的是「面」</td>
+        </tr>
+        <tr>
+          <td><code>players</code></td>
+          <td>id, name, ntrp, lat, lng, <strong>level_answers</strong>, <strong>availability</strong>,
+            <strong>pref_club_ids</strong>, pref_ntrp_min, pref_ntrp_max</td>
+          <td>球友資料<em>就是</em>偏好設定，不另開 preferences 表——媒合要同時看雙方偏好，
+            拆表只會讓每次媒合多一次 join</td>
+        </tr>
+        <tr>
+          <td><code>bookings</code></td>
+          <td>id, club_id, court_id, user_id, date, hour, status</td>
+          <td>唯一索引擋重複訂場</td>
+        </tr>
+        <tr>
+          <td><code>invites</code></td>
+          <td>id, from_id, to_id, club_id, <strong>booking_id</strong>, date, hour, message, status</td>
+          <td>指向它訂的那筆預約，退訂時才找得到</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>兩個刻意的模型決定</h4>
+  <ul class="ac">
+    <li><b><code>availability</code> 用「星期 × 時段」而不是行事曆。</b>
+      要球友填「週三 19:00–21:00」這種精確格式，沒有人會維護。不精確，但填得完。</li>
+    <li><b><code>level_answers</code> 是一個和型別</b>：<code>null</code>（未設定）/
+      <code>'manual'</code>（自己選的）/ 三題作答物件。一個欄位表達三種狀態，
+      比多開一個 <code>level_source</code> 再去對齊兩者乾淨。</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="secno">§7</span>非功能需求</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>項目</th><th>要求</th><th class="num">狀態</th></tr></thead>
+      <tbody>
+        <tr><td>平台</td><td>手機網頁 PWA，iOS Safari 與 Android Chrome</td><td class="num"><span class="chip done">已實作</span></td></tr>
+        <tr><td>離線</td><td>已安裝的 App 在無網路時可開啟並瀏覽既有資料</td><td class="num"><span class="chip done">已實作</span></td></tr>
+        <tr><td>部署</td><td>push 到 main 自動建置上線；測試與型別檢查沒過就不部署</td><td class="num"><span class="chip done">已實作</span></td></tr>
+        <tr><td>位置隱私</td><td>只存行政區中心座標，不存精確位置，不顯示他人確切位置</td><td class="num"><span class="chip done">已實作</span></td></tr>
+        <tr><td>個資</td><td>需符合個資法：告知蒐集目的、提供查詢與刪除管道</td><td class="num"><span class="chip todo">未實作</span></td></tr>
+        <tr><td>演算法正確性</td><td>媒合與程度推算須有測試覆蓋；算錯不會當機，只會默默推薦錯的人</td><td class="num"><span class="chip done">33 個測試</span></td></tr>
+        <tr><td>無障礙</td><td>鍵盤焦點可見、尊重 <code>prefers-reduced-motion</code></td><td class="num"><span class="chip todo">部分</span></td></tr>
+        <tr><td>檢舉與封鎖</td><td>陌生人見面型產品的必要安全機制</td><td class="num"><span class="chip todo">未實作</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="secno">§8</span>對照 TIEPLAYER</h2>
+  <p>
+    參考對象是葡萄牙的 TIEPLAYER。以下只根據其<strong>首頁截圖上看得到的功能入口</strong>整理，
+    沒有實際使用過，所以不評論它各項功能做得如何。
+  </p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>TIEPLAYER 首頁可見的功能</th><th>TennisPal</th><th>判斷</th></tr></thead>
+      <tbody>
+        <tr><td>Book a Court（訂場）</td><td class="num"><span class="chip done">有</span></td><td>核心，兩邊都有</td></tr>
+        <tr><td>Matchmaker（媒合）</td><td class="num"><span class="chip done">有</span></td><td>我們把它當主軸，且會解釋推薦理由</td></tr>
+        <tr><td>Favourite Club（最愛球館）</td><td class="num"><span class="chip done">有</span></td><td>我們的「常去球場」是複選，且直接餵進媒合演算法</td></tr>
+        <tr><td>Open Matches（開放球局）</td><td class="num"><span class="chip todo">無</span></td><td>刻意排除，見 §4</td></tr>
+        <tr><td>Tournaments（賽事）</td><td class="num"><span class="chip todo">無</span></td><td>需要協會合作，不是軟體問題</td></tr>
+        <tr><td>Classes（課程）</td><td class="num"><span class="chip todo">無</span></td><td>供給端是教練，另一套生態</td></tr>
+        <tr><td>Match Recordings + AI Insights（錄影與分析）</td><td class="num"><span class="chip todo">無</span></td><td>需要球場硬體，資本密集</td></tr>
+        <tr><td>Wallet（錢包）</td><td class="num"><span class="chip todo">無</span></td><td>牽涉金流，見 §4</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout why">
+    <span class="label">從這個對照學到的</span>
+    <p>
+      TIEPLAYER 是一個成熟產品的樣子：它同時是訂場平台、賽事平台、教學平台和硬體服務。
+      那些功能各自都需要供給端的合作關係——球館、協會、教練、攝影設備。
+    </p>
+    <p>
+      <strong>我們沒有那些關係，所以不能從那裡開始。</strong>
+      唯一純軟體、不需要任何合作就能做好的，是媒合。把媒合做到使用者願意相信，
+      才有籌碼去談後面那些。這也是為什麼我們刻意把即時賽況砍掉——它看起來很酷，
+      但它不是那個籌碼。
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="secno">§9</span><span id="open"></span>待決事項</h2>
+  <p>這些需要產品決策，不是技術問題。標 <span class="chip open">待決</span> 的規格都卡在這裡。</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th class="num">#</th><th>問題</th><th>影響</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">Q1</td>
+          <td><strong>登入方式？</strong>手機簡訊 / Email / LINE Login / Google</td>
+          <td>台灣市場 LINE Login 轉換率最高，但綁定 LINE 生態；簡訊有成本；
+            Email 最便宜但流失最多。決定後才能寫 §5.7</td>
+        </tr>
+        <tr>
+          <td class="num">Q2</td>
+          <td><strong>真實球館資料從哪來？</strong>人工建檔 / 公開資料 / 球館合作</td>
+          <td>目前九個球館全是編的。這是上線的硬門檻——資料不真，媒合再準也沒用</td>
+        </tr>
+        <tr>
+          <td class="num">Q3</td>
+          <td><strong>訂場是真的訂到嗎？</strong></td>
+          <td>目前是 App 內部的模擬。要真的訂到，得跟球館的系統對接或走人工確認。
+            這決定產品是「工具」還是「平台」</td>
+        </tr>
+        <tr>
+          <td class="num">Q4</td>
+          <td><strong>先做哪個區域？</strong></td>
+          <td>媒合產品有密度門檻——同一區沒有足夠的人，演算法再好也配不出來。
+            建議先鎖單一區域做深</td>
+        </tr>
+        <tr>
+          <td class="num">Q5</td>
+          <td><strong>要不要做賽後互評？</strong></td>
+          <td>打完問一句「跟他打起來？程度差不多 / 對方強一點 / 對方弱一點」，
+            用真實對戰慢慢校正雙方的 NTRP。這是讓程度數字從「自評」變成「實測」的唯一路，
+            也是 UTR 那類系統準的原因。但要等有真實使用者互動才有意義</td>
+        </tr>
+        <tr>
+          <td class="num">Q6</td>
+          <td><strong>商業模式？</strong></td>
+          <td>免費 / 場地費抽成 / 球館付費曝光 / 訂閱。現在不急，但它會回頭影響
+            要不要做 Wallet 和訂場對接</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="secno">§10</span>成功指標</h2>
+  <p>
+    不看註冊數和 DAU——這種產品可以靠好奇心衝高一次註冊，然後完全不用。
+    要看的是媒合這件事本身有沒有成立：
+  </p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>指標</th><th>問的是</th><th class="num">及格線</th></tr></thead>
+      <tbody>
+        <tr><td>邀約發送率</td><td>看到推薦名單後，有多少比例真的按下邀約</td><td class="num">推薦不夠準的話這裡就掛了</td></tr>
+        <tr><td>邀約接受率</td><td>雙向合適的權重有沒有用</td><td class="num">&gt; 50%</td></tr>
+        <tr><td><strong>回頭再約同一人的比例</strong></td><td>這是最重要的一個</td><td class="num">—</td></tr>
+        <tr><td>爽約率</td><td>訂了場但沒去。太高就要考慮押金或信用機制</td><td class="num">—</td></tr>
+        <tr><td>放寬條件的使用率</td><td>太高代表推薦池太小，是密度問題不是演算法問題</td><td class="num">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout why">
+    <span class="label">為什麼「回頭再約同一人」最重要</span>
+    <p>
+      媒合成功的定義不是「約成一場」，是「找到一個固定球伴」。
+      使用者真正的痛是「每週都要重新找人」；只要有人再約同一個人第二次、第三次，
+      就代表演算法真的配對了合得來的人——那才是這個產品的價值被證實的時刻。
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="secno">§11</span>上線前必補</h2>
+  <p>依阻擋程度排序，前兩項不做就不能給陌生人用。</p>
+  <ol>
+    <li><strong>帳號與登入</strong>（§5.7）——沒有它，雙向互動不存在</li>
+    <li><strong>RLS 政策收緊</strong>——現在是「誰都能讀寫」</li>
+    <li><strong>真實球館資料</strong>（Q2）——資料不真，媒合再準也沒用</li>
+    <li><strong>檢舉與封鎖</strong>——陌生人見面型產品的基本安全機制</li>
+    <li><strong>個資告知與刪除</strong>——法規要求</li>
+    <li><strong>爽約處理</strong>——至少要能標記，才有後續機制的資料基礎</li>
+  </ol>
+</section>
+
+<footer>
+  <p>
+    TennisPal PRD v0.3 · 2026-08-22 · 對應程式碼 commit <code>64ec596</code><br>
+    文件中所有演算法權重、欄位名稱與狀態轉換皆對得上實際程式碼；
+    標示「未實作」者僅有規格。
+  </p>
+</footer>
+
+</div>
