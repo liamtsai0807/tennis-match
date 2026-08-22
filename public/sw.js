@@ -6,7 +6,12 @@
  *   其他（HTML、圖示、manifest）→ 先連網，斷線才回快取
  * 為了這兩條拉一個建置外掛不划算。
  */
-const CACHE = 'tennispal-v2'
+/**
+ * 快取名稱帶上建置版本。註冊時網址是 sw.js?v=20260822-abc1234，
+ * 版本一變瀏覽器就認得出這是新的 SW，舊快取也會在 activate 時被清掉。
+ */
+const VERSION = new URL(self.location.href).searchParams.get('v') || 'dev'
+const CACHE = 'tennispal-' + VERSION
 
 /**
  * 查快取時一律忽略 Vary。
@@ -20,8 +25,17 @@ const MATCH = { ignoreVary: true }
 // 導覽請求離線時要回哪一頁。用 SW 自己的 scope 推，才不會綁死在網域根目錄
 const SHELL = new URL('./', self.registration.scope).pathname
 
+/**
+ * 刻意不呼叫 skipWaiting()。
+ * 新的 SW 先停在 waiting，等使用者按下「更新」才接管——否則畫面上跑的是舊的 JS、
+ * 背後的 SW 卻是新的，會拿到不配對的資源，出現很難查的錯誤。
+ */
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.add(SHELL)).then(() => self.skipWaiting()))
+  e.waitUntil(caches.open(CACHE).then((c) => c.add(SHELL)))
+})
+
+self.addEventListener('message', (e) => {
+  if (e.data === 'SKIP_WAITING') self.skipWaiting()
 })
 
 self.addEventListener('activate', (e) => {

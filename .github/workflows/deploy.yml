@@ -1,0 +1,62 @@
+name: 部署到 GitHub Pages
+
+# push 到 main 就自動建置並上線。
+# 手動觸發（workflow_dispatch）保留著，方便重跑舊 commit 來回滾。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時只跑一份部署。連續 push 時取消排隊中的舊的，但不打斷正在跑的那個。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        # 版本字串取自 git 短雜湊，淺層 clone 就夠
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          # 測試用 node --experimental-strip-types 直接跑 .ts，需要 22
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # 測試與型別檢查沒過就不要部署。媒合與程度推算算錯不會當機，
+      # 只會默默推薦錯的人，靠這一關擋住。
+      - name: 跑測試
+        run: npm test
+
+      - name: 型別檢查
+        run: npx tsc -b
+
+      - name: 建置
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

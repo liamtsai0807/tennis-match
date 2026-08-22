@@ -206,6 +206,9 @@ export default function Profile() {
 
         <p className="note" style={{ textAlign: 'center', marginTop: 20, color: 'var(--ink-3)' }}>
           TennisPal・場地費與規則以各球館現場公告為準
+          {/* 測試者回報問題時，第一個要問的就是「你哪一版」，直接印出來省一輪往返 */}
+          <br />
+          <span style={{ fontVariantNumeric: 'tabular-nums' }}>版本 {__BUILD__}</span>
         </p>
       </div>
 

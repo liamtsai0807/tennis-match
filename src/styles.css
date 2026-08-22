@@ -513,3 +513,29 @@ button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
 @media (prefers-reduced-motion: reduce) {
   .install-bar, .toast, .sheet { animation: none; }
 }
+
+/* ---------- 有新版本 ---------- */
+
+/* 從上面滑下來，跟底部那些提示分開，不要跟安裝提示疊在一起 */
+.update-bar {
+  position: fixed; z-index: 46;
+  left: 50%; transform: translateX(-50%);
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  width: min(452px, calc(100% - 28px));
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px 10px 15px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2b9bff, var(--blue-deep));
+  color: #fff;
+  box-shadow: 0 8px 26px rgba(10, 80, 190, .34);
+  animation: drop .28s ease;
+}
+.update-bar b { display: block; font-size: 13.5px; font-weight: 700; }
+.update-bar small { display: block; font-size: 11.5px; opacity: .8; margin-top: 1px; }
+.update-bar .btn { background: rgba(255, 255, 255, .95); color: var(--blue-deep); }
+
+@keyframes drop { from { opacity: 0; transform: translate(-50%, -12px) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .update-bar { animation: none; }
+}
