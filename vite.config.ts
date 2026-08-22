@@ -19,11 +19,27 @@ function buildId(): string {
   }
 }
 
+const BUILD = buildId()
+
+/** 產出 version.json，讓常駐在背景的 App 有辦法問「線上現在是哪一版」。 */
+function emitVersionFile() {
+  return {
+    name: 'emit-version-json',
+    generateBundle(this: { emitFile: (f: { type: 'asset'; fileName: string; source: string }) => void }) {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: JSON.stringify({ build: BUILD }),
+      })
+    },
+  }
+}
+
 export default defineConfig({
   // 相對路徑：部署到 GitHub Pages 那種子路徑（/repo-name/）也不用改設定。
   // 搭配 HashRouter，靜態主機不需要任何 rewrite 規則。
   base: './',
-  plugins: [react()],
-  define: { __BUILD__: JSON.stringify(buildId()) },
+  plugins: [react(), emitVersionFile()],
+  define: { __BUILD__: JSON.stringify(BUILD) },
   server: { host: true, port: 5180 },
 })

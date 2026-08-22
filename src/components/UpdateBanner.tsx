@@ -16,7 +16,7 @@ export function UpdateBanner() {
     <div className="update-bar" role="status">
       <div className="grow">
         <b>有新版本</b>
-        <small>更新後畫面會重新載入，你填的偏好都還在</small>
+        <small>重新載入，設定不會不見</small>
       </div>
       <button
         className="btn sm primary"

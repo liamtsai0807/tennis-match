@@ -1,62 +1,70 @@
 /** ===== appUpdate.ts =====
- * Service worker 的更新流程。
+ * Service worker 註冊，以及「有新版本」的偵測。
  *
- * PWA 最經典的坑：App 裝到手機之後，使用者就一直用著舊快取，你改了什麼他都看不到。
- * 這裡的做法是偵測到有新版在 waiting，就讓畫面跳出提示，由使用者按一下才切過去。
- * 不自動切是因為畫面上跑的是舊的 JS，SW 若先接管會拿到不配對的資源。
+ * 為什麼不用 service worker 的 waiting 狀態來判斷有沒有新版：
+ * 這個 App 的導覽請求走 network-first，只要有網路，冷啟動時拿到的就是最新的
+ * HTML 與最新的（檔名帶雜湊的）JS——使用者早就在跑新版了，這時再跳「有新版本」
+ * 是騙人的。而且 registration.update() 重抓的是註冊當下那個網址，
+ * 版本寫在查詢參數裡的話它永遠抓不到新的。
+ *
+ * 真正需要提示的只有一種情況：App 常駐在背景好幾天沒重新載入過。
+ * 所以改成回到前景時比對 version.json，跟自己建置時嵌入的版本不一樣才提示。
  */
 
 const EVENT = 'tennispal:update-ready'
 
-let waiting: ServiceWorker | null = null
+/** 回到前景後至少隔這麼久才再查一次，避免切來切去一直打請求。 */
+const CHECK_INTERVAL_MS = 5 * 60 * 1000
+
+let lastCheck = 0
+let announced = false
 
 export function onUpdateReady(cb: () => void): () => void {
   window.addEventListener(EVENT, cb)
   return () => window.removeEventListener(EVENT, cb)
 }
 
-/** 使用者按下「更新」：叫新的 SW 接管，接管完成後重新載入。 */
+/** 使用者按下「更新」：重新載入就會拿到新的 HTML 與新的資源。 */
 export function applyUpdate() {
-  if (!waiting) {
-    window.location.reload()
-    return
-  }
-  // controllerchange 代表新的 SW 已經接手，這時候重新載入才會拿到新資源
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload()
-  }, { once: true })
-  waiting.postMessage('SKIP_WAITING')
+  window.location.reload()
 }
 
-function announce(sw: ServiceWorker) {
-  waiting = sw
-  window.dispatchEvent(new Event(EVENT))
+/**
+ * 比對線上的版本。抓不到（離線、檔案還沒上去）就當作沒有新版，
+ * 不要為了這個跳錯誤給使用者看。
+ */
+async function checkForUpdate(currentBuild: string) {
+  const now = Date.now()
+  if (announced || now - lastCheck < CHECK_INTERVAL_MS) return
+  lastCheck = now
+
+  try {
+    const res = await fetch(import.meta.env.BASE_URL + 'version.json', { cache: 'no-store' })
+    if (!res.ok) return
+    const { build } = (await res.json()) as { build?: string }
+    if (build && build !== currentBuild) {
+      announced = true
+      window.dispatchEvent(new Event(EVENT))
+    }
+  } catch {
+    // 離線就是離線，沒有新版可言
+  }
 }
 
 export function registerServiceWorker(build: string) {
-  if (!('serviceWorker' in navigator)) return
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register(import.meta.env.BASE_URL + 'sw.js?v=' + encodeURIComponent(build))
+      .catch(() => { /* 註冊失敗只是少了離線功能，不擋使用 */ })
+  }
 
-  navigator.serviceWorker
-    .register(import.meta.env.BASE_URL + 'sw.js?v=' + encodeURIComponent(build))
-    .then((reg) => {
-      // 開啟當下就已經有新版在等（上一次瀏覽時下載好的）
-      if (reg.waiting && navigator.serviceWorker.controller) announce(reg.waiting)
+  // 手機上把 App 切回前景會走這裡
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void checkForUpdate(build)
+  })
 
-      reg.addEventListener('updatefound', () => {
-        const next = reg.installing
-        if (!next) return
-        next.addEventListener('statechange', () => {
-          // 有 controller 才算「更新」；沒有的話是這台裝置第一次安裝，不用提示
-          if (next.state === 'installed' && navigator.serviceWorker.controller) {
-            announce(next)
-          }
-        })
-      })
-
-      // App 被放到背景很久再回來時，主動問一次有沒有新版
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') reg.update().catch(() => {})
-      })
-    })
-    .catch(() => { /* 註冊失敗只是少了離線與更新提示，不擋使用 */ })
+  // 桌機上分頁可能一直開著、從不觸發 visibilitychange，所以另外定期問一次
+  window.setInterval(() => {
+    if (document.visibilityState === 'visible') void checkForUpdate(build)
+  }, CHECK_INTERVAL_MS)
 }

@@ -96,6 +96,22 @@ npm run dev
 這是 PWA，不用經過 App Store 或 Play 商店：把 `dist/` 部署到任何支援 HTTPS 的
 靜態主機，使用者開連結就能裝到主畫面，有自己的圖示、全螢幕、沒網路也打得開。
 
+### 部署（GitHub Pages，自動）
+
+push 到 `main` 就會自動建置上線，設定在 [.github/workflows/deploy.yml](.github/workflows/deploy.yml)。
+測試與型別檢查沒過就不會部署。
+
+第一次要做的設定：
+
+1. 在 GitHub 建一個 repo（Public，或 Private + 付費方案才有 Pages）
+2. `git remote add origin <repo 網址>` 然後 `git push -u origin main`
+3. repo → Settings → Pages → **Source 選 GitHub Actions**（不要選 Deploy from a branch）
+4. Actions 分頁看它跑完，網址是 `https://<帳號>.github.io/<repo 名>/`
+
+之後每次改完 push 就好。要回滾就到 Actions 重跑舊 commit 的 workflow。
+
+想自己建一份來看：
+
 ```bash
 npm run build
 ```
@@ -110,6 +126,14 @@ npm run build
   預設要比對它，離線時請求標頭對不上就會整個失效
 - 安裝提示 — Android 接 `beforeinstallprompt` 給一顆安裝鈕；iOS 沒有這個事件，
   改成教使用者按「分享 → 加入主畫面」
+- **版本與更新** — 每次建置產生「日期-git短雜湊」，顯示在「我的」頁最下面
+  （測試者回報問題時直接看得到是哪一版），同時寫進 `version.json`。
+  App 回到前景時比對線上版本，不一樣就跳「有新版本」
+
+  這裡刻意**不**用 service worker 的 waiting 狀態判斷有沒有新版：導覽請求走
+  network-first，有網路時冷啟動拿到的本來就是最新的，這時再提示是騙人的；
+  而且 `registration.update()` 重抓的是註冊當下那個網址，版本寫在查詢參數裡
+  它永遠抓不到新的。真正需要提示的只有「App 常駐在背景好幾天沒重新載入」。
 
 圖示由 `tools/make_icons.ts` 產生（純 Node，沒有繪圖相依）：
 

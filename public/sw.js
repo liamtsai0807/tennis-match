@@ -26,16 +26,13 @@ const MATCH = { ignoreVary: true }
 const SHELL = new URL('./', self.registration.scope).pathname
 
 /**
- * 刻意不呼叫 skipWaiting()。
- * 新的 SW 先停在 waiting，等使用者按下「更新」才接管——否則畫面上跑的是舊的 JS、
- * 背後的 SW 卻是新的，會拿到不配對的資源，出現很難查的錯誤。
+ * 直接接管，不停在 waiting。
+ * 導覽請求走 network-first，所以只要有網路，頁面與 SW 是同一次載入一起換新的，
+ * 不會出現「畫面跑舊 JS、SW 是新的」那種不配對狀況。
+ * 就算真的錯開了也不會壞：資源檔名帶內容雜湊，舊頁面要的舊檔案還在伺服器上。
  */
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.add(SHELL)))
-})
-
-self.addEventListener('message', (e) => {
-  if (e.data === 'SKIP_WAITING') self.skipWaiting()
+  e.waitUntil(caches.open(CACHE).then((c) => c.add(SHELL)).then(() => self.skipWaiting()))
 })
 
 self.addEventListener('activate', (e) => {
@@ -71,6 +68,9 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return
   const url = new URL(req.url)
   if (url.origin !== self.location.origin) return
+
+  // 版本檔一定要問伺服器，被快取住的話就永遠偵測不到新版了
+  if (url.pathname.endsWith('/version.json')) return
 
   if (req.mode === 'navigate') {
     e.respondWith(networkFirst(req, SHELL))
