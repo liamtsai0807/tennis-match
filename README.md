@@ -157,7 +157,7 @@ node --experimental-strip-types tools/make_icons.ts
 要換成真的可以多人共用的後端，接 Supabase：
 
 1. 去 <https://supabase.com> 開一個免費專案
-2. 進 SQL Editor，先貼 [supabase/schema.sql](supabase/schema.sql) 執行，再貼 [supabase/seed.sql](supabase/seed.sql) 執行
+2. 進 SQL Editor，先貼 [supabase/migrations/20260822000000_init.sql](supabase/migrations/20260822000000_init.sql) 執行，再貼 [supabase/seed.sql](supabase/seed.sql) 執行
 3. 專案設定裡複製 Project URL 與 anon public key
 4. 把 `.env.example` 複製成 `.env`，兩個值填進去
 5. 重跑 `npm run dev`
@@ -165,7 +165,7 @@ node --experimental-strip-types tools/make_icons.ts
 **不用改任何畫面程式碼。** 所有資料進出都集中在 [src/lib/db.ts](src/lib/db.ts)，
 線上與離線兩種實作共用同一組函式簽名。
 
-`schema.sql` 裡有一個 unique index 擋重複訂場——前端的檢查一定有 race condition，
+初始 migration 裡有一個 unique index 擋重複訂場——前端的檢查一定有 race condition，
 資料庫這層才擋得住。
 
 ## 測試
@@ -212,7 +212,8 @@ src/
     Clubs.tsx / ClubDetail.tsx   直接訂場
     Profile.tsx / Preferences.tsx / PlayerDetail.tsx / Home.tsx
 supabase/
-  schema.sql     建表 + RLS + Realtime 設定
+  config.toml    本機 Supabase 的設定（連接埠、seed 路徑…）
+  migrations/    建表 + RLS + Realtime 設定，db reset 時依序套用
   seed.sql       由 tools/gen_seed_sql.ts 從 mockData.ts 產生，不要手改
 tools/
   match.test.ts        媒合演算法測試
@@ -225,7 +226,7 @@ tools/
 ## 已知限制
 
 - **沒有登入。** 目前寫死一個使用者（`ME = 'p-me'`），「登錄」只是填偏好，
-  不是真的註冊。要多人真的用，得接 Supabase Auth，並把 `schema.sql` 註解裡
+  不是真的註冊。要多人真的用，得接 Supabase Auth，並把 migration 註解裡
   那組綁 `auth.uid()` 的 RLS 政策換上去——現在的政策是「誰都能讀寫」，只適合自己玩。
 - **對方不會真的回覆。** 示範資料裡有一封別人寄給你的邀約可以按接受／婉拒，
   但你送出去的邀約沒有人會回。要真的能互動得先有帳號系統。

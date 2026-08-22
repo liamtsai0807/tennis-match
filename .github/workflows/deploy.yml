@@ -1,10 +1,11 @@
 name: 部署到 GitHub Pages
 
-# push 到 main 就自動建置並上線。
-# 手動觸發（workflow_dispatch）保留著，方便重跑舊 commit 來回滾。
+# 目前全端都跑在本機，GitHub 只當原始碼倉庫，所以自動部署先關掉。
+# 要上線時把下面兩行的註解拿掉即可恢復「push 到 main 就部署」。
+# on:
+#   push:
+#     branches: [main]
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

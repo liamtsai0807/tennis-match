@@ -1,5 +1,6 @@
--- ===== schema.sql =====
--- 在 Supabase 專案的 SQL Editor 貼上整份執行一次即可。
+-- ===== 初始 schema =====
+-- 本機開發：supabase start / supabase db reset 會自動套用這份，接著套 ../seed.sql。
+-- 雲端專案：在 SQL Editor 貼上整份執行一次即可。
 -- 欄位名稱刻意跟 src/lib/types.ts 一字不差，這樣 db.ts 才能直接 insert 整個物件，
 -- 不用做欄位對應。
 
@@ -90,6 +91,19 @@ create index if not exists invites_by_from on invites (from_id, status);
 -- 有人接受或婉拒邀約時，對方要馬上看到。
 alter publication supabase_realtime add table invites;
 alter publication supabase_realtime add table bookings;
+
+-- ---------------------------------------------------------------
+-- 授權：PostgREST 是用 anon（未登入）這個角色連線的，新版 Supabase 不會自動把
+-- 新資料表授權給它，少了這段前端一律拿到 42501 permission denied。
+-- 這是「這個角色碰得到哪些資料表」，真正的列級存取控制在下面的 RLS policy。
+-- ---------------------------------------------------------------
+grant usage on schema public to anon, authenticated;
+
+-- 球場與球場內的場地是參考資料，只讀。
+grant select on clubs, courts to anon, authenticated;
+
+-- 球友檔案、訂場、邀約是使用者會動的資料。
+grant select, insert, update, delete on players, bookings, invites to anon, authenticated;
 
 -- ---------------------------------------------------------------
 -- RLS：目前 App 還沒接 Supabase Auth，先用「都可讀寫」讓流程跑得起來。

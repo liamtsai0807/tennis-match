@@ -3,6 +3,7 @@
  * 沒設定 Supabase 時自動退回離線模式，兩邊的函式簽名完全一樣，
  * 之後接上真後端不需要動任何畫面程式碼。
  */
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from './supabase.ts'
 import { CLUBS, COURTS, PLAYERS, SEED_BOOKINGS, SEED_INVITES, ME } from './mockData.ts'
 import type { Booking, Club, Court, Invite, Player } from './types.ts'
@@ -344,15 +345,40 @@ export async function cancelInvite(id: string): Promise<void> {
 
 // ---------- 訂閱 ----------
 
+/**
+ * 所有訂閱者共用一條 realtime channel，扇出和引用計數自己做。
+ *
+ * 不能讓每個 useData 各自 client.channel('all-changes')——supabase-js 拿 topic
+ * 當快取鍵，第二個呼叫拿到的是同一條、而且已經 subscribe() 過的 channel，
+ * 再 .on() 會直接丟 "cannot add postgres_changes callbacks after subscribe()"。
+ * 一個畫面只要用兩次 useData 就會踩到（InviteCompose 就是）。
+ * 改成每人一條唯一 topic 也不行：channel 數量會隨畫面上的 hook 數膨脹。
+ */
+const changeListeners = new Set<() => void>()
+let changeChannel: RealtimeChannel | null = null
+
 /** 給列表頁用的粗粒度訂閱：任何資料變動都重抓。 */
 export function subscribeAll(onChange: () => void): () => void {
   const client = supabase
   if (client) {
-    const ch = client
-      .channel('all-changes')
-      .on('postgres_changes', { event: '*', schema: 'public' }, onChange)
-      .subscribe()
-    return () => { client.removeChannel(ch) }
+    changeListeners.add(onChange)
+    if (!changeChannel) {
+      changeChannel = client
+        .channel('all-changes')
+        .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+          // 先複製一份再跑，回呼裡退訂不會動到正在迭代的集合
+          for (const fn of [...changeListeners]) fn()
+        })
+        .subscribe()
+    }
+    return () => {
+      changeListeners.delete(onChange)
+      // 最後一個訂閱者走了才真的收掉 channel，否則會斷掉還在用的人
+      if (changeListeners.size === 0 && changeChannel) {
+        client.removeChannel(changeChannel)
+        changeChannel = null
+      }
+    }
   }
   window.addEventListener('tennispal:changed', onChange)
   return () => window.removeEventListener('tennispal:changed', onChange)
