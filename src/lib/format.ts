@@ -1,0 +1,66 @@
+/** ===== format.ts ===== */
+import type { Ntrp, Surface } from './types.ts'
+
+const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
+
+export function todayISO(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+export function addDaysISO(iso: string, days: number): string {
+  const d = new Date(iso + 'T00:00:00')
+  d.setDate(d.getDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+/** 「今天 (五)」「8/25 (一)」——列表上要一眼看得出是不是今天。 */
+export function friendlyDate(iso: string): string {
+  const d = new Date(iso + 'T00:00:00')
+  const today = todayISO()
+  const w = WEEKDAYS[d.getDay()]
+  if (iso === today) return '今天 (' + w + ')'
+  if (iso === addDaysISO(today, 1)) return '明天 (' + w + ')'
+  return d.getMonth() + 1 + '/' + d.getDate() + ' (' + w + ')'
+}
+
+export function shortDate(iso: string): string {
+  const d = new Date(iso + 'T00:00:00')
+  return d.getMonth() + 1 + '/' + d.getDate()
+}
+
+export function weekday(iso: string): string {
+  return WEEKDAYS[new Date(iso + 'T00:00:00').getDay()]
+}
+
+export function hourLabel(h: number): string {
+  return String(h).padStart(2, '0') + ':00'
+}
+
+export function hourRange(h: number): string {
+  return hourLabel(h) + '–' + hourLabel(h + 1)
+}
+
+export const SURFACE_LABEL: Record<Surface, string> = {
+  hard: '硬地', clay: '紅土', grass: '草地', carpet: '地毯',
+}
+
+export function ntrpLabel(n: Ntrp): string {
+  if (n <= 2.5) return 'NTRP ' + n + '・初學'
+  if (n <= 3.5) return 'NTRP ' + n + '・進階'
+  if (n <= 4.5) return 'NTRP ' + n + '・熟練'
+  return 'NTRP ' + n + '・競賽'
+}
+
+export function money(n: number): string {
+  return 'NT$' + n.toLocaleString('zh-TW')
+}
+
+/**
+ * 頭像縮寫。中文取名字的最後一個字，不取兩個字——小尺寸頭像（30px）塞兩個字會擠爆。
+ * 英文名取兩個字首。
+ */
+export function initials(name: string): string {
+  const trimmed = name.trim()
+  if (/[\u4e00-\u9fff]/.test(trimmed)) return trimmed.slice(-1)
+  return trimmed.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+}
