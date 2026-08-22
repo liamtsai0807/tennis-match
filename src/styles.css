@@ -439,3 +439,35 @@ a { color: inherit; text-decoration: none; }
 
 /* 偏好球場那種整張卡可點的按鈕，要跟一般 button 的預設樣式脫鉤 */
 button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
+
+/* ---------- 程度推算的三題 ---------- */
+
+/* 次要動作做成文字連結，不要再放一顆按鈕跟主要流程搶注意力 */
+.linkish {
+  font-size: 12.5px; font-weight: 700; color: var(--blue);
+  padding: 4px 0;
+}
+.linkish:active { opacity: .6; }
+
+/* 題號。這裡的編號是真的順序（三題要依序回答），不是裝飾 */
+.qnum {
+  display: inline-grid; place-items: center;
+  width: 17px; height: 17px; margin-right: 6px;
+  border-radius: 50%; background: var(--ink-3); color: #fff;
+  font-size: 10.5px; font-weight: 800;
+}
+
+/* 推算結果。用淡藍底跟上面的題目區隔開，讓人知道這是「算出來的」不是「選出來的」 */
+/* 並排的選項一律等高，最長的那顆撐出高度就好，不要只有它凸出來 */
+.field .row > .chip { align-self: stretch; }
+
+.result {
+  padding: 14px 16px; border-radius: 14px;
+  background: var(--blue-soft);
+  border: 1px solid #d3e6ff;
+}
+.result .ntrp-note {
+  margin-left: 8px; font-size: 12.5px; font-weight: 700;
+  color: var(--blue-deep); opacity: .75;
+  font-variant-numeric: tabular-nums;
+}

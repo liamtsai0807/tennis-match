@@ -1,5 +1,7 @@
 /** ===== types.ts ===== */
 
+import type { LevelAnswers } from './level.ts'
+
 export type Surface = 'hard' | 'clay' | 'grass'
 
 /** NTRP 是國際通用的網球分級，1.0 新手 ~ 7.0 職業。台灣球友多半自報 2.5–4.5。 */
@@ -60,6 +62,13 @@ export interface Player extends LatLng {
   bio: string
   wins: number
   losses: number
+  /**
+   * 程度是怎麼來的：
+   *   null          還沒設定
+   *   'manual'      使用者知道自己的 NTRP，直接選的
+   *   LevelAnswers  三題的作答，ntrp 由 estimateNtrp() 推算
+   */
+  level_answers: LevelAnswers | 'manual' | null
   /** 偏好時段：星期幾 × 早/午/晚 */
   availability: Availability
   /** 偏好球場。兩個人的偏好有交集時，媒合分數會明顯往上拉 */

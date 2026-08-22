@@ -1,4 +1,5 @@
 /** ===== format.ts ===== */
+import { levelLabel } from './level.ts'
 import type { Ntrp, Surface } from './types.ts'
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
@@ -54,11 +55,9 @@ export const SURFACE_LABEL: Record<Surface, string> = {
   hard: '硬地', clay: '紅土', grass: '草地',
 }
 
+/** 白話在前、NTRP 在括號裡。數字對不知道 NTRP 的人沒有意義。 */
 export function ntrpLabel(n: Ntrp): string {
-  if (n <= 2.5) return 'NTRP ' + n + '・初學'
-  if (n <= 3.5) return 'NTRP ' + n + '・進階'
-  if (n <= 4.5) return 'NTRP ' + n + '・熟練'
-  return 'NTRP ' + n + '・競賽'
+  return levelLabel(n)
 }
 
 export function money(n: number): string {

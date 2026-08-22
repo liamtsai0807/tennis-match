@@ -28,6 +28,7 @@ function player(over: Partial<Player> & { id: string }): Player {
   return {
     name: over.id, avatar_hue: 200, ntrp: 3, district: '台北市大安區',
     lat: 25.03, lng: 121.54, hand: 'right', bio: '', wins: 0, losses: 0,
+    level_answers: 'manual',
     availability: { weekdays: [0, 1, 2, 3, 4, 5, 6], blocks: ['morning', 'afternoon', 'evening'] },
     pref_club_ids: [], pref_ntrp_min: 2 as Ntrp, pref_ntrp_max: 5.5 as Ntrp,
     ...over,

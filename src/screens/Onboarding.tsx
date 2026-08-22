@@ -1,5 +1,5 @@
 /** ===== Onboarding.tsx =====
- * 第一次進來時填偏好。分成三步而不是一頁長表單，因為一次看到七個欄位很容易直接關掉。
+ * 第一次進來時填偏好。分成四步而不是一頁長表單，因為一次看到七個欄位很容易直接關掉。
  * 每一步都可以往回改，最後一步才寫進資料庫。
  */
 import { useEffect, useState } from 'react'
@@ -13,8 +13,10 @@ import { IconBack } from '../components/icons.tsx'
 import { getMe, listClubs, saveMe } from '../lib/db.ts'
 import type { Club, Player } from '../lib/types.ts'
 
+// 程度改成三題之後，原本的第一步塞不下了，拆成四步
 const STEPS = [
-  { title: '先認識你一下', hint: '程度填得準，配到的人才會合拍。' },
+  { title: '先認識你一下', hint: '不用自評分級，回答三個問題就好。' },
+  { title: '想找什麼樣的球伴', hint: '程度差太多，兩邊都打得不開心。' },
   { title: '什麼時候有空', hint: '之後媒合會優先找那個時段也有空的人。' },
   { title: '想在哪裡打', hint: '選幾個你方便的球場，可以複選。' },
 ]
@@ -40,7 +42,8 @@ export default function Onboarding() {
 
   // 每一步各自的完成條件，沒填完就不讓往下——最後一步才發現填錯很煩
   const stepOk = [
-    me.name.trim().length > 0 && me.pref_ntrp_min <= me.pref_ntrp_max,
+    me.name.trim().length > 0 && me.level_answers !== null,
+    me.pref_ntrp_min <= me.pref_ntrp_max,
     me.availability.weekdays.length > 0 && me.availability.blocks.length > 0,
     me.pref_club_ids.length > 0,
   ][step]
@@ -95,18 +98,23 @@ export default function Onboarding() {
               />
             </div>
             <LevelField value={me} onChange={patch} />
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="card pad stack" style={{ gap: 18 }}>
             <DistrictField value={me} onChange={patch} />
             <PartnerLevelField value={me} onChange={patch} />
           </div>
         )}
 
-        {step === 1 && (
+        {step === 2 && (
           <div className="card pad">
             <AvailabilityField value={me} onChange={patch} />
           </div>
         )}
 
-        {step === 2 && <ClubsField value={me} onChange={patch} clubs={clubs} />}
+        {step === 3 && <ClubsField value={me} onChange={patch} clubs={clubs} />}
 
         <button
           className="btn primary block"

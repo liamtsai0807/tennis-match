@@ -2,48 +2,153 @@
  * 偏好設定的欄位拆成一段一段，登錄流程一次顯示一段，設定頁一次顯示全部。
  * 兩邊共用同一份，才不會改了設定頁卻忘了改登錄流程。
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { DISTRICTS } from '../lib/mockData.ts'
 import { BLOCKS, BLOCK_ORDER, WEEKDAY_LABEL } from '../lib/match.ts'
+import {
+  estimateNtrp, levelName, levelHint, NTRP_STEPS,
+  EXPERIENCE_OPTIONS, FREQUENCY_OPTIONS, RALLY_OPTIONS,
+} from '../lib/level.ts'
 import { distanceKm, km } from '../lib/geo.ts'
 import { SURFACE_LABEL, money } from '../lib/format.ts'
+import type { LevelAnswers } from '../lib/level.ts'
 import type { Club, Ntrp, Player, TimeBlock } from '../lib/types.ts'
-
-const NTRP_STEPS: Ntrp[] = [2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]
-
-const NTRP_HINT: Record<string, string> = {
-  '2': '剛開始，還在抓球感',
-  '2.5': '打得到球，但方向還不太受控',
-  '3': '正手穩定，可以來回十球以上',
-  '3.5': '正反手都有把握，會用旋轉',
-  '4': '控制落點，發球有戰術',
-  '4.5': '有比賽經驗，體能與節奏都在線上',
-  '5': '地區賽事等級',
-  '5.5': '接近選手等級',
-}
 
 type Patch = (patch: Partial<Player>) => void
 
-/** 你的程度 */
+/**
+ * 你的程度。問三題好回答的，然後推算 NTRP。
+ *
+ * 直接問「你的 NTRP 是多少」的問題是：沒打過分級賽的人不知道 3.0 和 3.5 差在哪，
+ * 於是有人虛報有人謙虛，而整個媒合都建立在這個數字上。
+ * 真的知道自己分級的人（打過聯賽的）走右上角那個連結直接選。
+ */
 export function LevelField({ value, onChange }: { value: Player; onChange: Patch }) {
+  const stored = value.level_answers
+  const manual = stored === 'manual'
+  // 三題還沒答完的中間狀態留在元件裡，答滿三題才寫回 player
+  const [draft, setDraft] = useState<Partial<LevelAnswers>>(
+    stored && stored !== 'manual' ? stored : {},
+  )
+
+  function pick(patch: Partial<LevelAnswers>) {
+    const next = { ...draft, ...patch }
+    setDraft(next)
+    if (next.experience && next.frequency && next.rally) {
+      const answers = next as LevelAnswers
+      onChange({ level_answers: answers, ntrp: estimateNtrp(answers) })
+    }
+  }
+
+  const done = Boolean(draft.experience && draft.frequency && draft.rally)
+
+  if (manual) {
+    return (
+      <div className="field">
+        <div className="row between">
+          <label style={{ margin: 0 }}>你的程度（NTRP）</label>
+          <button className="linkish" onClick={() => { setDraft({}); onChange({ level_answers: null }) }}>
+            改用三題推算
+          </button>
+        </div>
+        <div className="chips">
+          {NTRP_STEPS.map((n) => (
+            <button
+              key={n}
+              className="chip"
+              aria-pressed={value.ntrp === n}
+              onClick={() => onChange({ ntrp: n, level_answers: 'manual' })}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+        <p className="note" style={{ margin: '2px 0 0' }}>{levelHint(value.ntrp)}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="stack" style={{ gap: 18 }}>
+      <div className="row between">
+        <label style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--ink-2)' }}>
+          你的程度
+        </label>
+        <button className="linkish" onClick={() => onChange({ level_answers: 'manual' })}>
+          我知道自己的 NTRP
+        </button>
+      </div>
+
+      <Question
+        n={1}
+        title="打多久了？"
+        options={EXPERIENCE_OPTIONS}
+        selected={draft.experience}
+        onPick={(id) => pick({ experience: id })}
+      />
+      <Question
+        n={2}
+        title="多常打？"
+        options={FREQUENCY_OPTIONS}
+        selected={draft.frequency}
+        onPick={(id) => pick({ frequency: id })}
+      />
+      <Question
+        n={3}
+        title="跟程度差不多的人對打，通常能來回幾球？"
+        options={RALLY_OPTIONS}
+        selected={draft.rally}
+        onPick={(id) => pick({ rally: id })}
+        stacked
+      />
+
+      {done ? (
+        <div className="result">
+          <div className="eyebrow" style={{ marginBottom: 4 }}>你的程度</div>
+          <b style={{ fontSize: 19, fontWeight: 800 }}>{levelName(value.ntrp)}</b>
+          <span className="ntrp-note">NTRP {value.ntrp}</span>
+          <p className="note" style={{ margin: '6px 0 0' }}>{levelHint(value.ntrp)}</p>
+        </div>
+      ) : (
+        <p className="note" style={{ margin: 0 }}>
+          三題都選完就會算出你的程度，之後隨時可以改。
+        </p>
+      )}
+    </div>
+  )
+}
+
+function Question<T extends string>({
+  n, title, options, selected, onPick, stacked = false,
+}: {
+  n: number
+  title: string
+  options: ReadonlyArray<{ id: T; label: string; hint?: string }>
+  selected: T | undefined
+  onPick: (id: T) => void
+  stacked?: boolean
+}) {
   return (
     <div className="field">
-      <label>你的程度（NTRP）</label>
-      <div className="chips">
-        {NTRP_STEPS.map((n) => (
+      <label><span className="qnum">{n}</span>{title}</label>
+      <div className={stacked ? 'stack-s' : 'row'} style={stacked ? undefined : { gap: 6 }}>
+        {options.map((o) => (
           <button
-            key={n}
+            key={o.id}
             className="chip"
-            aria-pressed={value.ntrp === n}
-            onClick={() => onChange({ ntrp: n })}
+            style={stacked ? { textAlign: 'left' } : { flex: 1, padding: '10px 4px', textAlign: 'center' }}
+            aria-pressed={selected === o.id}
+            onClick={() => onPick(o.id)}
           >
-            {n}
+            {o.label}
+            {o.hint && (
+              <small style={{ display: 'block', fontWeight: 500, opacity: .7, fontSize: 11, marginTop: 1 }}>
+                {o.hint}
+              </small>
+            )}
           </button>
         ))}
       </div>
-      <p className="note" style={{ margin: '2px 0 0' }}>
-        {NTRP_HINT[String(value.ntrp)]}
-      </p>
     </div>
   )
 }
@@ -223,6 +328,7 @@ export function ClubsField({
 export function isPreferencesValid(p: Player): boolean {
   return (
     p.name.trim().length > 0 &&
+    p.level_answers !== null &&
     p.pref_ntrp_min <= p.pref_ntrp_max &&
     p.availability.weekdays.length > 0 &&
     p.availability.blocks.length > 0 &&

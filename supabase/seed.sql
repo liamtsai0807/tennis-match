@@ -71,18 +71,18 @@ insert into courts (id, club_id, name) values
   ('c-taoyuan-court-5', 'c-taoyuan', '第 5 球場')
 on conflict (id) do nothing;
 
-insert into players (id, name, avatar_hue, ntrp, district, lat, lng, hand, bio, wins, losses, availability, pref_club_ids, pref_ntrp_min, pref_ntrp_max) values
-  ('p-me', '陳彥廷', 210, 3, '台北市大安區', 25.0265, 121.5435, 'right', '週末球友，正手比反手穩。想找程度差不多的固定球伴。', 12, 9, '{"weekdays":[1,2,3,4,5,0,6],"blocks":["evening","morning"]}'::jsonb, '["c-daan","c-xinyi","c-zhongshan"]'::jsonb, 2.5, 3.5),
-  ('p-kai', '王凱文', 24, 3.5, '台北市大安區', 25.03, 121.547, 'right', '底線纏鬥型，喜歡打長球。平日晚上比較有空。', 34, 21, '{"weekdays":[1,2,3,4,5],"blocks":["evening"]}'::jsonb, '["c-daan","c-xinyi"]'::jsonb, 3, 4),
-  ('p-ethan', '李昱辰', 0, 3, '台北市大安區', 25.023, 121.538, 'right', '高中生，禮拜六早上固定練球，想找人對打。', 9, 7, '{"weekdays":[6],"blocks":["morning"]}'::jsonb, '["c-daan","c-zhongshan"]'::jsonb, 2.5, 3.5),
-  ('p-hanwei', '吳承翰', 190, 3, '台北市信義區', 25.033, 121.56, 'right', '下班後想動一動，不太計較勝負，打得開心比較重要。', 15, 18, '{"weekdays":[1,2,3,4,5,0,6],"blocks":["evening","afternoon"]}'::jsonb, '["c-xinyi","c-daan","c-neihu"]'::jsonb, 2.5, 3.5),
-  ('p-shihan', '黃詩涵', 300, 3.5, '台北市中山區', 25.065, 121.525, 'right', '正拍抽球是強項，反拍還在練。平日晚上都可以。', 28, 24, '{"weekdays":[1,2,3,4,5],"blocks":["evening"]}'::jsonb, '["c-zhongshan","c-sanchong","c-daan"]'::jsonb, 3, 4),
-  ('p-ryan', 'Ryan Park', 150, 3, '台北市內湖區', 25.082, 121.578, 'left', '左手，發球有角度。在台北工作三年了，想固定找人打。', 20, 19, '{"weekdays":[0,1,2,3,4,5,6],"blocks":["evening","morning"]}'::jsonb, '["c-neihu","c-xinyi"]'::jsonb, 2.5, 3.5),
-  ('p-yuting', '陳語婷', 330, 4, '台北市士林區', 25.1, 121.525, 'left', '打了六年，想找強一點的對手練習。', 51, 28, '{"weekdays":[0,6],"blocks":["morning","afternoon"]}'::jsonb, '["c-tianmu","c-zhongshan"]'::jsonb, 3.5, 4.5),
-  ('p-meiling', '林美玲', 275, 2.5, '台北市內湖區', 25.08, 121.59, 'right', '打了半年，還在練發球，求輕虐。', 6, 15, '{"weekdays":[0,6],"blocks":["morning"]}'::jsonb, '["c-neihu","c-tianmu"]'::jsonb, 2, 3),
-  ('p-jason', 'Jason Liu', 45, 3, '新北市板橋區', 25.012, 121.465, 'right', '回台灣兩年，找固定球伴一起練。板橋、台北都可以。', 18, 22, '{"weekdays":[0,1,2,3,4,5,6],"blocks":["evening","afternoon"]}'::jsonb, '["c-banqiao","c-daan","c-sanchong"]'::jsonb, 2.5, 3.5),
-  ('p-mingyuan', '蔡明遠', 95, 2.5, '新北市新店區', 24.975, 121.54, 'right', '剛開始打，週末早上有空，希望對方有耐心一點。', 3, 11, '{"weekdays":[0,6],"blocks":["morning"]}'::jsonb, '["c-xindian"]'::jsonb, 2, 3),
-  ('p-hao', '張皓', 15, 4.5, '桃園市中壢區', 24.96, 121.22, 'right', '大學校隊出身，可以陪練也可以認真打。', 88, 31, '{"weekdays":[0,6],"blocks":["morning","afternoon"]}'::jsonb, '["c-taoyuan","c-xindian"]'::jsonb, 4, 5.5),
-  ('p-sofia', 'Sofia Chen', 260, 3.5, '新竹市東區', 24.79, 121.01, 'right', '新竹上班，偶爾北上找人打。', 40, 33, '{"weekdays":[1,2,3,4,5],"blocks":["evening"]}'::jsonb, '["c-taoyuan"]'::jsonb, 3, 4)
+insert into players (id, name, avatar_hue, ntrp, district, lat, lng, hand, bio, wins, losses, level_answers, availability, pref_club_ids, pref_ntrp_min, pref_ntrp_max) values
+  ('p-me', '陳彥廷', 210, 3, '台北市大安區', 25.0265, 121.5435, 'right', '週末球友，正手比反手穩。想找程度差不多的固定球伴。', 12, 9, null, '{"weekdays":[],"blocks":[]}'::jsonb, '[]'::jsonb, 2.5, 3.5),
+  ('p-kai', '王凱文', 24, 3.5, '台北市大安區', 25.03, 121.547, 'right', '底線纏鬥型，喜歡打長球。平日晚上比較有空。', 34, 21, 'manual', '{"weekdays":[1,2,3,4,5],"blocks":["evening"]}'::jsonb, '["c-daan","c-xinyi"]'::jsonb, 3, 4),
+  ('p-ethan', '李昱辰', 0, 3, '台北市大安區', 25.023, 121.538, 'right', '高中生，禮拜六早上固定練球，想找人對打。', 9, 7, 'manual', '{"weekdays":[6],"blocks":["morning"]}'::jsonb, '["c-daan","c-zhongshan"]'::jsonb, 2.5, 3.5),
+  ('p-hanwei', '吳承翰', 190, 3, '台北市信義區', 25.033, 121.56, 'right', '下班後想動一動，不太計較勝負，打得開心比較重要。', 15, 18, 'manual', '{"weekdays":[1,2,3,4,5,0,6],"blocks":["evening","afternoon"]}'::jsonb, '["c-xinyi","c-daan","c-neihu"]'::jsonb, 2.5, 3.5),
+  ('p-shihan', '黃詩涵', 300, 3.5, '台北市中山區', 25.065, 121.525, 'right', '正拍抽球是強項，反拍還在練。平日晚上都可以。', 28, 24, 'manual', '{"weekdays":[1,2,3,4,5],"blocks":["evening"]}'::jsonb, '["c-zhongshan","c-sanchong","c-daan"]'::jsonb, 3, 4),
+  ('p-ryan', 'Ryan Park', 150, 3, '台北市內湖區', 25.082, 121.578, 'left', '左手，發球有角度。在台北工作三年了，想固定找人打。', 20, 19, 'manual', '{"weekdays":[0,1,2,3,4,5,6],"blocks":["evening","morning"]}'::jsonb, '["c-neihu","c-xinyi"]'::jsonb, 2.5, 3.5),
+  ('p-yuting', '陳語婷', 330, 4, '台北市士林區', 25.1, 121.525, 'left', '打了六年，想找強一點的對手練習。', 51, 28, 'manual', '{"weekdays":[0,6],"blocks":["morning","afternoon"]}'::jsonb, '["c-tianmu","c-zhongshan"]'::jsonb, 3.5, 4.5),
+  ('p-meiling', '林美玲', 275, 2.5, '台北市內湖區', 25.08, 121.59, 'right', '打了半年，還在練發球，求輕虐。', 6, 15, 'manual', '{"weekdays":[0,6],"blocks":["morning"]}'::jsonb, '["c-neihu","c-tianmu"]'::jsonb, 2, 3),
+  ('p-jason', 'Jason Liu', 45, 3, '新北市板橋區', 25.012, 121.465, 'right', '回台灣兩年，找固定球伴一起練。板橋、台北都可以。', 18, 22, 'manual', '{"weekdays":[0,1,2,3,4,5,6],"blocks":["evening","afternoon"]}'::jsonb, '["c-banqiao","c-daan","c-sanchong"]'::jsonb, 2.5, 3.5),
+  ('p-mingyuan', '蔡明遠', 95, 2.5, '新北市新店區', 24.975, 121.54, 'right', '剛開始打，週末早上有空，希望對方有耐心一點。', 3, 11, 'manual', '{"weekdays":[0,6],"blocks":["morning"]}'::jsonb, '["c-xindian"]'::jsonb, 2, 3),
+  ('p-hao', '張皓', 15, 4.5, '桃園市中壢區', 24.96, 121.22, 'right', '大學校隊出身，可以陪練也可以認真打。', 88, 31, 'manual', '{"weekdays":[0,6],"blocks":["morning","afternoon"]}'::jsonb, '["c-taoyuan","c-xindian"]'::jsonb, 4, 5.5),
+  ('p-sofia', 'Sofia Chen', 260, 3.5, '新竹市東區', 24.79, 121.01, 'right', '新竹上班，偶爾北上找人打。', 40, 33, 'manual', '{"weekdays":[1,2,3,4,5],"blocks":["evening"]}'::jsonb, '["c-taoyuan"]'::jsonb, 3, 4)
 on conflict (id) do nothing;
 

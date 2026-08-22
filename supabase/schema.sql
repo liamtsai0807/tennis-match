@@ -41,6 +41,9 @@ create table if not exists players (
   bio            text not null default '',
   wins           int  not null default 0,
   losses         int  not null default 0,
+  -- 程度是怎麼來的：null 未設定／'"manual"' 直接選的／三題的作答物件
+  -- 存 jsonb 而不是拆成三欄，是因為題目本來就會改版，改版時不用動 schema
+  level_answers  jsonb,
   -- { "weekdays": [1,2,3], "blocks": ["evening"] }
   availability   jsonb not null default '{"weekdays":[],"blocks":[]}'::jsonb,
   pref_club_ids  jsonb not null default '[]'::jsonb,
