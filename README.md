@@ -91,6 +91,34 @@ npm run dev
 
 也可以跳過媒合，直接到「球場」頁自己訂一個場。
 
+## 裝到手機
+
+這是 PWA，不用經過 App Store 或 Play 商店：把 `dist/` 部署到任何支援 HTTPS 的
+靜態主機，使用者開連結就能裝到主畫面，有自己的圖示、全螢幕、沒網路也打得開。
+
+```bash
+npm run build
+```
+
+產出的 `dist/` 直接部署即可。已經處理好的部分：
+
+- `base: './'` 加上 HashRouter — 部署在網域根目錄或子路徑（`/repo-name/`）都能跑，
+  靜態主機不需要任何 rewrite 規則
+- `public/manifest.webmanifest` — 名稱、圖示、`display: standalone`、捷徑
+- `public/sw.js` — service worker，離線可用。**查快取時必須 `ignoreVary: true`**，
+  因為 GitHub Pages、Netlify、Cloudflare 都會回 `Vary` 標頭，而 `caches.match()`
+  預設要比對它，離線時請求標頭對不上就會整個失效
+- 安裝提示 — Android 接 `beforeinstallprompt` 給一顆安裝鈕；iOS 沒有這個事件，
+  改成教使用者按「分享 → 加入主畫面」
+
+圖示由 `tools/make_icons.ts` 產生（純 Node，沒有繪圖相依）：
+
+```bash
+node --experimental-strip-types tools/make_icons.ts
+```
+
+**HTTPS 是必要條件**，service worker 在 http 下不會註冊（localhost 例外）。
+
 ## 資料存在哪
 
 現在是**離線示範模式**：資料存在瀏覽器的 localStorage，畫面下方有「離線示範」的小標記。
@@ -161,6 +189,7 @@ tools/
   level.test.ts        程度推算測試
   gen_seed_sql.ts      產生 seed.sql
   build_single_file.ts 把 build 產物壓成單一 HTML，用來分享原型
+  make_icons.ts        產生 PWA 安裝用的 PNG 圖示
 ```
 
 ## 已知限制

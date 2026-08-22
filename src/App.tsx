@@ -2,6 +2,7 @@
 import { HashRouter, Routes, Route, NavLink, useLocation, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ToastProvider } from './components/Toast.tsx'
+import { InstallPrompt } from './components/InstallPrompt.tsx'
 import { IconHome, IconSearch, IconPeople, IconUser } from './components/icons.tsx'
 import { OFFLINE, isOnboarded } from './lib/db.ts'
 
@@ -83,6 +84,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </OnboardingGate>
+          <InstallPrompt />
           {OFFLINE && <div className="backend-flag">離線示範模式</div>}
           <TabRegion />
         </div>
