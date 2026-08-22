@@ -2,7 +2,8 @@
  * 「我的」＝我的邀約、我的預約、以及登錄時填的那些偏好（可以隨時改）。
  */
 import { Link } from 'react-router-dom'
-import { Header, Avatar } from '../components/ui.tsx'
+import { useState } from 'react'
+import { Header, Avatar, Sheet } from '../components/ui.tsx'
 import { useToast } from '../components/Toast.tsx'
 import { IconCourt, IconChevron } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
@@ -21,8 +22,15 @@ const STATUS: Record<Invite['status'], { text: string; cls: string }> = {
   cancelled: { text: '已取消', cls: '' },
 }
 
+/**
+ * 確認對話框自己做，不用 window.confirm——沙箱環境（iframe、無痕）會直接擋掉它，
+ * 而且被擋時是靜默回傳 false，按鈕看起來就像壞掉。
+ */
+type Pending = { title: string; body: string; action: () => void } | null
+
 export default function Profile() {
   const toast = useToast()
+  const [pending, setPending] = useState<Pending>(null)
   const { data } = useData(async () => {
     const [me, players, bookings, clubs, invites] = await Promise.all([
       getMe(), listPlayers(), listMyBookings(), listClubs(), listInvites(),
@@ -44,10 +52,12 @@ export default function Profile() {
   const total = me.wins + me.losses
   const winRate = total > 0 ? Math.round((me.wins / total) * 100) : 0
 
-  async function onCancel(id: string) {
-    if (!confirm('確定取消這筆預約？')) return
-    await cancelBooking(id)
-    toast('預約已取消')
+  function onCancel(id: string) {
+    setPending({
+      title: '取消這筆預約？',
+      body: '場地會釋出給其他人。開打前 2 小時內取消恕不退費。',
+      action: async () => { await cancelBooking(id); toast('預約已取消') },
+    })
   }
 
   return (
@@ -179,11 +189,11 @@ export default function Profile() {
             <button
               className="list-row"
               style={{ width: '100%', textAlign: 'left' }}
-              onClick={() => {
-                if (!confirm('會把偏好設定、邀約、預約全部清掉，重新走一次登錄流程。')) return
-                resetDemoData()
-                location.href = '/'
-              }}
+              onClick={() => setPending({
+                title: '重設示範資料？',
+                body: '偏好設定、邀約、預約全部清掉，重新走一次登錄流程。',
+                action: () => { resetDemoData(); toast('已重設，重新設定一次偏好') },
+              })}
             >
               <div className="grow">
                 <b>重設示範資料</b>
@@ -198,6 +208,19 @@ export default function Profile() {
           TennisPal・場地費與規則以各球館現場公告為準
         </p>
       </div>
+
+      <Sheet open={pending !== null} onClose={() => setPending(null)} title={pending?.title ?? ''}>
+        <p className="note" style={{ marginBottom: 16 }}>{pending?.body}</p>
+        <div className="stack-s">
+          <button
+            className="btn danger block"
+            onClick={() => { pending?.action(); setPending(null) }}
+          >
+            確定
+          </button>
+          <button className="btn block" onClick={() => setPending(null)}>再想想</button>
+        </div>
+      </Sheet>
     </>
   )
 }

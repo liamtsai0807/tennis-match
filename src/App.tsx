@@ -1,5 +1,5 @@
 /** ===== App.tsx ===== */
-import { BrowserRouter, Routes, Route, NavLink, useLocation, Navigate } from 'react-router-dom'
+import { HashRouter, Routes, Route, NavLink, useLocation, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ToastProvider } from './components/Toast.tsx'
 import { IconHome, IconSearch, IconPeople, IconUser } from './components/icons.tsx'
@@ -64,7 +64,7 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <ToastProvider>
         <ScrollToTop />
         <div className="app">
@@ -87,7 +87,7 @@ export default function App() {
           <TabRegion />
         </div>
       </ToastProvider>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 

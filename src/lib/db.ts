@@ -46,12 +46,36 @@ function seed(): LocalStore {
   return { onboarded: false, me: null, bookings, invites }
 }
 
+/**
+ * 有些環境（沙箱 iframe、無痕模式）會直接擋掉 localStorage，一存取就丟例外。
+ * 那種情況退回記憶體，App 照樣能用，只是關掉分頁就忘了。
+ */
+let memory: string | null = null
+
+function load(): string | null {
+  try {
+    return localStorage.getItem(KEY)
+  } catch {
+    return memory
+  }
+}
+
+function save(value: string | null) {
+  try {
+    if (value === null) localStorage.removeItem(KEY)
+    else localStorage.setItem(KEY, value)
+  } catch {
+    // 存不進去就算了，至少這一次開啟期間資料還在
+  }
+  memory = value
+}
+
 function read(): LocalStore {
   try {
-    const raw = localStorage.getItem(KEY)
+    const raw = load()
     if (!raw) {
       const fresh = seed()
-      localStorage.setItem(KEY, JSON.stringify(fresh))
+      save(JSON.stringify(fresh))
       return fresh
     }
     return { ...seed(), ...(JSON.parse(raw) as Partial<LocalStore>) } as LocalStore
@@ -61,12 +85,12 @@ function read(): LocalStore {
 }
 
 function write(s: LocalStore) {
-  localStorage.setItem(KEY, JSON.stringify(s))
+  save(JSON.stringify(s))
   window.dispatchEvent(new Event('tennispal:changed'))
 }
 
 export function resetDemoData() {
-  localStorage.removeItem(KEY)
+  save(null)
   write(seed())
 }
 
