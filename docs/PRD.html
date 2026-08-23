@@ -305,10 +305,10 @@
     幫網球愛好者找到程度相近的球伴，約一個對兩個人都方便的球場打球。
   </p>
   <div class="meta">
-    <span><b>版本</b> v0.4</span>
+    <span><b>版本</b> v0.5</span>
     <span><b>日期</b> 2026-08-23</span>
     <span><b>狀態</b> 後端已接上，本機可完整運行；未上線</span>
-    <span><b>對應程式碼</b> commit 46015d6</span>
+    <span><b>對應程式碼</b> commit e39a71b</span>
   </div>
 </header>
 
@@ -630,7 +630,10 @@
     <li>需要：註冊、登入、身分驗證、以及把初始 migration
       （<code>supabase/migrations/20260822000000_init.sql</code>）註解裡那組綁
       <code>auth.uid()</code> 的 RLS 政策換上去。現在的政策是「誰都能讀寫」，只適合自己玩。</li>
-    <li>登入方式待決，見 <a href="#open">§9</a>。</li>
+    <li>登入方式已決（<a href="#open">§9 Q1</a>）：第一版 Google + Email，走 Supabase Auth 內建 provider；
+      LINE Login 等媒合驗證有效後，和 LINE 推播一起做。</li>
+    <li>身分要抽成一層，不要讓畫面直接認 <code>ME</code>——之後換／加 provider 才不用動業務邏輯。
+      現在 <code>ME = 'p-me'</code> 是寫死的常數，而且 seed 裡就有這筆假資料，接真帳號時要一併處理。</li>
   </ul>
 
   <h3><span class="num">5.8</span>後端與本機開發環境<span class="chip done">已實作</span></h3>
@@ -718,6 +721,7 @@
       <tbody>
         <tr><td>平台</td><td>手機網頁 PWA，iOS Safari 與 Android Chrome</td><td class="num"><span class="chip done">已實作</span></td></tr>
         <tr><td>離線</td><td>已安裝的 App 在無網路時可開啟並瀏覽既有資料</td><td class="num"><span class="chip done">已實作</span></td></tr>
+        <tr><td>錯誤處理</td><td>畫面出錯時要有訊息與出路，不能是空白；錯誤訊息要帶版本，測試者才回報得出來</td><td class="num"><span class="chip done">已實作</span></td></tr>
         <tr><td>後端</td><td>本機以 Supabase CLI 完整運行（Postgres／REST／即時訂閱）；雲端專案尚未開設</td><td class="num"><span class="chip done">本機已實作</span></td></tr>
         <tr><td>部署</td><td>建置管線已就緒，測試與型別檢查沒過就不部署；目前刻意停用自動觸發，GitHub 僅作原始碼倉庫</td><td class="num"><span class="chip open">已停用</span></td></tr>
         <tr><td>位置隱私</td><td>只存行政區中心座標，不存精確位置，不顯示他人確切位置</td><td class="num"><span class="chip done">已實作</span></td></tr>
@@ -769,7 +773,8 @@
 
 <section>
   <h2><span class="secno">§9</span><span id="open"></span>待決事項</h2>
-  <p>這些需要產品決策，不是技術問題。標 <span class="chip open">待決</span> 的規格都卡在這裡。</p>
+  <p>這些需要產品決策，不是技術問題。標 <span class="chip open">待決</span> 的規格都卡在這裡。
+    已經拍板的保留在表上，連同當時的理由——半年後回頭看，「為什麼這樣決定」比「決定了什麼」重要。</p>
 
   <div class="tablewrap">
     <table>
@@ -777,14 +782,28 @@
       <tbody>
         <tr>
           <td class="num">Q1</td>
-          <td><strong>登入方式？</strong>手機簡訊 / Email / LINE Login / Google</td>
-          <td>台灣市場 LINE Login 轉換率最高，但綁定 LINE 生態；簡訊有成本；
-            Email 最便宜但流失最多。決定後才能寫 §5.7</td>
+          <td><strong>登入方式</strong> <span class="chip done">已決</span><br>
+            第一版 Google + Email，之後再加 LINE Login</td>
+          <td><b>這題真正問的是通知，不是登入。</b>邀約是非同步的，對方要在別的時間看到並回覆；
+            沒有推播的話 §10 的「邀約接受率」一定掛。LINE 是唯一順便解決推播的選項，
+            但它<b>不是 Supabase 內建 provider</b>（內建清單沒有 LINE，要自己接 custom OAuth/OIDC），
+            而現在媒合準不準都還沒驗證。
+            所以第一版走內建的 Google + Email 先把身分抽象出來，
+            第一批使用者是從自己球友圈找來的，登入摩擦不是那階段的瓶頸、通知先靠人工。
+            等媒合驗證有效要開始長使用者時，LINE Login 和 LINE 推播一起做——那時它們是同一件事。
+            <b>已知代價：</b>auth 會做兩次。</td>
         </tr>
         <tr>
           <td class="num">Q2</td>
-          <td><strong>真實球館資料從哪來？</strong>人工建檔 / 公開資料 / 球館合作</td>
-          <td>目前九個球館全是編的。這是上線的硬門檻——資料不真，媒合再準也沒用</td>
+          <td><strong>真實球館資料從哪來</strong> <span class="chip done">已決</span><br>
+            政府開放資料當骨架，細節人工補</td>
+          <td>目前九個球館全是編的，這是上線硬門檻。
+            <b>全國運動場館資訊（iPlay）</b>的開放資料有場館名稱、行政區、地址、<b>經緯度</b>、
+            設施項目、開放時間——<b>剛好蓋住演算法真正用到的欄位</b>（球場推薦只吃經緯度和使用者的偏好球場）。
+            缺的材質、室內、燈光、價格、面數全是顯示用，人工補；單一區域 20–40 個場，一兩天查得完。
+            <b>三個要注意：</b>年更一次，球館收掉或改價不會反映，要有人工校正機制；
+            開放時間是自由文字，要 parse 或人工填；涵蓋以公共場館為主，私人俱樂部要另外補。
+            授權為政府資料開放授權條款第 1 版，可商用但須標示來源。</td>
         </tr>
         <tr>
           <td class="num">Q3</td>
@@ -860,7 +879,7 @@
 
 <footer>
   <p>
-    TennisPal PRD v0.4 · 2026-08-23 · 對應程式碼 commit <code>46015d6</code><br>
+    TennisPal PRD v0.5 · 2026-08-23 · 對應程式碼 commit <code>e39a71b</code><br>
     文件中所有演算法權重、欄位名稱與狀態轉換皆對得上實際程式碼；
     標示「未實作」者僅有規格。
   </p>
