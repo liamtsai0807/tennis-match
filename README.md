@@ -247,7 +247,8 @@ supabase/
   seed.sql       由 tools/gen_seed_sql.ts 從 mockData.ts 產生，不要手改
   templates/     登入信範本（給驗證碼，不給連結）
 src/lib/
-  clubData.ts    真實球場，由 tools/import_clubs.ts 從開放資料產生，不要手改
+  clubData.ts     真實球場，由 tools/import_clubs.ts 從開放資料產生，不要手改
+  clubOverrides.ts 人工查證的結果，唯一一份手改的球場資料，匯入時套上去
 tools/
   match.test.ts        媒合演算法測試
   level.test.ts        程度推算測試
@@ -277,6 +278,11 @@ tools/
   沒設定時按下去只會得到錯誤訊息，Email 那條路不受影響。
 - **距離是直線距離**，不是實際路程。要接路網 API 才算得出路程，
   但拿來排序球場的結果幾乎一樣。
+- **人工查證才剛開始。** 54 個球場裡目前只有 **1 個**（臺北市網球中心）查證過，
+  其餘都還是開放資料的原樣。查證結果寫在
+  [src/lib/clubOverrides.ts](src/lib/clubOverrides.ts)——那是**唯一一份手改的球場資料**，
+  由匯入工具在產生 `clubData.ts` 時套上去。不要直接改 `clubData.ts`，
+  它每次重跑都會整份重寫。
 - **球館細節未確認。** 球場已經換成真實資料（政府開放資料 iPlay，雙北 54 個
   可租借的網球場館，見 [tools/import_clubs.ts](tools/import_clubs.ts)），
   名稱、地址、經緯度是真的。但**場地材質、夜燈、每小時價格、評分、面數

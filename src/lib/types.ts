@@ -55,6 +55,14 @@ export interface Club extends LatLng {
    * 「App 說訂到了、現場卻不算數」這種比不做更糟的狀況。
    */
   booking_url: string | null
+  /**
+   * 收費的補充說明。真實球場的價格幾乎都是分級的——尖峰離峰、平日假日、
+   * 室內室外、燈光費另計。price_per_hour 一個數字裝不下，硬塞會變成謊報。
+   * 有值時 price_per_hour 代表「最低那一檔」，畫面上會標「起」。
+   */
+  price_note: string | null
+  /** 人工查證的日期。資料會過期，不記日期就不知道哪一筆該重查。 */
+  verified_on: string | null
 }
 
 export interface Court {

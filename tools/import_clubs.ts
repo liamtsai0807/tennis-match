@@ -20,8 +20,12 @@
  *   2. 出現在那份名單裡就代表這個場在市府的線上訂場系統裡，可以深連結過去
  * 對應只能靠地址——那份 JSON 沒有座標也沒有 id。對不上很正常：
  * 我們的球場有一半是大學和學校的場，本來就不歸市府訂場系統管。
+ *
+ * 最後套上 src/lib/clubOverrides.ts 的人工查證結果。那是唯一手改的一份，
+ * 放在這裡套是因為 clubData.ts 每次重跑都會整份重寫，人工成果寫在那裡會被蓋掉。
  */
 import { readFileSync, writeFileSync } from 'node:fs'
+import { CLUB_OVERRIDES } from '../src/lib/clubOverrides.ts'
 
 const VBS_URL = 'https://vbs.sports.taipei/opendata/sports_tms2.json'
 
@@ -176,6 +180,10 @@ interface Row {
   bookingUrl: string | null
 }
 
+/** 人工查證的結果，用正規化地址當鍵 */
+const overrides = new Map(CLUB_OVERRIDES.map((o) => [normAddr(o.address), o]))
+let overridden = 0
+
 const vbs = await loadVbs()
 /** 深連結只能到場地清單頁——網球的篩選是純前端 JS，沒有可靠的網址參數。 */
 const VBS_PAGE = 'https://vbs.sports.taipei/venues/'
@@ -230,21 +238,41 @@ for (const r of rows.slice(1)) {
 
 clubs.sort((a, b) => a.district.localeCompare(b.district, 'zh-TW') || a.name.localeCompare(b.name, 'zh-TW'))
 
+const lit = (v: unknown): string =>
+  v === null || v === undefined ? 'null'
+    : typeof v === 'string' ? JSON.stringify(v)
+      : String(v)
+
 const body = clubs.map((c) => {
+  // id 一律由「開放資料原本的名稱＋地址」推出來，人工改了顯示名稱也不會變。
+  // id 變動等於使用者存的偏好球場全部失效，那個代價比名稱好看重要得多。
   const id = slugId(c.name, c.address)
-  // 名稱帶「室內」的才敢說是室內；沒寫的一律當戶外，寧可少說也不要說錯
-  const indoor = /室內/.test(c.name)
+  const ov = overrides.get(normAddr(c.address))
+  if (ov) overridden++
+  const p = ov?.patch ?? {}
+
+  const field = <K extends keyof typeof p>(key: K, fallback: unknown) =>
+    lit(key in p ? p[key] : fallback)
+
   return `  {
-    id: '${id}', name: ${JSON.stringify(c.name)},
+    id: '${id}', name: ${field('name', c.name)},
     district: ${JSON.stringify(c.district)},
     address: ${JSON.stringify(c.address)},
     lat: ${c.lat}, lng: ${c.lng},
-    surface: null, indoor: ${indoor}, lights: null,
-    price_per_hour: ${c.free ? 0 : 'null'}, rating: null, courts: 1,
-    open_hour: ${c.openHour}, close_hour: ${c.closeHour},
+    surface: ${field('surface', null)},
+    // 名稱帶「室內」的才敢說是室內；沒寫的一律當戶外，寧可少說也不要說錯
+    indoor: ${field('indoor', /室內/.test(c.name))},
+    lights: ${field('lights', null)},
+    price_per_hour: ${field('price_per_hour', c.free ? 0 : null)},
+    price_note: ${field('price_note', null)},
+    rating: ${field('rating', null)},
+    courts: ${field('courts', 1)},
+    open_hour: ${field('open_hour', c.openHour)},
+    close_hour: ${field('close_hour', c.closeHour)},
     photo: '${gradient(id)}',
-    source: 'opendata',
-    booking_url: ${c.bookingUrl ? `'${c.bookingUrl}'` : 'null'},
+    source: '${ov ? 'manual' : 'opendata'}',
+    booking_url: ${field('booking_url', c.bookingUrl)},
+    verified_on: ${lit(ov?.verifiedOn ?? null)},
   },`
 }).join('\n')
 
@@ -279,6 +307,13 @@ writeFileSync(new URL('../src/lib/clubData.ts', import.meta.url), out)
 console.log(`已產生 src/lib/clubData.ts：${CITIES.join('、')} 共 ${clubs.length} 個可租借的網球場館`)
 console.log('過濾掉：', Object.entries(skipped).map(([k, v]) => `${k} ${v}`).join('、'))
 console.log(`對上臺北市體育局訂場系統：${matched} 個（有真實開放時間與訂場連結）`)
+console.log(`套用人工查證：${overridden} / ${CLUB_OVERRIDES.length} 個`)
+if (overridden < CLUB_OVERRIDES.length) {
+  // 開放資料年更一次，地址改了 override 就會靜靜失效，不講的話沒人會發現
+  const missed = CLUB_OVERRIDES.filter((o) => !clubs.some((c) => normAddr(c.address) === normAddr(o.address)))
+  console.warn('⚠️  這些人工查證的地址在開放資料裡找不到，可能是地址寫法變了：')
+  for (const m of missed) console.warn('   ' + m.address)
+}
 const byDistrict = new Map<string, number>()
 for (const c of clubs) byDistrict.set(c.district, (byDistrict.get(c.district) ?? 0) + 1)
 console.log('分布：', [...byDistrict].sort((a, b) => b[1] - a[1]).map(([d, n]) => `${d} ${n}`).join('、'))

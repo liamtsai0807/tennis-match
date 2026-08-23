@@ -81,12 +81,22 @@ export default function ClubDetail() {
             <div className="row" style={{ gap: 4, marginTop: 4, color: 'var(--ink-2)', fontSize: 13 }}>
               <IconPin size={15} /> {club.address}
             </div>
+            {/* 分級收費一個數字裝不下，說明要放在看得到的地方 */}
+            {club.price_note && (
+              <p className="note price-note">
+                <b>收費</b>{club.price_note}
+              </p>
+            )}
             <div className="row" style={{ gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
               {club.surface && <span className="pill">{SURFACE_LABEL[club.surface]}</span>}
               <span className="pill">{club.indoor ? '室內' : '戶外'}</span>
               {club.source !== 'opendata' && <span className="pill">{club.courts} 面場</span>}
               <span className="pill">{club.open_hour}:00–{club.close_hour}:00</span>
               {club.lights === true && <span className="pill">夜間照明</span>}
+              {club.verified_on && (
+                <span className="pill ok">已查證 {club.verified_on}</span>
+              )}
+              {club.source === 'opendata' && <span className="pill">細節未確認</span>}
             </div>
 
             {/*
@@ -115,7 +125,7 @@ export default function ClubDetail() {
               )}
               <p className="note" style={{ margin: '8px 0 0', textAlign: 'center' }}>
                 {club.booking_url
-                  ? '這個場在臺北市體育局的線上訂場系統裡'
+                  ? '訂場請到球館自己的系統，我們不代訂'
                   : '這個場沒有線上訂場，電話與營業時間請看地圖'}
               </p>
             </div>

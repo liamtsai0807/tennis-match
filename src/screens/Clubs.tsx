@@ -98,9 +98,12 @@ export default function Clubs() {
                     {c.lights === false && <span className="pill warn">無夜燈</span>}
                     {/* 來自開放資料的球場只有名稱、地址、座標是確定的，講清楚比留白好 */}
                     {c.source === 'opendata' && <span className="pill">細節未確認</span>}
+                    {c.source === 'manual' && <span className="pill ok">已查證</span>}
                     <span className="spacer" />
                     <b style={{ fontSize: 14.5 }}>
                       {money(c.price_per_hour)}
+                      {/* 有補充說明代表價格是分級的，這個數字只是最低那一檔 */}
+                      {c.price_note && <small style={{ color: 'var(--ink-3)', fontWeight: 600 }}> 起</small>}
                       {c.price_per_hour !== null && c.price_per_hour > 0 && (
                         <small style={{ color: 'var(--ink-3)', fontWeight: 600 }}> /小時</small>
                       )}
