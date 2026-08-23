@@ -74,42 +74,7 @@ export const CLUB_OVERRIDES: ClubOverride[] = [
   // 兩邊都要會員登入、都沒有 API，所以我們只能把人送到對的那個入口。
   // ---------------------------------------------------------------
 
-  {
-    address: '臺北市 中山區 大直橋 至 中山高速公路(金泰段右岸)（基隆河右岸）',
-    verifiedOn: '2026-08-23',
-    sources: ['https://vbs.sports.taipei/venues/?K=174'],
-    patch: {
-      name: '美堤河濱公園網球場',
-      courts: 2,
-      lights: true,
-      open_hour: 8,
-      close_hour: 22,
-      // 官方場館頁寫的是日間夜間同價 140。網路上流傳的 400 元是錯的，
-      // 那是別的收費表；只信場館頁自己寫的數字。
-      price_per_hour: 140,
-      price_note:
-        '每小時 140 元，日間夜間同價。臺北市體育局線上預約，要先註冊會員。' +
-        '未開放線上預約的面只供現場民眾輪流使用，不能營利。',
-      // 深連結到這個場館自己的頁面，不是場地清單頁——那一頁就看得到時段與收費
-      booking_url: 'https://vbs.sports.taipei/venues/?K=174',
-    },
-  },
 
-  {
-    address: '臺北市 中山區 圓山橋下10號水門 大直橋至中山橋(大佳段)（基隆河左岸）',
-    verifiedOn: '2026-08-23',
-    sources: ['https://vbs.sports.taipei/opendata/sports_tms2.json（確認它在系統裡）'],
-    patch: {
-      name: '大佳河濱公園網球場',
-      open_hour: 8,
-      close_hour: 22,
-      // 體育局的開放資料確認這個場在系統裡（SportType 網球），但還沒找到它的
-      // 場館專屬頁（?K=）——它的地址沒有路名，用路名比對的方式找不到。
-      // 先給清單頁，之後補上精確的那一頁。面數與收費都還沒查證。
-      booking_url: 'https://vbs.sports.taipei/venues/',
-      price_note: '在臺北市體育局的線上訂場系統裡，但這個場的面數與收費還沒查證。',
-    },
-  },
 
   {
     address: '臺北市士林區通河東街1及2段堤外',
@@ -175,58 +140,6 @@ export const CLUB_OVERRIDES: ClubOverride[] = [
         '沒有人申請的時段開放現場自由使用。',
       booking_url:
         'https://www.hrcm.ntpc.gov.tw/Service/VenueRental/TennisCourtLeaseInst/Detail/小碧潭網球場',
-    },
-  },
-]
-
-/**
- * 開放資料整個漏掉、但確實存在而且訂得到的球場。
- *
- * override 只能修既有的球場，補不了缺的。而 iPlay 漏掉的不是零星幾個——
- * 光是臺北市河濱就漏了彩虹（9 面）和雙園（4 面），兩個都在體育局的線上訂場
- * 系統裡、都有夜燈。對「河濱打球」這件事來說，漏掉九面場等於漏掉一個大場地。
- *
- * 這裡每一筆的座標、面數、開放時間、收費都來自體育局場館頁本身，不是估的。
- */
-export const CLUB_ADDITIONS: Array<{
-  club: Omit<Club, 'photo'>
-  sources: string[]
-}> = [
-  {
-    sources: ['https://vbs.sports.taipei/venues/?K=201'],
-    club: {
-      // id 自己給，不走名稱雜湊——這筆不是從開放資料來的，沒有原始名稱可以雜湊
-      id: 'c-vbs-201',
-      name: '彩虹河濱公園網球場',
-      district: '臺北市內湖區',
-      address: '基隆河中山高速公路至麥帥一橋間(舊宗段右岸)（基隆河右岸）',
-      lat: 25.062687, lng: 121.571815,
-      surface: null, indoor: false, lights: true,
-      price_per_hour: 140,
-      price_note: '每小時 140 元，日間夜間同價。臺北市體育局線上預約，要先註冊會員。',
-      rating: null, courts: 9,
-      open_hour: 8, close_hour: 22,
-      source: 'manual',
-      booking_url: 'https://vbs.sports.taipei/venues/?K=201',
-      verified_on: '2026-08-23',
-    },
-  },
-  {
-    sources: ['https://vbs.sports.taipei/venues/?K=210'],
-    club: {
-      id: 'c-vbs-210',
-      name: '雙園河濱公園網球場',
-      district: '臺北市萬華區',
-      address: '雙園抽水站至華江橋上游側欄杆間',
-      lat: 25.034276, lng: 121.488169,
-      surface: null, indoor: false, lights: true,
-      price_per_hour: 140,
-      price_note: '每小時 140 元，日間夜間同價。臺北市體育局線上預約，要先註冊會員。',
-      rating: null, courts: 4,
-      open_hour: 8, close_hour: 22,
-      source: 'manual',
-      booking_url: 'https://vbs.sports.taipei/venues/?K=210',
-      verified_on: '2026-08-23',
     },
   },
 ]
