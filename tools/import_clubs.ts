@@ -12,8 +12,18 @@
  * 開放資料給得起的：名稱、行政區、地址、經緯度、開放星期、租借方式。
  * 給不起的：場地材質、室內外、夜燈、每小時價格、場地面數、評分。
  * 那些一律留 null 或標成未確認，不要編一個出來——編出來的價格使用者會當真。
+ *
+ * 第二個來源：臺北市體育局場館設施管理系統自己的開放端點
+ *   https://vbs.sports.taipei/opendata/sports_tms2.json
+ * 它補兩件 iPlay 給不起的事：
+ *   1. 真實的開放與關閉時間（iPlay 的「開放時間」欄位存的是星期，不是時刻）
+ *   2. 出現在那份名單裡就代表這個場在市府的線上訂場系統裡，可以深連結過去
+ * 對應只能靠地址——那份 JSON 沒有座標也沒有 id。對不上很正常：
+ * 我們的球場有一半是大學和學校的場，本來就不歸市府訂場系統管。
  */
 import { readFileSync, writeFileSync } from 'node:fs'
+
+const VBS_URL = 'https://vbs.sports.taipei/opendata/sports_tms2.json'
 
 const [csvPath, ...cityArgs] = process.argv.slice(2)
 if (!csvPath) {
@@ -64,6 +74,64 @@ function cityOf(address: string): string {
   return m ? m[1].replace('台', '臺') : ''
 }
 
+// ---------- 臺北市體育局訂場系統 ----------
+
+interface VbsVenue {
+  Area: string
+  Name: string
+  SportType: string
+  Address: string
+  startTime: string
+  endTime: string
+}
+
+/**
+ * 地址正規化。兩份資料同一個地點寫法不一樣：
+ * iPlay 寫「臺北市 士林區 忠誠路二段77號」，體育局寫「臺北市士林區忠誠路2段77號 」。
+ * 統一臺／台、去掉空白與括號說明、去掉郵遞區號、中文數字的「段」換成阿拉伯數字。
+ */
+function normAddr(a: string): string {
+  const cn: Record<string, string> = {
+    一: '1', 二: '2', 三: '3', 四: '4', 五: '5',
+    六: '6', 七: '7', 八: '8', 九: '9', 十: '10',
+  }
+  return (a ?? '')
+    .replace(/臺/g, '台')
+    .replace(/[\s\u3000]/g, '')
+    .replace(/\(.*?\)|（.*?）/g, '')
+    .replace(/^\d{3,5}/, '')
+    .replace(/^台灣/, '')
+    .replace(/([一二三四五六七八九十])段/g, (_m, d: string) => cn[d] + '段')
+}
+
+/**
+ * 抓出「路名＋段＋巷弄號」這個核心，前面的縣市行政區去掉。
+ * 完整地址逐字比對只對得上三筆，因為兩邊在門牌後面接的補充說明不一樣；
+ * 拿核心去比對得上十筆，而且十筆都是精確地址，沒有偽陽性。
+ */
+function addrCore(a: string): string {
+  const m = /([^市區縣]{2,10}(?:路|街|大道)[0-9]*段?[0-9]*巷?[0-9-]*弄?[0-9-]*號?)/.exec(normAddr(a))
+  return m ? m[1] : ''
+}
+
+function hourOf(t: string): number | null {
+  const m = /^(\d{1,2}):/.exec(t ?? '')
+  return m ? Number(m[1]) : null
+}
+
+async function loadVbs(): Promise<VbsVenue[]> {
+  try {
+    const res = await fetch(VBS_URL)
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    const all = (await res.json()) as VbsVenue[]
+    return all.filter((x) => (x.SportType ?? '').includes('網球'))
+  } catch (e) {
+    // 對不到就是少了開放時間與訂場連結，球場本身還是進得去，不要讓整個匯入失敗
+    console.warn('⚠️  讀不到體育局訂場系統的資料，開放時間與訂場連結會留空：' + (e as Error).message)
+    return []
+  }
+}
+
 // ---------- 產生穩定的 id ----------
 
 /**
@@ -101,7 +169,17 @@ const iLng = col('經度')
 const iFacility = col('設施項目')
 const iRental = col('租借資訊')
 
-interface Row { name: string; district: string; address: string; lat: number; lng: number; free: boolean }
+interface Row {
+  name: string; district: string; address: string
+  lat: number; lng: number; free: boolean
+  openHour: number; closeHour: number
+  bookingUrl: string | null
+}
+
+const vbs = await loadVbs()
+/** 深連結只能到場地清單頁——網球的篩選是純前端 JS，沒有可靠的網址參數。 */
+const VBS_PAGE = 'https://vbs.sports.taipei/venues/'
+let matched = 0
 
 const seen = new Set<string>()
 const clubs: Row[] = []
@@ -128,14 +206,25 @@ for (const r of rows.slice(1)) {
   if (seen.has(key)) { skipped.重複++; continue }
   seen.add(key)
 
+  const district = (r[iDistrict] ?? '').trim()
+  const core = addrCore(address)
+  const hit = core
+    ? vbs.find((v) => district.includes(v.Area) && normAddr(v.Address).includes(core))
+    : undefined
+  if (hit) matched++
+
   clubs.push({
     name,
-    district: cityOf(address) + (r[iDistrict] ?? '').trim(),
+    district: cityOf(address) + district,
     address,
     lat: Number(lat.toFixed(6)),
     lng: Number(lng.toFixed(6)),
     // 「免費對外場地租借」是真的資料，價格就是 0；「付費」只知道要錢，不知道多少
     free: rental.includes('免費'),
+    // 對不上就退回 6–22 這個保守預設，並不是查證過的營業時間
+    openHour: (hit && hourOf(hit.startTime)) ?? 6,
+    closeHour: (hit && hourOf(hit.endTime)) ?? 22,
+    bookingUrl: hit ? VBS_PAGE : null,
   })
 }
 
@@ -152,9 +241,10 @@ const body = clubs.map((c) => {
     lat: ${c.lat}, lng: ${c.lng},
     surface: null, indoor: ${indoor}, lights: null,
     price_per_hour: ${c.free ? 0 : 'null'}, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: ${c.openHour}, close_hour: ${c.closeHour},
     photo: '${gradient(id)}',
     source: 'opendata',
+    booking_url: ${c.bookingUrl ? `'${c.bookingUrl}'` : 'null'},
   },`
 }).join('\n')
 
@@ -172,6 +262,9 @@ const out = `/** ===== clubData.ts =====
  * 開放資料沒有這些欄位。等人工確認過再把值填進來，並把 source 改成 'manual'。
  * courts 一律先當 1 面；真實面數要人工查，它只影響「這個時段還剩幾面」的計算。
  *
+ * 開放時間：對得上臺北市體育局訂場系統的才是查證過的，其餘一律是 6–22 的保守預設。
+ * booking_url：有值代表這個場在市府線上訂場系統裡。
+ *
  * 範圍：${CITIES.join('、')}，共 ${clubs.length} 個場館。
  */
 import type { Club } from './types.ts'
@@ -185,6 +278,7 @@ writeFileSync(new URL('../src/lib/clubData.ts', import.meta.url), out)
 
 console.log(`已產生 src/lib/clubData.ts：${CITIES.join('、')} 共 ${clubs.length} 個可租借的網球場館`)
 console.log('過濾掉：', Object.entries(skipped).map(([k, v]) => `${k} ${v}`).join('、'))
+console.log(`對上臺北市體育局訂場系統：${matched} 個（有真實開放時間與訂場連結）`)
 const byDistrict = new Map<string, number>()
 for (const c of clubs) byDistrict.set(c.district, (byDistrict.get(c.district) ?? 0) + 1)
 console.log('分布：', [...byDistrict].sort((a, b) => b[1] - a[1]).map(([d, n]) => `${d} ${n}`).join('、'))

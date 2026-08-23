@@ -12,6 +12,9 @@
  * 開放資料沒有這些欄位。等人工確認過再把值填進來，並把 source 改成 'manual'。
  * courts 一律先當 1 面；真實面數要人工查，它只影響「這個時段還剩幾面」的計算。
  *
+ * 開放時間：對得上臺北市體育局訂場系統的才是查證過的，其餘一律是 6–22 的保守預設。
+ * booking_url：有值代表這個場在市府線上訂場系統裡。
+ *
  * 範圍：臺北市、新北市，共 54 個場館。
  */
 import type { Club } from './types.ts'
@@ -27,6 +30,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(65 64% 42%),hsl(77 64% 28%) 55%,hsl(89 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-13ts2co', name: "排球場館",
@@ -38,6 +42,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(195 52% 42%),hsl(207 52% 28%) 55%,hsl(219 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-02eb2j8', name: "新北高中網球場",
@@ -49,6 +54,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(263 64% 42%),hsl(275 64% 28%) 55%,hsl(287 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-17achkz', name: "土城綜合球場-網球場",
@@ -60,6 +66,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(237 52% 42%),hsl(249 52% 28%) 55%,hsl(261 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1e8y3fy', name: "宏國德霖科技學院網球場(館)",
@@ -71,6 +78,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(295 58% 42%),hsl(307 58% 28%) 55%,hsl(319 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1mxo36s', name: "中和區錦和運動公園-網球場",
@@ -82,6 +90,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(3 52% 42%),hsl(15 52% 28%) 55%,hsl(27 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0lmdly4', name: "秀山國民小學網球場(館)",
@@ -93,6 +102,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(130 58% 42%),hsl(142 58% 28%) 55%,hsl(154 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1x8ba0z', name: "新北市永和區綠寶石公園網球場(新店溪左岸自行車道5.5KM)",
@@ -104,6 +114,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(224 64% 42%),hsl(236 64% 28%) 55%,hsl(248 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0wu26dk', name: "華僑高級中學網球場(館)",
@@ -115,6 +126,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(79 58% 42%),hsl(91 58% 28%) 55%,hsl(103 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1swl24q', name: "新月網球場",
@@ -126,6 +138,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(30 52% 42%),hsl(42 52% 28%) 55%,hsl(54 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0gejqbn', name: "林口高中網球場(館)",
@@ -137,6 +150,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(223 58% 42%),hsl(235 58% 28%) 55%,hsl(247 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0fk0mr6', name: "第二運動公園網球場",
@@ -148,6 +162,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(36 52% 42%),hsl(48 52% 28%) 55%,hsl(60 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-06td8b7', name: "臺灣師範大學室外網球場",
@@ -159,6 +174,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(101 64% 42%),hsl(113 64% 28%) 55%,hsl(125 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0fkdbyh', name: "文化國小田徑場",
@@ -170,6 +186,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(224 64% 42%),hsl(236 64% 28%) 55%,hsl(248 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0nly2vt', name: "真理大學體育館",
@@ -181,6 +198,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(275 64% 42%),hsl(287 64% 28%) 55%,hsl(299 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0jq1ucq', name: "淡江大學網球場(館)",
@@ -192,6 +210,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(279 52% 42%),hsl(291 52% 28%) 55%,hsl(303 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1yr5xdo', name: "聖約翰科技大學網球場",
@@ -203,6 +222,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(182 64% 42%),hsl(194 64% 28%) 55%,hsl(206 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1yr5xdo', name: "聖約翰科技大學網球場",
@@ -214,6 +234,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(182 64% 42%),hsl(194 64% 28%) 55%,hsl(206 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0uf2fga', name: "景文科技大學網球場(館)",
@@ -225,6 +246,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(253 58% 42%),hsl(265 58% 28%) 55%,hsl(277 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1gojbyh', name: "新北市新店區小碧潭公園網球場(新店溪右岸自行車道2.3KM)",
@@ -236,6 +258,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(326 64% 42%),hsl(338 64% 28%) 55%,hsl(350 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0yin15m', name: "彭福國小網球場(館)",
@@ -247,6 +270,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(289 58% 42%),hsl(301 58% 28%) 55%,hsl(313 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1wbp6yi', name: "樹林體育園區網球場",
@@ -258,6 +282,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(112 58% 42%),hsl(124 58% 28%) 55%,hsl(136 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-12sm4rn', name: "微風運河網球場",
@@ -269,6 +294,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(323 64% 42%),hsl(335 64% 28%) 55%,hsl(347 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1vmo0ua', name: "鶯歌國小網球場(館)",
@@ -280,6 +306,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(163 58% 42%),hsl(175 58% 28%) 55%,hsl(187 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-007sqo2', name: "士林區百齡河濱公園",
@@ -288,9 +315,10 @@ export const REAL_CLUBS: Club[] = [
     lat: 25.088431, lng: 121.514947,
     surface: null, indoor: false, lights: null,
     price_per_hour: 0, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: 8, close_hour: 21,
     photo: 'linear-gradient(150deg,hsl(294 52% 42%),hsl(306 52% 28%) 55%,hsl(318 52% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
   {
     id: 'c-0fl7cqi', name: "天壽公園",
@@ -299,9 +327,10 @@ export const REAL_CLUBS: Club[] = [
     lat: 25.116907, lng: 121.524491,
     surface: null, indoor: false, lights: null,
     price_per_hour: 0, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: 8, close_hour: 17,
     photo: 'linear-gradient(150deg,hsl(24 52% 42%),hsl(36 52% 28%) 55%,hsl(48 52% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
   {
     id: 'c-0l425ko', name: "東吳大學網球場(館)",
@@ -313,6 +342,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(253 58% 42%),hsl(265 58% 28%) 55%,hsl(277 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1wml0f7', name: "臺北市天母棒球場",
@@ -321,9 +351,10 @@ export const REAL_CLUBS: Club[] = [
     lat: 25.113456, lng: 121.532929,
     surface: null, indoor: false, lights: null,
     price_per_hour: null, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: 8, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(74 64% 42%),hsl(86 64% 28%) 55%,hsl(98 64% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
   {
     id: 'c-0xywvlw', name: "銘傳大學田徑場",
@@ -335,6 +366,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(177 52% 42%),hsl(189 52% 28%) 55%,hsl(201 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-014c0j5', name: "銘傳大學體育館",
@@ -346,6 +378,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(89 64% 42%),hsl(101 64% 28%) 55%,hsl(113 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1823beb', name: "臺北教育大學網球場",
@@ -357,6 +390,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(197 64% 42%),hsl(209 64% 28%) 55%,hsl(221 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1g2soks', name: "臺灣科技大學網球場(館)",
@@ -368,6 +402,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(254 64% 42%),hsl(266 64% 28%) 55%,hsl(278 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0008o0m', name: "美堤河濱公園",
@@ -376,9 +411,10 @@ export const REAL_CLUBS: Club[] = [
     lat: 25.076679, lng: 121.553367,
     surface: null, indoor: false, lights: null,
     price_per_hour: 0, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: 8, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(162 52% 42%),hsl(174 52% 28%) 55%,hsl(186 52% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
   {
     id: 'c-0flprbw', name: "新生公園網球場",
@@ -390,6 +426,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(275 64% 42%),hsl(287 64% 28%) 55%,hsl(299 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-187m0ht', name: "臺北市中山區大佳河濱公園",
@@ -401,6 +438,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(261 52% 42%),hsl(273 52% 28%) 55%,hsl(285 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-197lw6y', name: "三民國中網球場",
@@ -412,6 +450,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(227 64% 42%),hsl(239 64% 28%) 55%,hsl(251 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1g9ltan', name: "內湖區石潭公園",
@@ -420,9 +459,10 @@ export const REAL_CLUBS: Club[] = [
     lat: 25.063694, lng: 121.592651,
     surface: null, indoor: false, lights: null,
     price_per_hour: 0, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: 8, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(94 58% 42%),hsl(106 58% 28%) 55%,hsl(118 58% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
   {
     id: 'c-0knqvfe', name: "西湖國中網球場",
@@ -434,6 +474,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(93 52% 42%),hsl(105 52% 28%) 55%,hsl(117 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-15j77uu', name: "煙波庭公園",
@@ -442,9 +483,10 @@ export const REAL_CLUBS: Club[] = [
     lat: 25.086504, lng: 121.599029,
     surface: null, indoor: false, lights: null,
     price_per_hour: 0, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: 8, close_hour: 20,
     photo: 'linear-gradient(150deg,hsl(276 52% 42%),hsl(288 52% 28%) 55%,hsl(300 52% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
   {
     id: 'c-1adteb4', name: "瑞湖公園",
@@ -453,9 +495,10 @@ export const REAL_CLUBS: Club[] = [
     lat: 25.069429, lng: 121.577228,
     surface: null, indoor: false, lights: null,
     price_per_hour: 0, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: 8, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(37 58% 42%),hsl(49 58% 28%) 55%,hsl(61 58% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
   {
     id: 'c-0iow7ho', name: "臺北市網球中心附設健身房",
@@ -467,6 +510,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(107 64% 42%),hsl(119 64% 28%) 55%,hsl(131 64% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
   {
     id: 'c-1q5cdaz', name: "萬有二號公園",
@@ -475,9 +519,10 @@ export const REAL_CLUBS: Club[] = [
     lat: 25.00073, lng: 121.541635,
     surface: null, indoor: false, lights: null,
     price_per_hour: 0, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: 8, close_hour: 21,
     photo: 'linear-gradient(150deg,hsl(237 52% 42%),hsl(249 52% 28%) 55%,hsl(261 52% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
   {
     id: 'c-06ex74s', name: "文林國小田徑場",
@@ -489,6 +534,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(299 64% 42%),hsl(311 64% 28%) 55%,hsl(323 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0uo7bm9', name: "明德國中田徑場",
@@ -500,6 +546,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(79 58% 42%),hsl(91 58% 28%) 55%,hsl(103 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1p4fpa5', name: "逸仙國小網球場、籃球場、躲避球場、樂樂棒球場",
@@ -511,6 +558,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(1 58% 42%),hsl(13 58% 28%) 55%,hsl(25 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1psnhgm', name: "陽明大學山下球場",
@@ -522,6 +570,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(186 52% 42%),hsl(198 52% 28%) 55%,hsl(210 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-02qp7af', name: "陽明大學山頂網球場",
@@ -533,6 +582,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(1 58% 42%),hsl(13 58% 28%) 55%,hsl(25 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1qsa9ed', name: "臺北藝術大學網球場(館)",
@@ -544,6 +594,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(176 64% 42%),hsl(188 64% 28%) 55%,hsl(200 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-11ojnba', name: "臺北網球場",
@@ -555,6 +606,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(104 64% 42%),hsl(116 64% 28%) 55%,hsl(128 64% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-00jd8gj', name: "臺北醫學大學網球場(館)",
@@ -566,6 +618,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(351 52% 42%),hsl(3 52% 28%) 55%,hsl(15 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1asmr0i', name: "中研公園",
@@ -577,6 +630,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(151 58% 42%),hsl(163 58% 28%) 55%,hsl(175 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0z1pvmg', name: "中華科技大學操場",
@@ -588,6 +642,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(325 58% 42%),hsl(337 58% 28%) 55%,hsl(349 58% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-1bvbons', name: "玉成公園",
@@ -599,6 +654,7 @@ export const REAL_CLUBS: Club[] = [
     open_hour: 6, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(333 52% 42%),hsl(345 52% 28%) 55%,hsl(357 52% 18%))',
     source: 'opendata',
+    booking_url: null,
   },
   {
     id: 'c-0rbgz6v', name: "南港公園",
@@ -607,8 +663,9 @@ export const REAL_CLUBS: Club[] = [
     lat: 25.045146, lng: 121.591799,
     surface: null, indoor: false, lights: null,
     price_per_hour: 0, rating: null, courts: 1,
-    open_hour: 6, close_hour: 22,
+    open_hour: 8, close_hour: 22,
     photo: 'linear-gradient(150deg,hsl(81 52% 42%),hsl(93 52% 28%) 55%,hsl(105 52% 18%))',
     source: 'opendata',
+    booking_url: 'https://vbs.sports.taipei/venues/',
   },
 ]

@@ -626,3 +626,12 @@ button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
   text-align: center;
 }
 .signin-devnote a { text-decoration: underline; text-underline-offset: 2px; }
+
+/* 會讓人誤會的地方要跳出來，不能跟一般說明長得一樣 */
+.warn-note {
+  background: #fff6e5;
+  border: 1px solid #ffe0a8;
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #7a4b00;
+}

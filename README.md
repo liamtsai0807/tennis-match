@@ -269,6 +269,10 @@ tools/
   同時記得把 Dashboard → Authentication → Email Templates → Magic Link
   換成 [supabase/templates/magic_link.html](supabase/templates/magic_link.html)，
   否則線上寄出去的是連結而不是驗證碼。
+- **我們不代訂場地。** App 內的「預約」只是內部紀錄，用途是讓你和球伴對得上時間，
+  **不會真的把場地訂下來**。台灣沒有任何一家場館提供訂場 API，所以球場詳情頁
+  改成放「到官方系統訂場」的深連結（對得上臺北市體育局訂場系統的 10 個場），
+  其餘退成「在地圖上開啟」讓使用者自己拿電話。
 - **Google 登入要自備 OAuth 用戶端**，步驟在上面〈登入〉那一節。
   沒設定時按下去只會得到錯誤訊息，Email 那條路不受影響。
 - **距離是直線距離**，不是實際路程。要接路網 API 才算得出路程，

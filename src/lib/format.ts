@@ -61,6 +61,15 @@ export function ntrpLabel(n: Ntrp): string {
 }
 
 /**
+ * 沒有線上訂場系統的球場，至少把人送到地圖——那裡有電話、營業時間和導航，
+ * 比什麼都不給好。用搜尋而不是座標，因為地圖上的店家頁面資訊比一個圖釘多。
+ */
+export function mapsUrl(name: string, address: string): string {
+  return 'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent(name + ' ' + address)
+}
+
+/**
  * 時段還剩幾面。來自開放資料的球場沒有面數，我們只知道「有沒有被訂走」——
  * 說「剩 1 面」會讓人以為我們查證過總共幾面，其實沒有。
  */

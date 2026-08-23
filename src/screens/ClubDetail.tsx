@@ -9,7 +9,7 @@ import { useToast } from '../components/Toast.tsx'
 import { IconPin, IconStar, IconShare } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
 import { createBooking, getAvailability, getClub } from '../lib/db.ts'
-import { addDaysISO, friendlyDate, hourRange, money, shortDate, slotLabel, SURFACE_LABEL, todayISO, weekday } from '../lib/format.ts'
+import { addDaysISO, friendlyDate, hourRange, mapsUrl, money, shortDate, slotLabel, SURFACE_LABEL, todayISO, weekday } from '../lib/format.ts'
 
 const DAYS_AHEAD = 14
 
@@ -88,6 +88,37 @@ export default function ClubDetail() {
               <span className="pill">{club.open_hour}:00–{club.close_hour}:00</span>
               {club.lights === true && <span className="pill">夜間照明</span>}
             </div>
+
+            {/*
+              台灣沒有一家場館提供訂場 API，我們不代訂。能做又真的有用的，
+              是把人送到已經存在的官方系統；沒有系統的場至少送到地圖拿電話。
+            */}
+            <div style={{ marginTop: 14 }}>
+              {club.booking_url ? (
+                <a
+                  className="btn block"
+                  href={club.booking_url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  到官方系統訂場 ↗
+                </a>
+              ) : (
+                <a
+                  className="btn block"
+                  href={mapsUrl(club.name, club.address)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  在地圖上開啟 ↗
+                </a>
+              )}
+              <p className="note" style={{ margin: '8px 0 0', textAlign: 'center' }}>
+                {club.booking_url
+                  ? '這個場在臺北市體育局的線上訂場系統裡'
+                  : '這個場沒有線上訂場，電話與營業時間請看地圖'}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -144,8 +175,13 @@ export default function ClubDetail() {
           <KV k="時間" v={hour !== null ? hourRange(hour) : '—'} />
           <KV k="場地費" v={money(club.price_per_hour)} />
         </div>
+        {/* 旁邊就放著一個真的訂場連結，不講清楚會有人以為這裡按了就訂到了 */}
+        <p className="note warn-note" style={{ marginBottom: 14 }}>
+          <b>這是 App 內部的紀錄，不會真的把場地訂下來。</b>
+          它的用途是讓你和球伴對得上時間；場地要另外去球館的系統或打電話訂。
+        </p>
         <p className="note" style={{ marginBottom: 14 }}>
-          場地費現場付款。開打前 2 小時內取消恕不退費，這是球館的規定。
+          場地費現場付款。
         </p>
         <button className="btn primary block" disabled={saving} onClick={confirm}>
           {saving ? '處理中…' : '確認預約'}

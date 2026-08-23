@@ -48,6 +48,13 @@ export interface Club extends LatLng {
   open_hour: number
   close_hour: number
   source: ClubSource
+  /**
+   * 官方線上訂場系統的網址。null = 這個場沒有（或我們還不知道）線上訂場，
+   * 畫面會退成「在地圖上開啟」讓使用者自己找電話。
+   * 我們自己不代訂——沒有任何一家提供 API，硬做只會產生
+   * 「App 說訂到了、現場卻不算數」這種比不做更糟的狀況。
+   */
+  booking_url: string | null
 }
 
 export interface Court {
