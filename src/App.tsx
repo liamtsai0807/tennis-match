@@ -2,6 +2,7 @@
 import { HashRouter, Routes, Route, NavLink, useLocation, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ToastProvider } from './components/Toast.tsx'
+import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { InstallPrompt } from './components/InstallPrompt.tsx'
 import { UpdateBanner } from './components/UpdateBanner.tsx'
 import { IconHome, IconSearch, IconPeople, IconUser } from './components/icons.tsx'
@@ -71,19 +72,21 @@ export default function App() {
         <ScrollToTop />
         <div className="app">
           <OnboardingGate>
-            <Routes>
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/" element={<Home />} />
-              <Route path="/match" element={<Matchmaker />} />
-              <Route path="/match/:playerId" element={<InviteCompose />} />
-              <Route path="/invites/:inviteId" element={<InviteDetail />} />
-              <Route path="/clubs" element={<Clubs />} />
-              <Route path="/clubs/:clubId" element={<ClubDetail />} />
-              <Route path="/player/:playerId" element={<PlayerDetail />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/profile/preferences" element={<Preferences />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/match" element={<Matchmaker />} />
+                <Route path="/match/:playerId" element={<InviteCompose />} />
+                <Route path="/invites/:inviteId" element={<InviteDetail />} />
+                <Route path="/clubs" element={<Clubs />} />
+                <Route path="/clubs/:clubId" element={<ClubDetail />} />
+                <Route path="/player/:playerId" element={<PlayerDetail />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/preferences" element={<Preferences />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </ErrorBoundary>
           </OnboardingGate>
           <UpdateBanner />
           <InstallPrompt />

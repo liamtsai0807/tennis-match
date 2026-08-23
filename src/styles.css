@@ -539,3 +539,29 @@ button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
 @media (prefers-reduced-motion: reduce) {
   .update-bar { animation: none; }
 }
+
+/* ---------- 畫面錯誤 ---------- */
+
+.screen-error { padding: 32px 16px 24px; }
+.screen-error .empty { padding-bottom: 20px; }
+.screen-error-actions {
+  display: flex; gap: 10px; justify-content: center;
+  margin-bottom: 26px;
+}
+.screen-error-detail {
+  max-width: 420px; margin: 0 auto;
+  font-size: 12.5px; color: var(--ink-3);
+}
+.screen-error-detail summary {
+  cursor: pointer; text-align: center;
+  padding: 6px; border-radius: 10px;
+}
+.screen-error-detail summary:hover { background: var(--card); }
+.screen-error-detail pre {
+  margin: 8px 0 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 11.5px; line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+}

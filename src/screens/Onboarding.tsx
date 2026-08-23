@@ -2,7 +2,7 @@
  * 第一次進來時填偏好。分成四步而不是一頁長表單，因為一次看到七個欄位很容易直接關掉。
  * 每一步都可以往回改，最後一步才寫進資料庫。
  */
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LevelField, DistrictField, PartnerLevelField, AvailabilityField, ClubsField,
@@ -10,8 +10,9 @@ import {
 } from '../components/PreferenceFields.tsx'
 import { useToast } from '../components/Toast.tsx'
 import { IconBack } from '../components/icons.tsx'
-import { getMe, listClubs, saveMe } from '../lib/db.ts'
-import type { Club, Player } from '../lib/types.ts'
+import { usePreferenceDraft } from '../lib/useData.ts'
+import { saveMe } from '../lib/db.ts'
+import type { Player } from '../lib/types.ts'
 
 // 程度改成三題之後，原本的第一步塞不下了，拆成四步
 const STEPS = [
@@ -25,16 +26,8 @@ export default function Onboarding() {
   const nav = useNavigate()
   const toast = useToast()
   const [step, setStep] = useState(0)
-  const [me, setMe] = useState<Player | null>(null)
-  const [clubs, setClubs] = useState<Club[]>([])
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    Promise.all([getMe(), listClubs()]).then(([m, c]) => {
-      setMe(m)
-      setClubs(c)
-    })
-  }, [])
+  const { me, setMe, clubs } = usePreferenceDraft()
 
   if (!me) return null
 

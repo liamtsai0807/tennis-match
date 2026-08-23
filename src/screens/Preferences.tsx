@@ -1,7 +1,7 @@
 /** ===== Preferences.tsx =====
  * 登錄之後要改偏好就走這裡。欄位跟登錄流程是同一份元件，只是一次顯示全部。
  */
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/ui.tsx'
 import { useToast } from '../components/Toast.tsx'
@@ -9,19 +9,15 @@ import {
   LevelField, DistrictField, PartnerLevelField, AvailabilityField, ClubsField,
   isPreferencesValid,
 } from '../components/PreferenceFields.tsx'
-import { getMe, listClubs, saveMe } from '../lib/db.ts'
-import type { Club, Player } from '../lib/types.ts'
+import { usePreferenceDraft } from '../lib/useData.ts'
+import { saveMe } from '../lib/db.ts'
+import type { Player } from '../lib/types.ts'
 
 export default function Preferences() {
   const nav = useNavigate()
   const toast = useToast()
-  const [me, setMe] = useState<Player | null>(null)
-  const [clubs, setClubs] = useState<Club[]>([])
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    Promise.all([getMe(), listClubs()]).then(([m, c]) => { setMe(m); setClubs(c) })
-  }, [])
+  const { me, setMe, clubs } = usePreferenceDraft()
 
   if (!me) return <><Header title="我的偏好" onBack /><div className="page" /></>
 
