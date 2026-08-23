@@ -2,7 +2,8 @@
  * 身分只在這裡處理。畫面和 db.ts 都只問「我是誰」，不管背後是 Supabase Auth
  * 還是離線模式那個固定的示範使用者。
  *
- * Q1 決定第一版走 Google + Email，之後要加 LINE Login 時只會動到這個檔案。
+ * Q1 決定第一版走 Google + Email，LINE Login 是第二步。
+ * 三種登入方式都走同一組函式，畫面不知道背後是誰。
  */
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
@@ -69,6 +70,57 @@ export async function sendEmailCode(email: string): Promise<void> {
 export async function verifyEmailCode(email: string, token: string): Promise<void> {
   const { error } = await client().auth.verifyOtp({ email, token, type: 'email' })
   if (error) throw error
+}
+
+/**
+ * LINE Login 目前設定好了沒。
+ *
+ * Supabase Auth 的內建 provider 清單裡沒有 LINE，所以不能像 Google 那樣
+ * 呼叫 signInWithOAuth 就了事，得走「LIFF 拿 ID token → Edge Function 驗證並
+ * 換成 Supabase session」這條路。channel id 是設定不是機密，可以放前端；
+ * channel secret 只有 Edge Function 看得到。
+ */
+export const isLineConfigured = Boolean(
+  (import.meta.env.VITE_LINE_LIFF_ID ?? '').trim(),
+)
+
+/** 現在是不是跑在 LINE 的 App 裡（LIFF）。不是的話 LINE 登入按鈕不該出現。 */
+export function inLiff(): boolean {
+  return typeof window !== 'undefined' && 'liff' in window
+}
+
+/**
+ * 用 LINE 登入。
+ *
+ * 流程：LIFF SDK 拿到 ID token → 丟給 line-auth Edge Function →
+ * 那邊拿 channel secret 跟 LINE 驗證、建立或找出對應的 Supabase 使用者、
+ * 回一組 session → 這裡把 session 設進 client。
+ *
+ * 沒設定時直接丟明確的錯誤，不要靜靜失敗——按了沒反應比報錯更難查。
+ */
+export async function signInWithLine(): Promise<void> {
+  if (!isLineConfigured) {
+    throw new Error('LINE 登入還沒設定（缺 VITE_LINE_LIFF_ID）')
+  }
+  if (!inLiff()) {
+    throw new Error('LINE 登入只能在 LINE 裡開啟時使用')
+  }
+  const liff = (window as unknown as { liff: { getIDToken(): string | null } }).liff
+  const idToken = liff.getIDToken()
+  if (!idToken) throw new Error('拿不到 LINE 的 ID token，請重新開啟')
+
+  const { data, error } = await client().functions.invoke('line-auth', {
+    body: { id_token: idToken },
+  })
+  if (error) throw error
+  if (!data?.access_token || !data?.refresh_token) {
+    throw new Error('line-auth 沒有回傳 session')
+  }
+  const { error: setErr } = await client().auth.setSession({
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+  })
+  if (setErr) throw setErr
 }
 
 export async function signInWithGoogle(): Promise<void> {

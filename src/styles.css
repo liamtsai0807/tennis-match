@@ -644,3 +644,11 @@ button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
   line-height: 1.6;
 }
 .price-note b { display: block; color: var(--ink); margin-bottom: 2px; }
+
+/* LINE 的品牌綠。只在 LINE 裡開啟時才會出現這顆 */
+.signin-line {
+  background: #06c755;
+  color: #fff;
+  margin-bottom: 10px;
+  box-shadow: 0 6px 18px rgba(6, 199, 85, .3);
+}

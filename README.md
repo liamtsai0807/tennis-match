@@ -178,6 +178,43 @@ Supabase 雲端專案內建的寄信服務每小時只給幾封，官方明講�
 
 沒設定的話，登入畫面上的 Google 按鈕會回一個錯誤訊息，Email 那條路不受影響。
 
+### 搬到 LINE（進行中）
+
+不依賴憑證的部分已經做好了，拿到憑證填進去就會動：
+
+| 檔案 | 做什麼 |
+|---|---|
+| [supabase/functions/line-auth](supabase/functions/line-auth/index.ts) | LINE 的 ID token 換成 Supabase session |
+| [supabase/functions/notify-invite](supabase/functions/notify-invite/index.ts) | 邀約有動靜時推播給對方 |
+| [src/lib/notify.ts](src/lib/notify.ts) | 前端這一側，盡力而為、不會讓邀約失敗 |
+| [src/lib/auth.ts](src/lib/auth.ts) | `signInWithLine()`、`isLineConfigured`、`inLiff()` |
+
+**還需要你去 LINE Developers 拿的東西**（我拿不到）：
+
+1. 建一個 Provider
+2. **Messaging API channel**（推播用）→ Channel access token
+3. **LINE Login channel**（登入用）→ Channel ID、Channel secret
+4. 在 Login channel 底下建 **LIFF app** → LIFF ID
+
+拿到之後：
+
+```bash
+# 前端（LIFF ID 不是機密，會出現在網址裡）
+echo 'VITE_LINE_LIFF_ID=你的LIFF_ID' >> .env
+
+# Edge Function（這些是機密，不要進 git）
+cat >> supabase/functions/.env <<'ENV'
+LINE_CHANNEL_ACCESS_TOKEN=Messaging API 的 token
+LINE_LOGIN_CHANNEL_ID=Login channel 的 Channel ID
+ENV
+
+supabase functions serve --env-file supabase/functions/.env
+```
+
+**沒設定的時候一律乾淨降級**：登入畫面不顯示 LINE 按鈕、推播回
+`{"skipped":"尚未設定 LINE"}` 並把原因記進 `notifications` 表，
+送邀約本身完全不受影響。
+
 要換成真的可以多人共用的後端，接 Supabase：
 
 1. 去 <https://supabase.com> 開一個免費專案

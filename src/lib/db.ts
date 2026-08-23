@@ -6,6 +6,7 @@
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from './supabase.ts'
 import { requireUserId } from './auth.ts'
+import { notifyInvite } from './notify.ts'
 import { CLUBS, COURTS, PLAYERS, SEED_BOOKINGS, SEED_INVITES, ME } from './mockData.ts'
 import type { Booking, Club, Court, Invite, Player } from './types.ts'
 
@@ -332,6 +333,8 @@ export async function sendInvite(input: {
       await cancelBooking(booking.id)
       throw error
     }
+    // 不 await：通知是盡力而為，送不出去也不該卡住送邀約這件事
+    notifyInvite(invite.id, 'invited')
     return data as Invite
   }
   const s = read()
@@ -370,6 +373,7 @@ async function setInviteStatus(id: string, status: Invite['status']): Promise<vo
 
 export async function acceptInvite(id: string): Promise<void> {
   await setInviteStatus(id, 'accepted')
+  notifyInvite(id, 'accepted')
 }
 
 /** 拒絕或取消時把場地一起退掉，不然球場會被沒人要打的球局佔著。 */
@@ -377,12 +381,14 @@ export async function declineInvite(id: string): Promise<void> {
   const inv = await getInvite(id)
   await setInviteStatus(id, 'declined')
   if (inv) await cancelBooking(inv.booking_id)
+  notifyInvite(id, 'declined')
 }
 
 export async function cancelInvite(id: string): Promise<void> {
   const inv = await getInvite(id)
   await setInviteStatus(id, 'cancelled')
   if (inv) await cancelBooking(inv.booking_id)
+  notifyInvite(id, 'cancelled')
 }
 
 // ---------- 訂閱 ----------

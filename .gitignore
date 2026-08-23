@@ -5,3 +5,4 @@ dist
 tsconfig.tsbuildinfo
 tennispal-pwa.zip
 public/_pwatest
+supabase/functions/.env

@@ -6,7 +6,7 @@
  */
 import { useState } from 'react'
 import { useToast } from '../components/Toast.tsx'
-import { sendEmailCode, signInWithGoogle, verifyEmailCode } from '../lib/auth.ts'
+import { inLiff, isLineConfigured, sendEmailCode, signInWithGoogle, signInWithLine, verifyEmailCode } from '../lib/auth.ts'
 import { LOCAL_MAILBOX_URL, isLocalBackend } from '../lib/supabase.ts'
 
 export default function SignIn() {
@@ -39,6 +39,16 @@ export default function SignIn() {
     } catch (e) {
       toast((e as Error).message, 'bad')
     } finally {
+      setBusy(false)
+    }
+  }
+
+  async function line() {
+    setBusy(true)
+    try {
+      await signInWithLine()
+    } catch (e) {
+      toast((e as Error).message, 'bad')
       setBusy(false)
     }
   }
@@ -116,6 +126,16 @@ export default function SignIn() {
       </div>
 
       <div className="signin-or"><span>或</span></div>
+
+      {/*
+        LINE 登入只在「設定好了」而且「真的在 LINE 裡開啟」時才出現。
+        在一般瀏覽器顯示這顆按鈕，按下去只會得到一句錯誤——那比沒有更糟。
+      */}
+      {isLineConfigured && inLiff() && (
+        <button className="btn block signin-line" disabled={busy} onClick={line}>
+          用 LINE 登入
+        </button>
+      )}
 
       <button className="btn block signin-google" disabled={busy} onClick={google}>
         用 Google 帳號登入
