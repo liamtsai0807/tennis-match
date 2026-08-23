@@ -159,8 +159,14 @@ node --experimental-strip-types tools/make_icons.ts
 接上 Supabase 之後會先要求登入（離線示範模式沒有帳號的概念，直接進 App）。
 第一版走 Email 驗證碼與 Google，理由寫在 [PRD §9 Q1](docs/PRD.html)。
 
-**Email 驗證碼**本機開箱可用。寄出的信會被 Mailpit 收走，不會真的送出去：
-打開 <http://127.0.0.1:54324> 就看得到那封信和六位數驗證碼。
+**Email 驗證碼**本機開箱可用，但要知道一件事：**信一封都不會離開這台機器**。
+本機的 Supabase 內建一個攔信箱（Mailpit），所有登入信都進那裡——
+填自己的真實信箱也一樣收不到，登入畫面上有提示連結，或直接開
+<http://127.0.0.1:54324> 拿驗證碼。
+
+上線前要接一個真的 SMTP 供應商（SendGrid、Resend、SES 之類）。
+Supabase 雲端專案內建的寄信服務每小時只給幾封，官方明講不是給正式環境用的，
+設定在 `[auth.email.smtp]`。
 
 **Google 登入**要自己準備一組 OAuth 用戶端才會動：
 

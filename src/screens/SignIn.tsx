@@ -7,6 +7,7 @@
 import { useState } from 'react'
 import { useToast } from '../components/Toast.tsx'
 import { sendEmailCode, signInWithGoogle, verifyEmailCode } from '../lib/auth.ts'
+import { LOCAL_MAILBOX_URL, isLocalBackend } from '../lib/supabase.ts'
 
 export default function SignIn() {
   const toast = useToast()
@@ -22,7 +23,7 @@ export default function SignIn() {
     try {
       await sendEmailCode(email.trim())
       setSent(true)
-      toast('驗證碼寄出了，收信看看')
+      toast(isLocalBackend ? '驗證碼寄出了，到攔信箱拿' : '驗證碼寄出了，收信看看')
     } catch (e) {
       toast((e as Error).message, 'bad')
     } finally {
@@ -100,6 +101,16 @@ export default function SignIn() {
               {' · '}
               <button className="linklike" onClick={() => { setSent(false); setCode('') }}>換一個信箱</button>
             </p>
+
+            {/* 本機的信一封都不會離開這台機器，不講的話會等一封永遠不來的信 */}
+            {isLocalBackend && (
+              <p className="signin-devnote">
+                本機開發模式：信不會真的寄出去，全部被攔在
+                {' '}
+                <a href={LOCAL_MAILBOX_URL} target="_blank" rel="noreferrer">攔信箱</a>
+                {' '}裡，驗證碼去那邊拿。
+              </p>
+            )}
           </>
         )}
       </div>

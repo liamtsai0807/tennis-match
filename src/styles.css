@@ -613,3 +613,16 @@ button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
   margin-left: auto;
   margin-right: auto;
 }
+
+/* 只在本機開發時出現，提醒信被攔信箱收走了 */
+.signin-devnote {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--blue-soft);
+  color: var(--blue-deep);
+  font-size: 12.5px;
+  line-height: 1.55;
+  text-align: center;
+}
+.signin-devnote a { text-decoration: underline; text-underline-offset: 2px; }
