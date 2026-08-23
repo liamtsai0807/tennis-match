@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import { Header, Avatar } from '../components/ui.tsx'
 import { IconCourt, IconPeople, IconChevron, IconClock, IconPin } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
-import { getMe, listClubs, listInvites, listMyBookings, listPlayers, ME } from '../lib/db.ts'
+import { getMe, listClubs, listInvites, listMyBookings, listPlayers, myId } from '../lib/db.ts'
 import { rankPartners, isFreeOn, BLOCKS } from '../lib/match.ts'
 import { addDaysISO, friendlyDate, hourRange, todayISO } from '../lib/format.ts'
 import type { Booking, Club, Invite, Player } from '../lib/types.ts'
@@ -24,8 +24,8 @@ export default function Home() {
   const { me, players, clubs, invites, bookings } = data
   const today = todayISO()
 
-  const incoming = invites.filter((i) => i.to_id === ME && i.status === 'pending')
-  const outgoing = invites.filter((i) => i.from_id === ME && i.status === 'pending')
+  const incoming = invites.filter((i) => i.to_id === myId() && i.status === 'pending')
+  const outgoing = invites.filter((i) => i.from_id === myId() && i.status === 'pending')
   const confirmed = invites
     .filter((i) => i.status === 'accepted' && i.date >= today)
     .slice(0, 3)
@@ -160,7 +160,7 @@ function InviteRow({
   invite, clubs, players, side,
 }: { invite: Invite; clubs: Club[]; players: Player[]; side: 'from' | 'to' | 'other' }) {
   const club = clubs.find((c) => c.id === invite.club_id)
-  const otherId = invite.from_id === ME ? invite.to_id : invite.from_id
+  const otherId = invite.from_id === myId() ? invite.to_id : invite.from_id
   const other = players.find((p) => p.id === otherId)
   const label = side === 'from' ? '約你' : side === 'to' ? '等回覆' : '約成了'
   return (

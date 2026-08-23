@@ -8,7 +8,7 @@ import { useToast } from '../components/Toast.tsx'
 import { IconClock, IconPin, IconChevron } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
 import {
-  acceptInvite, cancelInvite, declineInvite, getClub, getInvite, getPlayer, ME,
+  acceptInvite, cancelInvite, declineInvite, getClub, getInvite, getPlayer, myId,
 } from '../lib/db.ts'
 import { distanceKm, km } from '../lib/geo.ts'
 import { friendlyDate, hourRange, money, ntrpLabel, SURFACE_LABEL } from '../lib/format.ts'
@@ -30,9 +30,9 @@ export default function InviteDetail() {
   const { data } = useData(async () => {
     const invite = await getInvite(inviteId)
     if (!invite) return { invite: null, club: null, me: null, other: null }
-    const otherId = invite.from_id === ME ? invite.to_id : invite.from_id
+    const otherId = invite.from_id === myId() ? invite.to_id : invite.from_id
     const [club, me, other] = await Promise.all([
-      getClub(invite.club_id), getPlayer(ME), getPlayer(otherId),
+      getClub(invite.club_id), getPlayer(myId()), getPlayer(otherId),
     ])
     return { invite, club, me, other }
   }, [inviteId])
@@ -48,7 +48,7 @@ export default function InviteDetail() {
   }
 
   const { club, other, me } = data
-  const incoming = invite.to_id === ME
+  const incoming = invite.to_id === myId()
   const status = STATUS_LABEL[invite.status]
   const open = invite.status === 'pending'
 

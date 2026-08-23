@@ -1,0 +1,18 @@
+<!--
+  預設範本寄的是「點我登入」的連結，會把人踢出 App 去信箱再跳回來——
+  手機上這一趟很容易回不來。這份改成直接給六位數驗證碼，
+  使用者留在 App 裡打完就好。{{ .Token }} 就是那組碼。
+
+  雲端專案要一併改：Dashboard → Authentication → Email Templates → Magic Link。
+  兩邊不同步的話，本機測得過、線上寄出去的還是連結。
+-->
+<h2>TennisPal 登入驗證碼</h2>
+
+<p>在 App 裡輸入這組數字就能登入：</p>
+
+<p style="font-size:30px;letter-spacing:.3em;font-weight:700;font-family:monospace">{{ .Token }}</p>
+
+<p style="color:#666;font-size:14px">
+  驗證碼一小時內有效，而且只能用一次。<br>
+  不是你本人要登入的話，忽略這封信就好。
+</p>

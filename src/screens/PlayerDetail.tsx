@@ -2,7 +2,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { Header, Avatar, Empty, KV } from '../components/ui.tsx'
 import { useData } from '../lib/useData.ts'
-import { getMe, getPlayer, listClubs, ME } from '../lib/db.ts'
+import { getMe, getPlayer, listClubs, myId } from '../lib/db.ts'
 import { BLOCKS, WEEKDAY_LABEL } from '../lib/match.ts'
 import { distanceKm, km } from '../lib/geo.ts'
 import { ntrpLabel } from '../lib/format.ts'
@@ -26,7 +26,7 @@ export default function PlayerDetail() {
   }
 
   const me = data.me
-  const isMe = p.id === ME
+  const isMe = p.id === myId()
   const total = p.wins + p.losses
   const winRate = total > 0 ? Math.round((p.wins / total) * 100) : 0
   const shared = me.pref_club_ids.filter((id) => p.pref_club_ids.includes(id))

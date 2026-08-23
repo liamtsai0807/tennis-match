@@ -154,6 +154,24 @@ node --experimental-strip-types tools/make_icons.ts
 現在是**離線示範模式**：資料存在瀏覽器的 localStorage，畫面下方有「離線示範」的小標記。
 所有流程都能完整跑完，只是資料只存在你這台裝置。
 
+### 登入
+
+接上 Supabase 之後會先要求登入（離線示範模式沒有帳號的概念，直接進 App）。
+第一版走 Email 驗證碼與 Google，理由寫在 [PRD §9 Q1](docs/PRD.html)。
+
+**Email 驗證碼**本機開箱可用。寄出的信會被 Mailpit 收走，不會真的送出去：
+打開 <http://127.0.0.1:54324> 就看得到那封信和六位數驗證碼。
+
+**Google 登入**要自己準備一組 OAuth 用戶端才會動：
+
+1. Google Cloud Console 建 OAuth 2.0 用戶端（網頁應用程式）
+2. 授權的重新導向 URI 填 `http://127.0.0.1:54321/auth/v1/callback`
+3. `export SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=...` 與 `..._SECRET=...`
+4. 把 `supabase/config.toml` 裡 `[auth.external.google]` 的 `enabled` 改成 `true`
+5. `supabase stop && supabase start`
+
+沒設定的話，登入畫面上的 Google 按鈕會回一個錯誤訊息，Email 那條路不受影響。
+
 要換成真的可以多人共用的後端，接 Supabase：
 
 1. 去 <https://supabase.com> 開一個免費專案
@@ -161,6 +179,12 @@ node --experimental-strip-types tools/make_icons.ts
 3. 專案設定裡複製 Project URL 與 anon public key
 4. 把 `.env.example` 複製成 `.env`，兩個值填進去
 5. 重跑 `npm run dev`
+
+雲端專案還要做兩件本機已經設好、但不會自動同步過去的事：
+Authentication → Providers 開啟 Email 與 Google；
+Authentication → Email Templates → Magic Link 換成
+[supabase/templates/magic_link.html](supabase/templates/magic_link.html) 的內容，
+否則線上寄出去的還是「點我登入」的連結而不是驗證碼。
 
 **不用改任何畫面程式碼。** 所有資料進出都集中在 [src/lib/db.ts](src/lib/db.ts)，
 線上與離線兩種實作共用同一組函式簽名。
@@ -215,6 +239,7 @@ supabase/
   config.toml    本機 Supabase 的設定（連接埠、seed 路徑…）
   migrations/    建表 + RLS + Realtime 設定，db reset 時依序套用
   seed.sql       由 tools/gen_seed_sql.ts 從 mockData.ts 產生，不要手改
+  templates/     登入信範本（給驗證碼，不給連結）
 tools/
   match.test.ts        媒合演算法測試
   level.test.ts        程度推算測試

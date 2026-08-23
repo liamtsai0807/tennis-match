@@ -7,6 +7,8 @@ import { InstallPrompt } from './components/InstallPrompt.tsx'
 import { UpdateBanner } from './components/UpdateBanner.tsx'
 import { IconHome, IconSearch, IconPeople, IconUser } from './components/icons.tsx'
 import { OFFLINE, isOnboarded } from './lib/db.ts'
+import { useSession } from './lib/auth.ts'
+import SignIn from './screens/SignIn.tsx'
 
 import Onboarding from './screens/Onboarding.tsx'
 import Home from './screens/Home.tsx'
@@ -47,19 +49,41 @@ function ScrollToTop() {
 }
 
 /**
+ * 沒登入就只看得到登入畫面。離線示範模式沒有帳號的概念，直接放行。
+ * session 在 main.tsx 已經解析完才開始渲染，所以這裡不會閃一下登入頁。
+ */
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const session = useSession()
+  if (OFFLINE) return <>{children}</>
+  if (!session) return <SignIn />
+  return <>{children}</>
+}
+
+/**
  * 還沒填過偏好就一律導到登錄流程。
  * 媒合完全靠那些偏好在運作，沒填的話進到任何頁面都只會看到空畫面。
  */
 function OnboardingGate({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
-  const [done, setDone] = useState(isOnboarded())
+  // null = 還在問資料庫。這個階段什麼都不導，不然會先閃一次登錄流程
+  const [done, setDone] = useState<boolean | null>(null)
 
   useEffect(() => {
-    const sync = () => setDone(isOnboarded())
+    let alive = true
+    const sync = () => {
+      isOnboarded()
+        .then((d) => { if (alive) setDone(d) })
+        .catch(() => { if (alive) setDone(false) })
+    }
+    sync()
     window.addEventListener('tennispal:changed', sync)
-    return () => window.removeEventListener('tennispal:changed', sync)
+    return () => {
+      alive = false
+      window.removeEventListener('tennispal:changed', sync)
+    }
   }, [])
 
+  if (done === null) return null
   if (!done && pathname !== '/onboarding') return <Navigate to="/onboarding" replace />
   if (done && pathname === '/onboarding') return <Navigate to="/" replace />
   return <>{children}</>
@@ -71,6 +95,7 @@ export default function App() {
       <ToastProvider>
         <ScrollToTop />
         <div className="app">
+          <AuthGate>
           <OnboardingGate>
             <ErrorBoundary>
               <Routes>
@@ -92,6 +117,7 @@ export default function App() {
           <InstallPrompt />
           {OFFLINE && <div className="backend-flag">離線示範模式</div>}
           <TabRegion />
+          </AuthGate>
         </div>
       </ToastProvider>
     </HashRouter>

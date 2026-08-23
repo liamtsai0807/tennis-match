@@ -5,11 +5,19 @@
  */
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from './supabase.ts'
+import { requireUserId } from './auth.ts'
 import { CLUBS, COURTS, PLAYERS, SEED_BOOKINGS, SEED_INVITES, ME } from './mockData.ts'
 import type { Booking, Club, Court, Invite, Player } from './types.ts'
 
-export { ME }
 export const OFFLINE = !isSupabaseConfigured
+
+/**
+ * 我是誰。離線模式一直是那個示範使用者；接上 Supabase 之後是登入者的 auth.uid()。
+ * 刻意做成函式而不是常數——身分要到登入後才知道，常數在模組載入時就被定死了。
+ */
+export function myId(): string {
+  return OFFLINE ? ME : requireUserId()
+}
 
 const KEY = 'tennispal.v2'
 
@@ -97,12 +105,46 @@ export function resetDemoData() {
 
 // ---------- 登錄狀態與我的偏好 ----------
 
-export function isOnboarded(): boolean {
+/**
+ * 有沒有設定過偏好。線上模式的真相在資料庫——換一台裝置登入同一個帳號時，
+ * 不該被要求重填一次，而 localStorage 的旗標在那個情境會說謊。
+ */
+export async function isOnboarded(): Promise<boolean> {
+  if (supabase) {
+    const { data, error } = await supabase.from('players').select('id').eq('id', myId()).maybeSingle()
+    if (error) throw error
+    return data !== null
+  }
   return read().onboarded
 }
 
-/** 還沒設定過偏好時，回傳 mockData 裡的預設值當草稿。 */
+/**
+ * 剛註冊、還沒填過偏好的人要有一份草稿。借用示範使用者的預設座標與程度區間，
+ * 但名字留白——預先填好的話使用者會直接按下一步，然後頂著別人的名字上路。
+ */
+function blankPlayer(id: string): Player {
+  const template = PLAYERS.find((p) => p.id === ME)!
+  return {
+    ...template,
+    id,
+    name: '',
+    bio: '',
+    wins: 0,
+    losses: 0,
+    level_answers: null,
+    // 由 id 推出一個穩定的頭像顏色，不然每個新使用者都長一樣
+    avatar_hue: [...id].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 360, 7),
+  }
+}
+
+/** 還沒設定過偏好時回傳草稿而不是 null——畫面才有東西可以編輯。 */
 export async function getMe(): Promise<Player> {
+  if (supabase) {
+    const id = myId()
+    const { data, error } = await supabase.from('players').select('*').eq('id', id).maybeSingle()
+    if (error) throw error
+    return (data as Player | null) ?? blankPlayer(id)
+  }
   const s = read()
   if (s.me) return s.me
   return PLAYERS.find((p) => p.id === ME)!
@@ -154,7 +196,7 @@ export async function listCourts(clubId: string): Promise<Court[]> {
 /** 其他球友。我自己的資料一律走 getMe()，避免兩份不同步。 */
 export async function listPlayers(): Promise<Player[]> {
   if (supabase) {
-    const { data, error } = await supabase.from('players').select('*').neq('id', ME)
+    const { data, error } = await supabase.from('players').select('*').neq('id', myId())
     if (error) throw error
     return data as Player[]
   }
@@ -162,7 +204,7 @@ export async function listPlayers(): Promise<Player[]> {
 }
 
 export async function getPlayer(id: string): Promise<Player | null> {
-  if (id === ME) return getMe()
+  if (id === myId()) return getMe()
   return (await listPlayers()).find((p) => p.id === id) ?? null
 }
 
@@ -212,7 +254,7 @@ export async function createBooking(input: {
     id: uid('bk'),
     club_id: input.club_id,
     court_id: free.id,
-    user_id: ME,
+    user_id: myId(),
     date: input.date,
     hour: input.hour,
     created_at: new Date().toISOString(),
@@ -233,7 +275,7 @@ export async function createBooking(input: {
 export async function listMyBookings(): Promise<Booking[]> {
   if (supabase) {
     const { data, error } = await supabase.from('bookings').select('*')
-      .eq('user_id', ME).order('date').order('hour')
+      .eq('user_id', myId()).order('date').order('hour')
     if (error) throw error
     return data as Booking[]
   }
@@ -272,7 +314,7 @@ export async function sendInvite(input: {
 
   const invite: Invite = {
     id: uid('inv'),
-    from_id: ME,
+    from_id: myId(),
     to_id: input.to_id,
     club_id: input.club_id,
     booking_id: booking.id,
@@ -301,7 +343,7 @@ export async function sendInvite(input: {
 export async function listInvites(): Promise<Invite[]> {
   if (supabase) {
     const { data, error } = await supabase.from('invites').select('*')
-      .or('from_id.eq.' + ME + ',to_id.eq.' + ME)
+      .or('from_id.eq.' + myId() + ',to_id.eq.' + myId())
     if (error) throw error
     return (data as Invite[]).sort(byDateHour)
   }

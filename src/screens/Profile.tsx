@@ -5,11 +5,12 @@ import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { Header, Avatar, Sheet } from '../components/ui.tsx'
 import { useToast } from '../components/Toast.tsx'
+import { currentSession, signOut } from '../lib/auth.ts'
 import { IconCourt, IconChevron } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
 import {
   cancelBooking, getMe, listClubs, listInvites, listMyBookings, listPlayers,
-  resetDemoData, ME, OFFLINE,
+  resetDemoData, myId, OFFLINE,
 } from '../lib/db.ts'
 import { BLOCKS, WEEKDAY_LABEL } from '../lib/match.ts'
 import { friendlyDate, hourRange, money, ntrpLabel, todayISO } from '../lib/format.ts'
@@ -92,7 +93,7 @@ export default function Profile() {
             </div>
           ) : (
             live.map((i) => {
-              const otherId = i.from_id === ME ? i.to_id : i.from_id
+              const otherId = i.from_id === myId() ? i.to_id : i.from_id
               const other = players.find((p) => p.id === otherId)
               const club = clubs.find((c) => c.id === i.club_id)
               const s = STATUS[i.status]
@@ -101,7 +102,7 @@ export default function Profile() {
                   <Avatar player={other} />
                   <div className="grow">
                     <b className="truncate">
-                      {i.from_id === ME ? '你約 ' : ''}{other?.name}{i.to_id === ME ? ' 約你' : ''}
+                      {i.from_id === myId() ? '你約 ' : ''}{other?.name}{i.to_id === myId() ? ' 約你' : ''}
                     </b>
                     <small className="truncate">
                       {club?.name}・{friendlyDate(i.date)} {hourRange(i.hour)}
@@ -185,6 +186,23 @@ export default function Profile() {
             </div>
             <span className={'pill ' + (OFFLINE ? '' : 'ok')}>{OFFLINE ? '離線' : '線上'}</span>
           </div>
+          {!OFFLINE && (
+            <button
+              className="list-row"
+              style={{ width: '100%', textAlign: 'left' }}
+              onClick={() => setPending({
+                title: '要登出嗎？',
+                body: '偏好設定和邀約都留在帳號裡，下次登入還在。',
+                action: () => { void signOut() },
+              })}
+            >
+              <div className="grow">
+                <b>登出</b>
+                <small>{currentSession()?.user.email ?? '已登入'}</small>
+              </div>
+              <IconChevron size={18} />
+            </button>
+          )}
           {OFFLINE && (
             <button
               className="list-row"

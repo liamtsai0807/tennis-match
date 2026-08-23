@@ -565,3 +565,51 @@ button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
   font-size: 11.5px; line-height: 1.5;
   white-space: pre-wrap; word-break: break-word;
 }
+
+/* ---------- 登入 ---------- */
+
+.signin { padding-top: 48px; padding-bottom: 40px; }
+
+.signin-brand { text-align: center; margin-bottom: 26px; }
+.signin-ball { font-size: 40px; line-height: 1; margin-bottom: 10px; }
+.signin-brand h1 {
+  font-size: 26px; font-weight: 800; letter-spacing: -.01em;
+  margin: 0 0 6px;
+}
+.signin-brand .note { max-width: 26em; margin: 0 auto; }
+
+.field .otp {
+  font-size: 26px;
+  letter-spacing: .34em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 看起來像連結的按鈕。用 button 而不是 a，因為它不導向任何地方 */
+.linklike {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0;
+  font-size: inherit;
+}
+
+.signin-or {
+  display: flex; align-items: center; gap: 12px;
+  margin: 20px 2px;
+  color: var(--ink-3); font-size: 12.5px;
+}
+.signin-or::before, .signin-or::after {
+  content: ''; flex: 1; height: 1px; background: var(--line);
+}
+
+.signin-google { background: var(--card); box-shadow: var(--shadow); }
+
+.signin-terms {
+  margin-top: 26px;
+  text-align: center;
+  color: var(--ink-3);
+  max-width: 30em;
+  margin-left: auto;
+  margin-right: auto;
+}
