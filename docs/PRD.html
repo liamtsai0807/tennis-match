@@ -305,10 +305,10 @@
     幫網球愛好者找到程度相近的球伴，約一個對兩個人都方便的球場打球。
   </p>
   <div class="meta">
-    <span><b>版本</b> v0.3</span>
-    <span><b>日期</b> 2026-08-22</span>
-    <span><b>狀態</b> MVP 已可操作，未上線</span>
-    <span><b>對應程式碼</b> commit 64ec596</span>
+    <span><b>版本</b> v0.4</span>
+    <span><b>日期</b> 2026-08-23</span>
+    <span><b>狀態</b> 後端已接上，本機可完整運行；未上線</span>
+    <span><b>對應程式碼</b> commit 46015d6</span>
   </div>
 </header>
 
@@ -413,6 +413,7 @@
     <li>邀約：送出時同時訂場，對方拒絕自動退訂</li>
     <li>直接訂場：不透過媒合，自己挑時段訂</li>
     <li>PWA：可安裝到主畫面、離線可用、有版本更新提示</li>
+    <li>後端：Supabase（Postgres + REST + 即時訂閱），本機用同一份 migration 完整跑得起來</li>
   </ul>
 
   <h3>MVP 明確排除</h3>
@@ -626,9 +627,36 @@
     你送出去的邀約永遠不會有人回。
   </p>
   <ul class="ac">
-    <li>需要：註冊、登入、身分驗證、以及把 <code>schema.sql</code> 註解裡那組綁
+    <li>需要：註冊、登入、身分驗證、以及把初始 migration
+      （<code>supabase/migrations/20260822000000_init.sql</code>）註解裡那組綁
       <code>auth.uid()</code> 的 RLS 政策換上去。現在的政策是「誰都能讀寫」，只適合自己玩。</li>
     <li>登入方式待決，見 <a href="#open">§9</a>。</li>
+  </ul>
+
+  <h3><span class="num">5.8</span>後端與本機開發環境<span class="chip done">已實作</span></h3>
+  <p>
+    後端是 Supabase——託管的 Postgres，自帶 REST API、認證與即時訂閱。
+    前端從瀏覽器直接呼叫它，專案裡沒有任何自己寫的伺服器程式碼。
+    同一套用 Supabase CLI 在本機完整跑得起來，和雲端專案是同樣的元件、同一份 migration。
+  </p>
+  <ul class="ac">
+    <li><b>資料進出口只有一個。</b><code>src/lib/db.ts</code> 是唯一碰資料的地方，
+      畫面不直接碰 Supabase 也不直接碰 localStorage。環境變數留白時整個 App 自動退回
+      離線示範模式，兩種實作共用同一組函式簽名，換後端不必動任何畫面程式碼。</li>
+    <li><b>資料庫狀態隨時可重建。</b>schema 放在 <code>supabase/migrations/</code>，
+      種子資料由 <code>tools/gen_seed_sql.ts</code> 從 <code>mockData.ts</code> 產生，
+      離線模式和資料庫看到的是同一份資料。<code>supabase db reset</code> 依序套用兩者。</li>
+    <li><b><code>anon</code> 角色要明確授權。</b>PostgREST 是用未登入的 <code>anon</code>
+      角色連線的，新版 Supabase 不會自動把新資料表授權給它，migration 裡必須寫明
+      <code>grant</code>，否則前端一律拿到 42501。這層管的是「碰得到哪些表」，
+      列級的存取控制仍然在 RLS policy。</li>
+    <li><b>即時更新共用一條 channel。</b>supabase-js 拿 topic 當快取鍵，
+      同一個畫面訂閱兩次會拿到已經 <code>subscribe()</code> 過的同一條 channel，
+      再掛回呼就被拒絕；而任一元件卸載時移除 channel 會把還在用的人一起斷掉。
+      扇出與引用計數在 <code>db.ts</code> 自己管。</li>
+    <li><b>雲端專案尚未開設。</b>上線時把 <code>.env</code> 兩個值換成雲端專案的
+      URL 與 anon key 即可，程式碼不用改。anon key 本來就會被打包進前端、公開可見，
+      安全性靠的是 RLS，不是把 key 藏起來。</li>
   </ul>
 </section>
 
@@ -690,7 +718,8 @@
       <tbody>
         <tr><td>平台</td><td>手機網頁 PWA，iOS Safari 與 Android Chrome</td><td class="num"><span class="chip done">已實作</span></td></tr>
         <tr><td>離線</td><td>已安裝的 App 在無網路時可開啟並瀏覽既有資料</td><td class="num"><span class="chip done">已實作</span></td></tr>
-        <tr><td>部署</td><td>push 到 main 自動建置上線；測試與型別檢查沒過就不部署</td><td class="num"><span class="chip done">已實作</span></td></tr>
+        <tr><td>後端</td><td>本機以 Supabase CLI 完整運行（Postgres／REST／即時訂閱）；雲端專案尚未開設</td><td class="num"><span class="chip done">本機已實作</span></td></tr>
+        <tr><td>部署</td><td>建置管線已就緒，測試與型別檢查沒過就不部署；目前刻意停用自動觸發，GitHub 僅作原始碼倉庫</td><td class="num"><span class="chip open">已停用</span></td></tr>
         <tr><td>位置隱私</td><td>只存行政區中心座標，不存精確位置，不顯示他人確切位置</td><td class="num"><span class="chip done">已實作</span></td></tr>
         <tr><td>個資</td><td>需符合個資法：告知蒐集目的、提供查詢與刪除管道</td><td class="num"><span class="chip todo">未實作</span></td></tr>
         <tr><td>演算法正確性</td><td>媒合與程度推算須有測試覆蓋；算錯不會當機，只會默默推薦錯的人</td><td class="num"><span class="chip done">33 個測試</span></td></tr>
@@ -820,7 +849,8 @@
   <p>依阻擋程度排序，前兩項不做就不能給陌生人用。</p>
   <ol>
     <li><strong>帳號與登入</strong>（§5.7）——沒有它，雙向互動不存在</li>
-    <li><strong>RLS 政策收緊</strong>——現在是「誰都能讀寫」</li>
+    <li><strong>RLS 政策收緊</strong>——現在是「誰都能讀寫」，
+      正確版本已寫在初始 migration 底部的註解裡，接上 Auth 時啟用</li>
     <li><strong>真實球館資料</strong>（Q2）——資料不真，媒合再準也沒用</li>
     <li><strong>檢舉與封鎖</strong>——陌生人見面型產品的基本安全機制</li>
     <li><strong>個資告知與刪除</strong>——法規要求</li>
@@ -830,7 +860,7 @@
 
 <footer>
   <p>
-    TennisPal PRD v0.3 · 2026-08-22 · 對應程式碼 commit <code>64ec596</code><br>
+    TennisPal PRD v0.4 · 2026-08-23 · 對應程式碼 commit <code>46015d6</code><br>
     文件中所有演算法權重、欄位名稱與狀態轉換皆對得上實際程式碼；
     標示「未實作」者僅有規格。
   </p>
