@@ -10,7 +10,7 @@ insert into clubs (id, name, district, address, lat, lng, surface, indoor, light
   ('c-1e8y3fy', '宏國德霖科技學院網球場(館)', '新北市土城區', '新北市土城區青雲路380巷1號', 24.972287, 121.457537, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(295 58% 42%),hsl(307 58% 28%) 55%,hsl(319 58% 18%))', 'opendata', null, null),
   ('c-1mxo36s', '中和區錦和運動公園-網球場', '新北市中和區', '新北市中和區錦和路350-1號', 24.993069, 121.487428, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(3 52% 42%),hsl(15 52% 28%) 55%,hsl(27 52% 18%))', 'opendata', null, null),
   ('c-0lmdly4', '秀山國民小學網球場(館)', '新北市中和區', '新北市中和區立人街2號', 24.994499, 121.521792, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(130 58% 42%),hsl(142 58% 28%) 55%,hsl(154 58% 18%))', 'opendata', null, null),
-  ('c-1x8ba0z', '新北市永和區綠寶石公園網球場(新店溪左岸自行車道5.5KM)', '新北市永和區', '新北市永和區綠寶石公園網球場(新店溪左岸自行車道5.5KM)', 25.018155, 121.509411, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(224 64% 42%),hsl(236 64% 28%) 55%,hsl(248 64% 18%))', 'opendata', null, null),
+  ('c-1x8ba0z', '綠寶石網球場（永和河濱）', '新北市永和區', '新北市永和區綠寶石公園網球場(新店溪左岸自行車道5.5KM)', 25.018155, 121.509411, null, false, true, 150, '平日每 4 小時 600 元、假日 800 元，未滿 2 小時以半場次計。時段固定兩小時一節：08–10、10–12、13–15、15–17、18–20、20–22。線上申請要先註冊會員，非新北市民也可以註冊。沒有人申請的時段開放現場自由使用。', null, 1, 8, 22, 'linear-gradient(150deg,hsl(224 64% 42%),hsl(236 64% 28%) 55%,hsl(248 64% 18%))', 'manual', 'https://www.hrcm.ntpc.gov.tw/Service/VenueRental/TennisCourtLeaseInst/Detail/綠寶石網球場', '2026-08-23'),
   ('c-0wu26dk', '華僑高級中學網球場(館)', '新北市板橋區', '新北市板橋區大觀路一段32號', 25.006955, 121.446251, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(79 58% 42%),hsl(91 58% 28%) 55%,hsl(103 58% 18%))', 'opendata', null, null),
   ('c-1swl24q', '新月網球場', '新北市板橋區', '新北市板橋區新月橋與特二橋間網球場(大漢溪右岸自行車道3.75K', 25.024217, 121.449501, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(30 52% 42%),hsl(42 52% 28%) 55%,hsl(54 52% 18%))', 'opendata', null, null),
   ('c-0gejqbn', '林口高中網球場(館)', '新北市林口區', '新北市林口區仁愛路二段173號', 25.072976, 121.380043, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(223 58% 42%),hsl(235 58% 28%) 55%,hsl(247 58% 18%))', 'opendata', null, null),
@@ -22,12 +22,12 @@ insert into clubs (id, name, district, address, lat, lng, surface, indoor, light
   ('c-1yr5xdo', '聖約翰科技大學網球場', '新北市淡水區', '新北市淡水區淡金路四段499號', 25.226727, 121.45088, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(182 64% 42%),hsl(194 64% 28%) 55%,hsl(206 64% 18%))', 'opendata', null, null),
   ('c-1yr5xdo', '聖約翰科技大學網球場', '新北市淡水區', '新北市淡水區淡金路四段499號', 25.227421, 121.451535, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(182 64% 42%),hsl(194 64% 28%) 55%,hsl(206 64% 18%))', 'opendata', null, null),
   ('c-0uf2fga', '景文科技大學網球場(館)', '新北市新店區', '新北市新店區安忠路99號', 24.951968, 121.509331, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(253 58% 42%),hsl(265 58% 28%) 55%,hsl(277 58% 18%))', 'opendata', null, null),
-  ('c-1gojbyh', '新北市新店區小碧潭公園網球場(新店溪右岸自行車道2.3KM)', '新北市新店區', '新北市新店區小碧潭公園網球場(新店溪右岸自行車道2.3KM)', 24.972744, 121.52728, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(326 64% 42%),hsl(338 64% 28%) 55%,hsl(350 64% 18%))', 'opendata', null, null),
+  ('c-1gojbyh', '小碧潭網球場（新店河濱）', '新北市新店區', '新北市新店區小碧潭公園網球場(新店溪右岸自行車道2.3KM)', 24.972744, 121.52728, null, false, true, 150, '平日每 4 小時 600 元、假日 800 元，未滿 2 小時以半場次計。時段固定兩小時一節：08–10、10–12、13–15、15–17、18–20、20–22。線上申請要先註冊會員，非新北市民也可以註冊。沒有人申請的時段開放現場自由使用。', null, 1, 8, 22, 'linear-gradient(150deg,hsl(326 64% 42%),hsl(338 64% 28%) 55%,hsl(350 64% 18%))', 'manual', 'https://www.hrcm.ntpc.gov.tw/Service/VenueRental/TennisCourtLeaseInst/Detail/小碧潭網球場', '2026-08-23'),
   ('c-0yin15m', '彭福國小網球場(館)', '新北市樹林區', '新北市樹林區忠孝街30號', 24.981614, 121.423055, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(289 58% 42%),hsl(301 58% 28%) 55%,hsl(313 58% 18%))', 'opendata', null, null),
   ('c-1wbp6yi', '樹林體育園區網球場', '新北市樹林區', '新北市樹林區水源街81號', 24.982203, 121.426806, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(112 58% 42%),hsl(124 58% 28%) 55%,hsl(136 58% 18%))', 'opendata', null, null),
   ('c-12sm4rn', '微風運河網球場', '新北市蘆洲區', '新北市蘆洲區二重疏洪道微風網球場', 25.094315, 121.458111, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(323 64% 42%),hsl(335 64% 28%) 55%,hsl(347 64% 18%))', 'opendata', null, null),
   ('c-1vmo0ua', '鶯歌國小網球場(館)', '新北市鶯歌區', '新北市鶯歌區同慶里尖山埔路106號', 24.951175, 121.346612, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(163 58% 42%),hsl(175 58% 28%) 55%,hsl(187 58% 18%))', 'opendata', null, null),
-  ('c-007sqo2', '士林區百齡河濱公園', '臺北市士林區', '臺北市士林區通河東街1及2段堤外', 25.088431, 121.514947, null, false, null, 0, null, null, 1, 8, 21, 'linear-gradient(150deg,hsl(294 52% 42%),hsl(306 52% 28%) 55%,hsl(318 52% 18%))', 'opendata', 'https://vbs.sports.taipei/venues/', null),
+  ('c-007sqo2', '百齡河濱公園網球場（社子岸）', '臺北市士林區', '臺北市士林區通河東街1及2段堤外', 25.088431, 121.514947, null, false, false, 0, '免費，但仍要在臺北市體育局系統預約（要先註冊會員）。沒有夜間照明，天黑就打不了。', null, 6, 8, 22, 'linear-gradient(150deg,hsl(294 52% 42%),hsl(306 52% 28%) 55%,hsl(318 52% 18%))', 'manual', 'https://vbs.sports.taipei/venues/?K=87', '2026-08-23'),
   ('c-0fl7cqi', '天壽公園', '臺北市士林區', '臺北市士林區中山北路6段405巷右側', 25.116907, 121.524491, null, false, null, 0, null, null, 1, 8, 17, 'linear-gradient(150deg,hsl(24 52% 42%),hsl(36 52% 28%) 55%,hsl(48 52% 18%))', 'opendata', 'https://vbs.sports.taipei/venues/', null),
   ('c-0l425ko', '東吳大學網球場(館)', '臺北市士林區', '臺北市士林區臨溪路70號', 25.09568, 121.544307, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(253 58% 42%),hsl(265 58% 28%) 55%,hsl(277 58% 18%))', 'opendata', null, null),
   ('c-1wml0f7', '臺北市天母棒球場', '臺北市士林區', '臺北市 士林區 忠誠路二段77號', 25.113456, 121.532929, null, false, null, null, null, null, 1, 8, 22, 'linear-gradient(150deg,hsl(74 64% 42%),hsl(86 64% 28%) 55%,hsl(98 64% 18%))', 'opendata', 'https://vbs.sports.taipei/venues/', null),
@@ -35,9 +35,9 @@ insert into clubs (id, name, district, address, lat, lng, surface, indoor, light
   ('c-014c0j5', '銘傳大學體育館', '臺北市士林區', '臺北市士林區中山北路五段250號', 25.085599, 121.533508, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(89 64% 42%),hsl(101 64% 28%) 55%,hsl(113 64% 18%))', 'opendata', null, null),
   ('c-1823beb', '臺北教育大學網球場', '臺北市大安區', '臺北市大安區和平東路二段134號', 25.022112, 121.544859, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(197 64% 42%),hsl(209 64% 28%) 55%,hsl(221 64% 18%))', 'opendata', null, null),
   ('c-1g2soks', '臺灣科技大學網球場(館)', '臺北市大安區', '臺北市大安區基隆路四段43號', 25.014662, 121.54325, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(254 64% 42%),hsl(266 64% 28%) 55%,hsl(278 64% 18%))', 'opendata', null, null),
-  ('c-0008o0m', '美堤河濱公園', '臺北市中山區', '臺北市 中山區 大直橋 至 中山高速公路(金泰段右岸)（基隆河右岸）', 25.076679, 121.553367, null, false, null, 0, null, null, 1, 8, 22, 'linear-gradient(150deg,hsl(162 52% 42%),hsl(174 52% 28%) 55%,hsl(186 52% 18%))', 'opendata', 'https://vbs.sports.taipei/venues/', null),
+  ('c-0008o0m', '美堤河濱公園網球場', '臺北市中山區', '臺北市 中山區 大直橋 至 中山高速公路(金泰段右岸)（基隆河右岸）', 25.076679, 121.553367, null, false, true, 140, '每小時 140 元，日間夜間同價。臺北市體育局線上預約，要先註冊會員。未開放線上預約的面只供現場民眾輪流使用，不能營利。', null, 2, 8, 22, 'linear-gradient(150deg,hsl(162 52% 42%),hsl(174 52% 28%) 55%,hsl(186 52% 18%))', 'manual', 'https://vbs.sports.taipei/venues/?K=174', '2026-08-23'),
   ('c-0flprbw', '新生公園網球場', '臺北市中山區', '臺北市中山區新生北路3段105號', 25.068495, 121.531745, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(275 64% 42%),hsl(287 64% 28%) 55%,hsl(299 64% 18%))', 'opendata', null, null),
-  ('c-187m0ht', '臺北市中山區大佳河濱公園', '臺北市中山區', '臺北市 中山區 圓山橋下10號水門 大直橋至中山橋(大佳段)（基隆河左岸）', 25.074803, 121.535547, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(261 52% 42%),hsl(273 52% 28%) 55%,hsl(285 52% 18%))', 'opendata', null, null),
+  ('c-187m0ht', '大佳河濱公園網球場', '臺北市中山區', '臺北市 中山區 圓山橋下10號水門 大直橋至中山橋(大佳段)（基隆河左岸）', 25.074803, 121.535547, null, false, null, 0, '在臺北市體育局的線上訂場系統裡，但這個場的面數與收費還沒查證。', null, 1, 8, 22, 'linear-gradient(150deg,hsl(261 52% 42%),hsl(273 52% 28%) 55%,hsl(285 52% 18%))', 'manual', 'https://vbs.sports.taipei/venues/', '2026-08-23'),
   ('c-197lw6y', '三民國中網球場', '臺北市內湖區', '臺北市內湖區湖興里民權東路6段45號', 25.069518, 121.584993, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(227 64% 42%),hsl(239 64% 28%) 55%,hsl(251 64% 18%))', 'opendata', null, null),
   ('c-1g9ltan', '內湖區石潭公園', '臺北市內湖區', '臺北市 內湖區 安康路25巷', 25.063694, 121.592651, null, false, null, 0, null, null, 1, 8, 22, 'linear-gradient(150deg,hsl(94 58% 42%),hsl(106 58% 28%) 55%,hsl(118 58% 18%))', 'opendata', 'https://vbs.sports.taipei/venues/', null),
   ('c-0knqvfe', '西湖國中網球場', '臺北市內湖區', '臺北市內湖區西湖里環山路1段27號', 25.086114, 121.565797, null, false, null, null, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(93 52% 42%),hsl(105 52% 28%) 55%,hsl(117 52% 18%))', 'opendata', null, null),
@@ -56,7 +56,9 @@ insert into clubs (id, name, district, address, lat, lng, surface, indoor, light
   ('c-1asmr0i', '中研公園', '臺北市南港區', '臺北市 南港區 研究路2段12巷58弄', 25.046836, 121.613449, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(151 58% 42%),hsl(163 58% 28%) 55%,hsl(175 58% 18%))', 'opendata', null, null),
   ('c-0z1pvmg', '中華科技大學操場', '臺北市南港區', '臺北市南港區研究院路三段245號', 25.032699, 121.610847, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(325 58% 42%),hsl(337 58% 28%) 55%,hsl(349 58% 18%))', 'opendata', null, null),
   ('c-1bvbons', '玉成公園', '臺北市南港區', '臺北市 南港區 中坡南路55號', 25.042491, 121.585071, null, false, null, 0, null, null, 1, 6, 22, 'linear-gradient(150deg,hsl(333 52% 42%),hsl(345 52% 28%) 55%,hsl(357 52% 18%))', 'opendata', null, null),
-  ('c-0rbgz6v', '南港公園', '臺北市南港區', '臺北市 南港區 東新街170號', 25.045146, 121.591799, null, false, null, 0, null, null, 1, 8, 22, 'linear-gradient(150deg,hsl(81 52% 42%),hsl(93 52% 28%) 55%,hsl(105 52% 18%))', 'opendata', 'https://vbs.sports.taipei/venues/', null)
+  ('c-0rbgz6v', '南港公園', '臺北市南港區', '臺北市 南港區 東新街170號', 25.045146, 121.591799, null, false, null, 0, null, null, 1, 8, 22, 'linear-gradient(150deg,hsl(81 52% 42%),hsl(93 52% 28%) 55%,hsl(105 52% 18%))', 'opendata', 'https://vbs.sports.taipei/venues/', null),
+  ('c-vbs-201', '彩虹河濱公園網球場', '臺北市內湖區', '基隆河中山高速公路至麥帥一橋間(舊宗段右岸)（基隆河右岸）', 25.062687, 121.571815, null, false, true, 140, '每小時 140 元，日間夜間同價。臺北市體育局線上預約，要先註冊會員。', null, 9, 8, 22, 'linear-gradient(150deg,hsl(307 58% 42%),hsl(319 58% 28%) 55%,hsl(331 58% 18%))', 'manual', 'https://vbs.sports.taipei/venues/?K=201', '2026-08-23'),
+  ('c-vbs-210', '雙園河濱公園網球場', '臺北市萬華區', '雙園抽水站至華江橋上游側欄杆間', 25.034276, 121.488169, null, false, true, 140, '每小時 140 元，日間夜間同價。臺北市體育局線上預約，要先註冊會員。', null, 4, 8, 22, 'linear-gradient(150deg,hsl(337 58% 42%),hsl(349 58% 28%) 55%,hsl(1 58% 18%))', 'manual', 'https://vbs.sports.taipei/venues/?K=210', '2026-08-23')
 on conflict (id) do nothing;
 
 insert into courts (id, club_id, name) values
@@ -85,6 +87,11 @@ insert into courts (id, club_id, name) values
   ('c-12sm4rn-court-1', 'c-12sm4rn', '第 1 球場'),
   ('c-1vmo0ua-court-1', 'c-1vmo0ua', '第 1 球場'),
   ('c-007sqo2-court-1', 'c-007sqo2', '第 1 球場'),
+  ('c-007sqo2-court-2', 'c-007sqo2', '第 2 球場'),
+  ('c-007sqo2-court-3', 'c-007sqo2', '第 3 球場'),
+  ('c-007sqo2-court-4', 'c-007sqo2', '第 4 球場'),
+  ('c-007sqo2-court-5', 'c-007sqo2', '第 5 球場'),
+  ('c-007sqo2-court-6', 'c-007sqo2', '第 6 球場'),
   ('c-0fl7cqi-court-1', 'c-0fl7cqi', '第 1 球場'),
   ('c-0l425ko-court-1', 'c-0l425ko', '第 1 球場'),
   ('c-1wml0f7-court-1', 'c-1wml0f7', '第 1 球場'),
@@ -93,6 +100,7 @@ insert into courts (id, club_id, name) values
   ('c-1823beb-court-1', 'c-1823beb', '第 1 球場'),
   ('c-1g2soks-court-1', 'c-1g2soks', '第 1 球場'),
   ('c-0008o0m-court-1', 'c-0008o0m', '第 1 球場'),
+  ('c-0008o0m-court-2', 'c-0008o0m', '第 2 球場'),
   ('c-0flprbw-court-1', 'c-0flprbw', '第 1 球場'),
   ('c-187m0ht-court-1', 'c-187m0ht', '第 1 球場'),
   ('c-197lw6y-court-1', 'c-197lw6y', '第 1 球場'),
@@ -122,7 +130,20 @@ insert into courts (id, club_id, name) values
   ('c-1asmr0i-court-1', 'c-1asmr0i', '第 1 球場'),
   ('c-0z1pvmg-court-1', 'c-0z1pvmg', '第 1 球場'),
   ('c-1bvbons-court-1', 'c-1bvbons', '第 1 球場'),
-  ('c-0rbgz6v-court-1', 'c-0rbgz6v', '第 1 球場')
+  ('c-0rbgz6v-court-1', 'c-0rbgz6v', '第 1 球場'),
+  ('c-vbs-201-court-1', 'c-vbs-201', '第 1 球場'),
+  ('c-vbs-201-court-2', 'c-vbs-201', '第 2 球場'),
+  ('c-vbs-201-court-3', 'c-vbs-201', '第 3 球場'),
+  ('c-vbs-201-court-4', 'c-vbs-201', '第 4 球場'),
+  ('c-vbs-201-court-5', 'c-vbs-201', '第 5 球場'),
+  ('c-vbs-201-court-6', 'c-vbs-201', '第 6 球場'),
+  ('c-vbs-201-court-7', 'c-vbs-201', '第 7 球場'),
+  ('c-vbs-201-court-8', 'c-vbs-201', '第 8 球場'),
+  ('c-vbs-201-court-9', 'c-vbs-201', '第 9 球場'),
+  ('c-vbs-210-court-1', 'c-vbs-210', '第 1 球場'),
+  ('c-vbs-210-court-2', 'c-vbs-210', '第 2 球場'),
+  ('c-vbs-210-court-3', 'c-vbs-210', '第 3 球場'),
+  ('c-vbs-210-court-4', 'c-vbs-210', '第 4 球場')
 on conflict (id) do nothing;
 
 insert into players (id, name, avatar_hue, ntrp, district, lat, lng, hand, bio, wins, losses, level_answers, availability, pref_club_ids, pref_ntrp_min, pref_ntrp_max) values

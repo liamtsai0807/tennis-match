@@ -102,8 +102,11 @@ export default function Clubs() {
                     <span className="spacer" />
                     <b style={{ fontSize: 14.5 }}>
                       {money(c.price_per_hour)}
-                      {/* 有補充說明代表價格是分級的，這個數字只是最低那一檔 */}
-                      {c.price_note && <small style={{ color: 'var(--ink-3)', fontWeight: 600 }}> 起</small>}
+                      {/* 有補充說明代表價格是分級的，這個數字只是最低那一檔。
+                          但免費就是免費，不會有「免費起」這種東西 */}
+                      {c.price_note && c.price_per_hour !== null && c.price_per_hour > 0 && (
+                        <small style={{ color: 'var(--ink-3)', fontWeight: 600 }}> 起</small>
+                      )}
                       {c.price_per_hour !== null && c.price_per_hour > 0 && (
                         <small style={{ color: 'var(--ink-3)', fontWeight: 600 }}> /小時</small>
                       )}

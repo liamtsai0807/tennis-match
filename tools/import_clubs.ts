@@ -21,11 +21,12 @@
  * 對應只能靠地址——那份 JSON 沒有座標也沒有 id。對不上很正常：
  * 我們的球場有一半是大學和學校的場，本來就不歸市府訂場系統管。
  *
- * 最後套上 src/lib/clubOverrides.ts 的人工查證結果。那是唯一手改的一份，
- * 放在這裡套是因為 clubData.ts 每次重跑都會整份重寫，人工成果寫在那裡會被蓋掉。
+ * 最後套上 src/lib/clubOverrides.ts：人工查證的修正（override）與開放資料整個
+ * 漏掉的球場（addition）。那是唯一手改的一份，放在這裡套是因為 clubData.ts
+ * 每次重跑都會整份重寫，人工成果寫在那裡會被蓋掉。
  */
 import { readFileSync, writeFileSync } from 'node:fs'
-import { CLUB_OVERRIDES } from '../src/lib/clubOverrides.ts'
+import { CLUB_ADDITIONS, CLUB_OVERRIDES } from '../src/lib/clubOverrides.ts'
 
 const VBS_URL = 'https://vbs.sports.taipei/opendata/sports_tms2.json'
 
@@ -276,6 +277,26 @@ const body = clubs.map((c) => {
   },`
 }).join('\n')
 
+/** 開放資料漏掉、人工補進來的球場。這些沒有原始名稱可以雜湊，id 在 override 檔裡自己給。 */
+const extraBody = CLUB_ADDITIONS.map(({ club: c }) => `  {
+    id: '${c.id}', name: ${JSON.stringify(c.name)},
+    district: ${JSON.stringify(c.district)},
+    address: ${JSON.stringify(c.address)},
+    lat: ${c.lat}, lng: ${c.lng},
+    surface: ${lit(c.surface)},
+    indoor: ${c.indoor},
+    lights: ${lit(c.lights)},
+    price_per_hour: ${lit(c.price_per_hour)},
+    price_note: ${lit(c.price_note)},
+    rating: ${lit(c.rating)},
+    courts: ${c.courts},
+    open_hour: ${c.open_hour}, close_hour: ${c.close_hour},
+    photo: '${gradient(c.id)}',
+    source: '${c.source}',
+    booking_url: ${lit(c.booking_url)},
+    verified_on: ${lit(c.verified_on)},
+  },`).join('\n')
+
 const out = `/** ===== clubData.ts =====
  * 由 tools/import_clubs.ts 從政府開放資料產生，不要手改——重跑一次就會被蓋掉。
  *
@@ -293,12 +314,14 @@ const out = `/** ===== clubData.ts =====
  * 開放時間：對得上臺北市體育局訂場系統的才是查證過的，其餘一律是 6–22 的保守預設。
  * booking_url：有值代表這個場在市府線上訂場系統裡。
  *
- * 範圍：${CITIES.join('、')}，共 ${clubs.length} 個場館。
+ * 範圍：${CITIES.join('、')}，開放資料 ${clubs.length} 個，
+ * 另加 ${CLUB_ADDITIONS.length} 個開放資料漏掉但確實訂得到的（見 clubOverrides.ts）。
  */
 import type { Club } from './types.ts'
 
 export const REAL_CLUBS: Club[] = [
 ${body}
+${extraBody}
 ]
 `
 
@@ -308,6 +331,7 @@ console.log(`已產生 src/lib/clubData.ts：${CITIES.join('、')} 共 ${clubs.l
 console.log('過濾掉：', Object.entries(skipped).map(([k, v]) => `${k} ${v}`).join('、'))
 console.log(`對上臺北市體育局訂場系統：${matched} 個（有真實開放時間與訂場連結）`)
 console.log(`套用人工查證：${overridden} / ${CLUB_OVERRIDES.length} 個`)
+console.log(`人工補進開放資料漏掉的：${CLUB_ADDITIONS.length} 個`)
 if (overridden < CLUB_OVERRIDES.length) {
   // 開放資料年更一次，地址改了 override 就會靜靜失效，不講的話沒人會發現
   const missed = CLUB_OVERRIDES.filter((o) => !clubs.some((c) => normAddr(c.address) === normAddr(o.address)))
