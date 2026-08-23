@@ -246,10 +246,13 @@ supabase/
   migrations/    建表 + RLS + Realtime 設定，db reset 時依序套用
   seed.sql       由 tools/gen_seed_sql.ts 從 mockData.ts 產生，不要手改
   templates/     登入信範本（給驗證碼，不給連結）
+src/lib/
+  clubData.ts    真實球場，由 tools/import_clubs.ts 從開放資料產生，不要手改
 tools/
   match.test.ts        媒合演算法測試
   level.test.ts        程度推算測試
   gen_seed_sql.ts      產生 seed.sql
+  import_clubs.ts      把 iPlay 開放資料轉成 src/lib/clubData.ts
   build_single_file.ts 把 build 產物壓成單一 HTML，用來分享原型
   make_icons.ts        產生 PWA 安裝用的 PNG 圖示
 ```
@@ -270,8 +273,13 @@ tools/
   沒設定時按下去只會得到錯誤訊息，Email 那條路不受影響。
 - **距離是直線距離**，不是實際路程。要接路網 API 才算得出路程，
   但拿來排序球場的結果幾乎一樣。
-- **真實球館資料。** 九個球館的地址與價格是編的，座標只到行政區中心。
-  來源已決（政府開放資料當骨架，細節人工補），但要先定先做哪一區。
+- **球館細節未確認。** 球場已經換成真實資料（政府開放資料 iPlay，雙北 54 個
+  可租借的網球場館，見 [tools/import_clubs.ts](tools/import_clubs.ts)），
+  名稱、地址、經緯度是真的。但**場地材質、夜燈、每小時價格、評分、面數
+  開放資料沒有**，一律留 null、畫面上標「細節未確認」，等人工查證後補。
+  面數一律先當 1 面，它只影響「這個時段還剩幾面」的模擬。
+  另外開放資料本身有雜訊（例如有一筆場館名稱寫「排球場館」但分類是網球場），
+  人工那一輪要順便清掉。
 - **沒有付款、沒有推播通知。** 邀約是非同步的，對方不知道有人約他就不會回，
   這是上線後最可能讓「邀約接受率」掛掉的原因。
 

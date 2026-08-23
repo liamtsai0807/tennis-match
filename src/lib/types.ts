@@ -25,20 +25,29 @@ export interface Availability {
   blocks: TimeBlock[]
 }
 
+/** 這筆球場資料哪裡來的。opendata 的細節沒有經過人工確認。 */
+export type ClubSource = 'opendata' | 'manual'
+
 export interface Club extends LatLng {
   id: string
   name: string
   district: string
   address: string
-  surface: Surface
+  /**
+   * 以下幾欄政府開放資料沒有，null 代表「還不知道」。
+   * 刻意不用 0 或預設值代替——編一個出來，使用者會當真，
+   * 然後帶著錯的資訊跑到球場。
+   */
+  surface: Surface | null
   indoor: boolean
-  lights: boolean           // 沒夜燈就排不了晚上的球
-  price_per_hour: number    // TWD
-  rating: number
+  lights: boolean | null    // 沒夜燈就排不了晚上的球
+  price_per_hour: number | null   // TWD。0 是「免費」，是真的資料；null 才是不知道
+  rating: number | null
   photo: string             // 用 CSS 漸層當底圖，不依賴外部圖床
   courts: number
   open_hour: number
   close_hour: number
+  source: ClubSource
 }
 
 export interface Court {

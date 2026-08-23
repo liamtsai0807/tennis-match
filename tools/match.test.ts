@@ -40,6 +40,7 @@ function club(id: string, lat: number, lng: number): Club {
     id, name: id, district: '', address: '', lat, lng,
     surface: 'hard', indoor: false, lights: true, price_per_hour: 500,
     rating: 4, photo: '', courts: 4, open_hour: 6, close_hour: 22,
+    source: 'manual',
   }
 }
 

@@ -171,7 +171,7 @@ export async function saveMe(me: Player, markOnboarded = true): Promise<Player> 
 
 export async function listClubs(): Promise<Club[]> {
   if (supabase) {
-    const { data, error } = await supabase.from('clubs').select('*').order('rating', { ascending: false })
+    const { data, error } = await supabase.from('clubs').select('*').order('name')
     if (error) throw error
     return data as Club[]
   }

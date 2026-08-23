@@ -3,74 +3,25 @@
  * 座標是各行政區的大致中心，不是真實地址——媒合要算距離，沒有座標就算不出來。
  */
 import type { Club, Court, Player } from './types.ts'
+import { REAL_CLUBS } from './clubData.ts'
 
 export const ME = 'p-me'
 
-export const CLUBS: Club[] = [
-  {
-    id: 'c-daan', name: '大安網球中心', district: '台北市大安區',
-    address: '台北市大安區敦化南路二段 99 號', lat: 25.0270, lng: 121.5490,
-    surface: 'hard', indoor: false, lights: true,
-    price_per_hour: 500, rating: 4.6, courts: 8, open_hour: 6, close_hour: 22,
-    photo: 'linear-gradient(150deg,#1e6fd9,#0d3f8f 55%,#0a2d66)',
-  },
-  {
-    id: 'c-xinyi', name: '信義運動中心網球場', district: '台北市信義區',
-    address: '台北市信義區松勤街 100 號', lat: 25.0330, lng: 121.5670,
-    surface: 'hard', indoor: true, lights: true,
-    price_per_hour: 650, rating: 4.5, courts: 4, open_hour: 7, close_hour: 22,
-    photo: 'linear-gradient(150deg,#3f5a8a,#22355c 55%,#141f38)',
-  },
-  {
-    id: 'c-zhongshan', name: '中山網球場', district: '台北市中山區',
-    address: '台北市中山區玉門街 1 號', lat: 25.0700, lng: 121.5200,
-    surface: 'hard', indoor: false, lights: true,
-    price_per_hour: 400, rating: 4.2, courts: 6, open_hour: 6, close_hour: 21,
-    photo: 'linear-gradient(150deg,#2f9e6a,#177a4c 55%,#0d4d30)',
-  },
-  {
-    id: 'c-neihu', name: '內湖運動中心（室內）', district: '台北市內湖區',
-    address: '台北市內湖區洲子街 12 號', lat: 25.0790, lng: 121.5750,
-    surface: 'hard', indoor: true, lights: true,
-    price_per_hour: 700, rating: 4.8, courts: 4, open_hour: 7, close_hour: 23,
-    photo: 'linear-gradient(150deg,#4a5f9e,#25356b 55%,#141f42)',
-  },
-  {
-    id: 'c-tianmu', name: '天母網球場', district: '台北市士林區',
-    address: '台北市士林區忠誠路二段 77 號', lat: 25.1180, lng: 121.5300,
-    surface: 'clay', indoor: false, lights: true,
-    price_per_hour: 420, rating: 4.4, courts: 6, open_hour: 6, close_hour: 21,
-    photo: 'linear-gradient(150deg,#c96a3c,#a0472a 55%,#6f2f1c)',
-  },
-  {
-    id: 'c-banqiao', name: '板橋第一網球場', district: '新北市板橋區',
-    address: '新北市板橋區縣民大道二段 1 號', lat: 25.0140, lng: 121.4630,
-    surface: 'hard', indoor: false, lights: false,
-    price_per_hour: 350, rating: 4.1, courts: 10, open_hour: 6, close_hour: 18,
-    photo: 'linear-gradient(150deg,#2f8f9e,#176a7a 55%,#0d4250)',
-  },
-  {
-    id: 'c-sanchong', name: '三重綜合運動場網球場', district: '新北市三重區',
-    address: '新北市三重區集美街 60 號', lat: 25.0670, lng: 121.4880,
-    surface: 'hard', indoor: false, lights: true,
-    price_per_hour: 380, rating: 4.0, courts: 6, open_hour: 6, close_hour: 21,
-    photo: 'linear-gradient(150deg,#8a6a3f,#5c4522 55%,#382a14)',
-  },
-  {
-    id: 'c-xindian', name: '新店央北網球場', district: '新北市新店區',
-    address: '新北市新店區安興路 30 號', lat: 24.9800, lng: 121.5390,
-    surface: 'hard', indoor: false, lights: true,
-    price_per_hour: 450, rating: 4.3, courts: 5, open_hour: 6, close_hour: 22,
-    photo: 'linear-gradient(150deg,#6a4bb5,#432d80 55%,#281a4d)',
-  },
-  {
-    id: 'c-taoyuan', name: '桃園青埔網球園區', district: '桃園市中壢區',
-    address: '桃園市中壢區高鐵南路二段 8 號', lat: 25.0000, lng: 121.2200,
-    surface: 'grass', indoor: false, lights: true,
-    price_per_hour: 600, rating: 4.7, courts: 5, open_hour: 6, close_hour: 22,
-    photo: 'linear-gradient(150deg,#4a9d3f,#2c7028 55%,#17471a)',
-  },
-]
+/**
+ * 球場改用真實資料（政府開放資料，見 tools/import_clubs.ts）。
+ * 離線示範和線上用的是同一份，示範時看到的球場就是真的存在的球場。
+ */
+export const CLUBS: Club[] = REAL_CLUBS
+
+/**
+ * 示範球友的偏好球場要指到真實的 id 上。開放資料是年更的，
+ * 硬寫 id 會在下次重新匯入時全部失效，所以一律用行政區去找。
+ */
+function clubIn(district: string, nth = 0): string {
+  const list = CLUBS.filter((c) => c.district.includes(district))
+  if (list.length === 0) throw new Error('示範資料找不到這一區的球場：' + district)
+  return list[nth % list.length].id
+}
 
 export const COURTS: Court[] = CLUBS.flatMap((club) =>
   Array.from({ length: club.courts }, (_, i) => ({
@@ -104,7 +55,7 @@ export const PLAYERS: Player[] = [
     wins: 34, losses: 21,
     level_answers: 'manual',
     availability: { weekdays: WEEKNIGHTS, blocks: ['evening'] },
-    pref_club_ids: ['c-daan', 'c-xinyi'],
+    pref_club_ids: [clubIn('大安區'), clubIn('信義區')],
     pref_ntrp_min: 3, pref_ntrp_max: 4,
   },
   {
@@ -114,7 +65,7 @@ export const PLAYERS: Player[] = [
     wins: 9, losses: 7,
     level_answers: 'manual',
     availability: { weekdays: [6], blocks: ['morning'] },
-    pref_club_ids: ['c-daan', 'c-zhongshan'],
+    pref_club_ids: [clubIn('大安區'), clubIn('中山區')],
     pref_ntrp_min: 2.5, pref_ntrp_max: 3.5,
   },
   {
@@ -124,7 +75,7 @@ export const PLAYERS: Player[] = [
     wins: 15, losses: 18,
     level_answers: 'manual',
     availability: { weekdays: [...WEEKNIGHTS, ...WEEKEND], blocks: ['evening', 'afternoon'] },
-    pref_club_ids: ['c-xinyi', 'c-daan', 'c-neihu'],
+    pref_club_ids: [clubIn('信義區'), clubIn('大安區'), clubIn('內湖區')],
     pref_ntrp_min: 2.5, pref_ntrp_max: 3.5,
   },
   {
@@ -134,7 +85,7 @@ export const PLAYERS: Player[] = [
     wins: 28, losses: 24,
     level_answers: 'manual',
     availability: { weekdays: WEEKNIGHTS, blocks: ['evening'] },
-    pref_club_ids: ['c-zhongshan', 'c-sanchong', 'c-daan'],
+    pref_club_ids: [clubIn('中山區'), clubIn('三重區'), clubIn('大安區')],
     pref_ntrp_min: 3, pref_ntrp_max: 4,
   },
   {
@@ -144,7 +95,7 @@ export const PLAYERS: Player[] = [
     wins: 20, losses: 19,
     level_answers: 'manual',
     availability: { weekdays: EVERYDAY, blocks: ['evening', 'morning'] },
-    pref_club_ids: ['c-neihu', 'c-xinyi'],
+    pref_club_ids: [clubIn('內湖區'), clubIn('信義區')],
     pref_ntrp_min: 2.5, pref_ntrp_max: 3.5,
   },
   {
@@ -154,7 +105,7 @@ export const PLAYERS: Player[] = [
     wins: 51, losses: 28,
     level_answers: 'manual',
     availability: { weekdays: WEEKEND, blocks: ['morning', 'afternoon'] },
-    pref_club_ids: ['c-tianmu', 'c-zhongshan'],
+    pref_club_ids: [clubIn('士林區'), clubIn('中山區')],
     pref_ntrp_min: 3.5, pref_ntrp_max: 4.5,
   },
   {
@@ -164,7 +115,7 @@ export const PLAYERS: Player[] = [
     wins: 6, losses: 15,
     level_answers: 'manual',
     availability: { weekdays: WEEKEND, blocks: ['morning'] },
-    pref_club_ids: ['c-neihu', 'c-tianmu'],
+    pref_club_ids: [clubIn('內湖區'), clubIn('士林區')],
     pref_ntrp_min: 2, pref_ntrp_max: 3,
   },
   {
@@ -174,7 +125,7 @@ export const PLAYERS: Player[] = [
     wins: 18, losses: 22,
     level_answers: 'manual',
     availability: { weekdays: EVERYDAY, blocks: ['evening', 'afternoon'] },
-    pref_club_ids: ['c-banqiao', 'c-daan', 'c-sanchong'],
+    pref_club_ids: [clubIn('板橋區'), clubIn('大安區'), clubIn('三重區')],
     pref_ntrp_min: 2.5, pref_ntrp_max: 3.5,
   },
   {
@@ -184,27 +135,27 @@ export const PLAYERS: Player[] = [
     wins: 3, losses: 11,
     level_answers: 'manual',
     availability: { weekdays: WEEKEND, blocks: ['morning'] },
-    pref_club_ids: ['c-xindian'],
+    pref_club_ids: [clubIn('新店區')],
     pref_ntrp_min: 2, pref_ntrp_max: 3,
   },
   {
-    id: 'p-hao', name: '張皓', avatar_hue: 15, ntrp: 4.5, district: '桃園市中壢區',
-    lat: 24.9600, lng: 121.2200, hand: 'right',
+    id: 'p-hao', name: '張皓', avatar_hue: 15, ntrp: 4.5, district: '新北市板橋區',
+    lat: 25.0143, lng: 121.4675, hand: 'right',
     bio: '大學校隊出身，可以陪練也可以認真打。',
     wins: 88, losses: 31,
     level_answers: 'manual',
     availability: { weekdays: WEEKEND, blocks: ['morning', 'afternoon'] },
-    pref_club_ids: ['c-taoyuan', 'c-xindian'],
+    pref_club_ids: [clubIn('板橋區'), clubIn('新店區')],
     pref_ntrp_min: 4, pref_ntrp_max: 5.5,
   },
   {
-    id: 'p-sofia', name: 'Sofia Chen', avatar_hue: 260, ntrp: 3.5, district: '新竹市東區',
-    lat: 24.7900, lng: 121.0100, hand: 'right',
-    bio: '新竹上班，偶爾北上找人打。',
+    id: 'p-sofia', name: 'Sofia Chen', avatar_hue: 260, ntrp: 3.5, district: '新北市新店區',
+    lat: 24.9678, lng: 121.5417, hand: 'right',
+    bio: '新店上班，平日晚上找人打。',
     wins: 40, losses: 33,
     level_answers: 'manual',
     availability: { weekdays: WEEKNIGHTS, blocks: ['evening'] },
-    pref_club_ids: ['c-taoyuan'],
+    pref_club_ids: [clubIn('新店區')],
     pref_ntrp_min: 3, pref_ntrp_max: 4,
   },
 ]
@@ -220,15 +171,15 @@ function isoDate(offsetDays: number): string {
 
 /** 已經被別人訂走的時段，讓訂場畫面不是一片空的。 */
 export const SEED_BOOKINGS = [
-  { club_id: 'c-daan', date: isoDate(0), hour: 19, court: 1, user: 'p-other' },
-  { club_id: 'c-daan', date: isoDate(0), hour: 19, court: 2, user: 'p-other' },
-  { club_id: 'c-daan', date: isoDate(0), hour: 20, court: 1, user: 'p-other' },
-  { club_id: 'c-daan', date: isoDate(1), hour: 18, court: 3, user: 'p-other' },
-  { club_id: 'c-xinyi', date: isoDate(1), hour: 19, court: 1, user: 'p-other' },
-  { club_id: 'c-neihu', date: isoDate(1), hour: 20, court: 2, user: 'p-other' },
-  { club_id: 'c-tianmu', date: isoDate(2), hour: 9, court: 1, user: 'p-other' },
+  // 真實球場的面數開放資料沒有，一律先當 1 面，所以同一個球館同一個時段
+  // 只放得下一筆——這些的用途只是讓訂場畫面看得到「有些時段被佔走了」
+  { club_id: clubIn('大安區'), date: isoDate(0), hour: 19, court: 1, user: 'p-other' },
+  { club_id: clubIn('大安區'), date: isoDate(0), hour: 20, court: 1, user: 'p-other' },
+  { club_id: clubIn('信義區'), date: isoDate(1), hour: 19, court: 1, user: 'p-other' },
+  { club_id: clubIn('內湖區'), date: isoDate(1), hour: 20, court: 1, user: 'p-other' },
+  { club_id: clubIn('士林區'), date: isoDate(2), hour: 9, court: 1, user: 'p-other' },
   // 這一筆是下面那封邀請函訂的場，兩者要對得起來
-  { club_id: 'c-daan', date: isoDate(2), hour: 19, court: 4, user: 'p-kai' },
+  { club_id: clubIn('中山區'), date: isoDate(2), hour: 19, court: 1, user: 'p-kai' },
 ]
 
 /** 別人寄給你的邀約，這樣「收到的邀約」那一段才有東西可以按。 */
@@ -237,11 +188,11 @@ export const SEED_INVITES = [
     id: 'inv-seed-1',
     from_id: 'p-kai',
     to_id: ME,
-    club_id: 'c-daan',
-    booking_id: 'seed-7',
+    club_id: clubIn('中山區'),
+    booking_id: 'seed-5',
     date: isoDate(2),
     hour: 19,
-    message: '看到你也在大安區，程度好像差不多，要不要打一場？',
+    message: '看到你也在台北，程度好像差不多，要不要打一場？',
     status: 'pending' as const,
   },
 ]

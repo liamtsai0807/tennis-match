@@ -12,7 +12,7 @@ import { useData } from '../lib/useData.ts'
 import { getAvailability, getMe, getPlayer, listClubs, sendInvite } from '../lib/db.ts'
 import { rankClubs, isFreeOn, hoursIn, BLOCKS } from '../lib/match.ts'
 import { km } from '../lib/geo.ts'
-import { friendlyDate, hourRange, money, SURFACE_LABEL, todayISO } from '../lib/format.ts'
+import { friendlyDate, hourRange, money, slotLabel, SURFACE_LABEL, todayISO } from '../lib/format.ts'
 import type { TimeBlock } from '../lib/types.ts'
 
 export default function InviteCompose() {
@@ -127,11 +127,18 @@ export default function InviteCompose() {
                   <span className="row" style={{ gap: 3 }}><IconPin size={13} />{partner.name} {km(f.fromPartner)}</span>
                 </div>
                 <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                  <span className="pill">{SURFACE_LABEL[f.club.surface]}</span>
+                  {f.club.surface && <span className="pill">{SURFACE_LABEL[f.club.surface]}</span>}
                   {f.club.indoor && <span className="pill">室內</span>}
-                  <span className="pill"><IconStar size={12} filled />{f.club.rating.toFixed(1)}</span>
+                  {f.club.rating !== null && (
+                    <span className="pill"><IconStar size={12} filled />{f.club.rating.toFixed(1)}</span>
+                  )}
                   <span className="spacer" />
-                  <b style={{ fontSize: 13.5 }}>{money(f.club.price_per_hour)}<small style={{ color: 'var(--ink-3)' }}> /hr</small></b>
+                  <b style={{ fontSize: 13.5 }}>
+                    {money(f.club.price_per_hour)}
+                    {f.club.price_per_hour !== null && f.club.price_per_hour > 0 && (
+                      <small style={{ color: 'var(--ink-3)' }}> /hr</small>
+                    )}
+                  </b>
                 </div>
               </button>
             )
@@ -155,7 +162,7 @@ export default function InviteCompose() {
                     onClick={() => setHour(hour === h ? null : h)}
                   >
                     <b>{String(h).padStart(2, '0')}:00</b>
-                    <small>{past ? '已過' : !slot || slot.free === 0 ? '額滿' : '剩 ' + slot.free + ' 面'}</small>
+                    <small>{past ? '已過' : slotLabel(slot?.free ?? 0, chosen.club.source)}</small>
                   </button>
                 )
               })}

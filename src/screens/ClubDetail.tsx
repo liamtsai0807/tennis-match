@@ -9,7 +9,7 @@ import { useToast } from '../components/Toast.tsx'
 import { IconPin, IconStar, IconShare } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
 import { createBooking, getAvailability, getClub } from '../lib/db.ts'
-import { addDaysISO, friendlyDate, hourRange, money, shortDate, SURFACE_LABEL, todayISO, weekday } from '../lib/format.ts'
+import { addDaysISO, friendlyDate, hourRange, money, shortDate, slotLabel, SURFACE_LABEL, todayISO, weekday } from '../lib/format.ts'
 
 const DAYS_AHEAD = 14
 
@@ -74,17 +74,19 @@ export default function ClubDetail() {
           <div style={{ padding: '12px 15px 15px' }}>
             <div className="row between">
               <b style={{ fontSize: 19, fontWeight: 800 }}>{club.name}</b>
-              <span className="pill"><IconStar size={13} filled /> {club.rating.toFixed(1)}</span>
+              {club.rating !== null && (
+                <span className="pill"><IconStar size={13} filled /> {club.rating.toFixed(1)}</span>
+              )}
             </div>
             <div className="row" style={{ gap: 4, marginTop: 4, color: 'var(--ink-2)', fontSize: 13 }}>
               <IconPin size={15} /> {club.address}
             </div>
             <div className="row" style={{ gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
-              <span className="pill">{SURFACE_LABEL[club.surface]}</span>
+              {club.surface && <span className="pill">{SURFACE_LABEL[club.surface]}</span>}
               <span className="pill">{club.indoor ? '室內' : '戶外'}</span>
-              <span className="pill">{club.courts} 面場</span>
+              {club.source !== 'opendata' && <span className="pill">{club.courts} 面場</span>}
               <span className="pill">{club.open_hour}:00–{club.close_hour}:00</span>
-              {club.lights && <span className="pill">夜間照明</span>}
+              {club.lights === true && <span className="pill">夜間照明</span>}
             </div>
           </div>
         </div>
@@ -120,7 +122,7 @@ export default function ClubDetail() {
                 onClick={() => setHour(s.hour === hour ? null : s.hour)}
               >
                 <b>{String(s.hour).padStart(2, '0')}:00</b>
-                <small>{past ? '已過' : s.free === 0 ? '額滿' : '剩 ' + s.free + ' 面'}</small>
+                <small>{past ? '已過' : slotLabel(s.free, club.source)}</small>
               </button>
             )
           })}

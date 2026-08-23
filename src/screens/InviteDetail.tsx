@@ -103,7 +103,7 @@ export default function InviteDetail() {
           </div>
           {club && (
             <div className="row" style={{ gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
-              <span className="pill">{SURFACE_LABEL[club.surface]}</span>
+              {club.surface && <span className="pill">{SURFACE_LABEL[club.surface]}</span>}
               {club.indoor && <span className="pill">室內</span>}
               <span className="pill">你 {km(distanceKm(me, club))}</span>
               <span className="pill">{other.name} {km(distanceKm(other, club))}</span>

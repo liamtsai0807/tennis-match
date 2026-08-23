@@ -1,6 +1,6 @@
 /** ===== format.ts ===== */
 import { levelLabel } from './level.ts'
-import type { Ntrp, Surface } from './types.ts'
+import type { Ntrp, Surface, ClubSource } from './types.ts'
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -60,7 +60,19 @@ export function ntrpLabel(n: Ntrp): string {
   return levelLabel(n)
 }
 
-export function money(n: number): string {
+/**
+ * 時段還剩幾面。來自開放資料的球場沒有面數，我們只知道「有沒有被訂走」——
+ * 說「剩 1 面」會讓人以為我們查證過總共幾面，其實沒有。
+ */
+export function slotLabel(free: number, source: ClubSource): string {
+  if (free === 0) return '額滿'
+  return source === 'opendata' ? '可預約' : '剩 ' + free + ' 面'
+}
+
+/** null = 還不知道價格。不要顯示成 NT$0，那會被當成免費。 */
+export function money(n: number | null): string {
+  if (n === null) return '價格未提供'
+  if (n === 0) return '免費'
   return 'NT$' + n.toLocaleString('zh-TW')
 }
 

@@ -308,8 +308,9 @@ export function ClubsField({
               <div style={{ minWidth: 0 }}>
                 <b style={{ fontSize: 15, display: 'block' }}>{club.name}</b>
                 <small style={{ color: 'var(--ink-2)', fontSize: 12.5 }}>
-                  {km(dist)}・{SURFACE_LABEL[club.surface]}
-                  {club.indoor ? '・室內' : ''}・{money(club.price_per_hour)}/hr
+                  {km(dist)}
+                  {club.surface ? '・' + SURFACE_LABEL[club.surface] : ''}
+                  {club.indoor ? '・室內' : ''}・{money(club.price_per_hour)}
                 </small>
               </div>
               <span className={'pill ' + (on ? 'blue' : '')}>{on ? '已選' : '選'}</span>
