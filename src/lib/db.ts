@@ -5,7 +5,7 @@
  */
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from './supabase.ts'
-import { requireUserId } from './auth.ts'
+import { currentLineUserId, requireUserId } from './auth.ts'
 import { notifyInvite } from './notify.ts'
 import { CLUBS, COURTS, PLAYERS, SEED_BOOKINGS, SEED_INVITES, ME } from './mockData.ts'
 import type { Booking, Club, Court, Invite, Player } from './types.ts'
@@ -158,7 +158,11 @@ export async function getMe(): Promise<Player> {
 
 export async function saveMe(me: Player, markOnboarded = true): Promise<Player> {
   if (supabase) {
-    const { data, error } = await supabase.from('players').upsert(me).select().single()
+    // 第一次登入時球友資料還不存在，line-auth 那一刻綁不上 line_user_id，
+    // 所以在這裡補。少了它推播會默默送不出去，而且錯誤只會出現在 notifications 表。
+    const lineUserId = currentLineUserId()
+    const row = lineUserId ? { ...me, line_user_id: lineUserId } : me
+    const { data, error } = await supabase.from('players').upsert(row).select().single()
     if (error) throw error
     const s = read()
     s.me = data as Player

@@ -31,6 +31,16 @@ export function currentSession(): Session | null {
 }
 
 /** 目前登入者的 id。呼叫時一定已經過了 AuthGate，所以拿不到就是程式有問題。 */
+/**
+ * 目前登入者的 LINE user id，不是用 LINE 登入的就回 null。
+ * line-auth 在建立帳號時把它寫進 user_metadata，這裡讀回來——
+ * 第一次登入時球友資料還不存在，那一刻綁不上，得靠建立資料時補。
+ */
+export function currentLineUserId(): string | null {
+  const meta = currentSession()?.user?.user_metadata as { line_user_id?: string } | undefined
+  return meta?.line_user_id ?? null
+}
+
 export function requireUserId(): string {
   const id = session?.user.id
   if (!id) throw new Error('尚未登入')

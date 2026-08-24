@@ -23,6 +23,15 @@ function json(body: unknown, status = 200): Response {
   })
 }
 
+/**
+ * 這個錯誤代表「這個人以前就註冊過」，也就是回訪，不是失敗。
+ * 優先看錯誤代碼，舊版 GoTrue 沒有代碼時退回比對狀態碼與訊息。
+ */
+function isAlreadyRegistered(err: { code?: string; status?: number; message?: string }): boolean {
+  if (err.code === 'email_exists') return true
+  return err.status === 422 && /already been registered/i.test(err.message ?? '')
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
@@ -68,31 +77,23 @@ Deno.serve(async (req) => {
 
   // LINE 不保證給 email（使用者可以不授權），所以不能拿 email 當身分。
   // 用 sub（該 channel 專屬的使用者 id）組一個穩定的內部信箱。
+  //
+  // 一定要轉小寫：LINE 的 user id 是大寫 U 開頭，而 GoTrue 存 email 前會轉小寫。
+  // 不轉的話，第一次註冊寫進去的是小寫、第二次組出來的是大寫，回訪的人就再也
+  // 對不上自己的帳號了。lineUserId 本身要保留原大小寫，推播 API 認的是那個。
   const lineUserId = profile.sub
-  const email = `line_${lineUserId}@line.local`
+  const email = `line_${lineUserId}@line.local`.toLowerCase()
 
-  const { data: created, error: createErr } = await admin.auth.admin.createUser({
+  const { error: createErr } = await admin.auth.admin.createUser({
     email,
     email_confirm: true,
     user_metadata: { provider: 'line', line_user_id: lineUserId, name: profile.name ?? '' },
   })
 
-  let userId = created?.user?.id
-  if (createErr) {
-    // 已經註冊過就不是錯誤，找出原本那個人
-    const { data: list } = await admin.auth.admin.listUsers()
-    userId = list?.users.find((u) => u.email === email)?.id
-    if (!userId) {
-      console.error('[line-auth] 建立使用者失敗且找不到既有帳號', createErr.message)
-      return json({ error: createErr.message }, 500)
-    }
-  }
-
-  // 把 LINE 的使用者 id 記到球友資料上，推播才知道要往哪裡送
-  if (userId) {
-    await admin.from('players')
-      .update({ line_user_id: lineUserId })
-      .eq('id', userId)
+  // 已經註冊過代表這是回訪，是正常的；其他錯誤才是真的有問題。
+  if (createErr && !isAlreadyRegistered(createErr)) {
+    console.error('[line-auth] 建立使用者失敗', createErr.message)
+    return json({ error: createErr.message }, 500)
   }
 
   // magiclink 只是拿 session 的手段，這封信不會寄出去
@@ -120,6 +121,18 @@ Deno.serve(async (req) => {
   if (otpErr) {
     console.error('[line-auth] verifyOtp 失敗', otpErr.message)
     return json({ error: otpErr.message }, 500)
+  }
+
+  // 使用者 id 直接從 session 拿，不必再去翻使用者清單。
+  // listUsers() 預設只回前 50 筆，人一多就會翻不到——這裡從源頭避開那個問題。
+  const userId = sess.user?.id ?? sess.session?.user?.id
+  if (userId) {
+    // 把 LINE 的使用者 id 記到球友資料上，推播才知道要往哪裡送
+    const { error: linkUserErr } = await admin.from('players')
+      .update({ line_user_id: lineUserId })
+      .eq('id', userId)
+    // 記不起來不該擋住登入，但要留下痕跡，否則推播默默送不出去很難查
+    if (linkUserErr) console.error('[line-auth] 綁定 line_user_id 失敗', linkUserErr.message)
   }
 
   return json({
