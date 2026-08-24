@@ -12,6 +12,7 @@ import {
   acceptInvite, cancelInvite, declineInvite, getBooking, getClub, getInvite, getPlayer, myId,
 } from '../lib/db.ts'
 import { distanceKm, km } from '../lib/geo.ts'
+import { closeLiffWindow } from '../lib/liff.ts'
 import { friendlyDate, hourRange, money, ntrpLabel, SURFACE_LABEL } from '../lib/format.ts'
 import type { Invite } from '../lib/types.ts'
 
@@ -59,6 +60,9 @@ export default function InviteDetail() {
     try {
       await fn(invite!.id)
       toast(msg)
+      // 在 LINE 裡按完就關窗回聊天室，使用者不會覺得自己跑到別的地方去了。
+      // 一般瀏覽器沒有這回事，closeLiffWindow() 會自己判斷。
+      closeLiffWindow()
       if (back) nav('/profile', { replace: true })
     } catch (e) {
       toast((e as Error).message, 'bad')

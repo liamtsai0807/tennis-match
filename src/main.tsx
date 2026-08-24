@@ -4,14 +4,20 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { registerServiceWorker } from './lib/appUpdate.ts'
 import { initAuth } from './lib/auth.ts'
+import { initLiff } from './lib/liff.ts'
 import './styles.css'
 
 /**
- * 先把 session 解析完再開始渲染。少了這一步，已經登入的人會先看到登入畫面
- * 閃一下才跳進 App——每次冷啟動都閃一次，很像壞掉。
- * 解析失敗（後端連不上）也照樣渲染，讓 App 自己去顯示錯誤。
+ * 開始渲染之前先做兩件事，順序有意義：
+ *
+ * 1. LIFF 要先——它會把 `?liff.state=` 轉回 hash。晚一步的話 Router 已經
+ *    讀過網址了，深連結就會落在首頁而不是那封邀約。
+ * 2. 再解析 session。少了這一步，已經登入的人會先看到登入畫面閃一下才跳進
+ *    App，每次冷啟動都閃一次，很像壞掉。
+ *
+ * 兩者都失敗也照樣渲染，讓 App 自己去顯示錯誤。
  */
-initAuth().finally(() => {
+initLiff().then(initAuth).finally(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
