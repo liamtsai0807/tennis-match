@@ -177,12 +177,35 @@ const iLat = col('緯度')
 const iLng = col('經度')
 const iFacility = col('設施項目')
 const iRental = col('租借資訊')
+// 訂不到場的時候，能打的那支電話比什麼都有用。開放資料每一筆都有。
+const iPhone = col('場館實際管理人電話')
+const iWebsite = col('場館官方網站')
+
+/**
+ * 開放資料的電話很雜：有「02-25702330#6535」、有全形括號、有多支用頓號隔開。
+ * 只做保守清理——去空白、統一分隔符號；看不出是電話的就丟掉，不要硬猜。
+ */
+function cleanPhone(raw: string | undefined): string | null {
+  const t = (raw ?? '').trim().replace(/\s+/g, '')
+  if (!t) return null
+  if (!/\d{6,}/.test(t.replace(/\D/g, ''))) return null
+  return t.slice(0, 40)
+}
+
+/** 官網只收 http(s)，其他（有人填「無」、填 email）一律丟掉。 */
+function cleanUrl(raw: string | undefined): string | null {
+  const t = (raw ?? '').trim()
+  if (!/^https?:\/\//i.test(t)) return null
+  return t.slice(0, 200)
+}
 
 interface Row {
   name: string; district: string; address: string
   lat: number; lng: number; free: boolean
   openHour: number; closeHour: number
   bookingUrl: string | null
+  phone: string | null
+  website: string | null
   vbs: VbsTennis | null
 }
 
@@ -240,6 +263,8 @@ for (const r of rows.slice(1)) {
     openHour: hit?.open_hour ?? 6,
     closeHour: hit?.close_hour ?? 22,
     bookingUrl: hit ? vbsUrl(hit.k) : null,
+    phone: cleanPhone(r[iPhone]),
+    website: cleanUrl(r[iWebsite]),
     vbs: hit ?? null,
   })
 }
@@ -280,6 +305,8 @@ const body = clubs.map((c) => {
     photo: '${gradient(id)}',
     source: '${ov || c.vbs ? 'manual' : 'opendata'}',
     booking_url: ${field('booking_url', c.bookingUrl)},
+    phone: ${field('phone', c.phone)},
+    website: ${field('website', c.website)},
     verified_on: ${lit(ov?.verifiedOn ?? (c.vbs ? VBS_VERIFIED_ON : null))},
   },`
 }).join('\n')
@@ -307,6 +334,9 @@ const extraBody = extras.map((v) => {
     photo: '${gradient(id)}',
     source: 'manual',
     booking_url: '${vbsUrl(v.k)}',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '${VBS_VERIFIED_ON}',
   },`
 }).join('\n')

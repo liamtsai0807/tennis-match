@@ -39,6 +39,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(9 34% 36%),hsl(14 34% 24%) 55%,hsl(18 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-29844132#318",
+    website: "http://www.mcjh.ntpc.edu.tw",
     verified_on: null,
   },
   {
@@ -59,6 +61,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(16 46% 36%),hsl(21 46% 24%) 55%,hsl(25 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-29715606#303",
+    website: "http://www.scvs.ntpc.edu.tw",
     verified_on: null,
   },
   {
@@ -79,6 +83,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(16 40% 36%),hsl(21 40% 24%) 55%,hsl(25 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28577326#127",
+    website: "http://www.scsh.ntpc.edu.tw",
     verified_on: null,
   },
   {
@@ -99,6 +105,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(25 34% 36%),hsl(30 34% 24%) 55%,hsl(34 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-22700177#831",
+    website: null,
     verified_on: null,
   },
   {
@@ -119,6 +127,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(25 46% 36%),hsl(30 46% 24%) 55%,hsl(34 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-22733567#605",
+    website: "http://www.dlit.edu.tw",
     verified_on: null,
   },
   {
@@ -139,6 +149,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(12 40% 36%),hsl(17 40% 24%) 55%,hsl(21 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-22482688#430",
+    website: "http://www.zhonghe.ntpc.gov.tw/",
     verified_on: null,
   },
   {
@@ -159,6 +171,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(26 52% 36%),hsl(31 52% 24%) 55%,hsl(35 56% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-29434353#836",
+    website: "http://www.ssps.ntpc.edu.tw",
     verified_on: null,
   },
   {
@@ -179,6 +193,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(26 40% 36%),hsl(31 40% 24%) 55%,hsl(35 44% 15%))',
     source: 'manual',
     booking_url: "https://www.hrcm.ntpc.gov.tw/Service/VenueRental/TennisCourtLeaseInst/Detail/綠寶石網球場",
+    phone: "02-89699596#501",
+    website: "http://www.rhbd.ntpc.gov.tw/cht/index.php?",
     verified_on: "2026-08-23",
   },
   {
@@ -199,6 +215,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(11 34% 36%),hsl(16 34% 24%) 55%,hsl(20 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-29684131#341",
+    website: "http://www.nocsh.ntpc.edu.tw",
     verified_on: null,
   },
   {
@@ -219,6 +237,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(8 40% 36%),hsl(13 40% 24%) 55%,hsl(17 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-89699596#501",
+    website: "http://www.rhbd.ntpc.gov.tw/cht/index.php?",
     verified_on: null,
   },
   {
@@ -239,6 +259,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(27 52% 36%),hsl(32 52% 24%) 55%,hsl(36 56% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-26009482#302",
+    website: "http://www.lksh.ntpc.edu.tw",
     verified_on: null,
   },
   {
@@ -259,6 +281,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(15 46% 36%),hsl(20 46% 24%) 55%,hsl(24 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-26033111#242",
+    website: null,
     verified_on: null,
   },
   {
@@ -279,6 +303,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(20 46% 36%),hsl(25 46% 24%) 55%,hsl(29 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-77148466",
+    website: "http://www.ntnu.edu.tw",
     verified_on: null,
   },
   {
@@ -299,6 +325,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(12 52% 36%),hsl(17 52% 24%) 55%,hsl(21 56% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-26212031#852",
+    website: "http://www.twhps.ntpc.edu.tw",
     verified_on: null,
   },
   {
@@ -319,6 +347,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(17 34% 36%),hsl(22 34% 24%) 55%,hsl(26 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-26212121#1714",
+    website: "http://www.au.edu.tw",
     verified_on: null,
   },
   {
@@ -339,6 +369,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(25 40% 36%),hsl(30 40% 24%) 55%,hsl(34 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-26230985",
+    website: "http://www.tku.edu.tw",
     verified_on: null,
   },
   {
@@ -359,6 +391,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(25 52% 36%),hsl(30 52% 24%) 55%,hsl(34 56% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28013131#6217",
+    website: "http://www.sju.edu.tw/",
     verified_on: null,
   },
   {
@@ -379,6 +413,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(25 52% 36%),hsl(30 52% 24%) 55%,hsl(34 56% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28013131#6217",
+    website: "http://www.sju.edu.tw/",
     verified_on: null,
   },
   {
@@ -399,6 +435,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(7 34% 36%),hsl(12 34% 24%) 55%,hsl(16 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-82122000#2213",
+    website: "http://www.just.edu.tw/",
     verified_on: null,
   },
   {
@@ -419,6 +457,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(19 52% 36%),hsl(24 52% 24%) 55%,hsl(28 56% 15%))',
     source: 'manual',
     booking_url: "https://www.hrcm.ntpc.gov.tw/Service/VenueRental/TennisCourtLeaseInst/Detail/小碧潭網球場",
+    phone: "02-89699596#501",
+    website: "http://www.rhbd.ntpc.gov.tw/cht/index.php?",
     verified_on: "2026-08-23",
   },
   {
@@ -439,6 +479,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(27 34% 36%),hsl(32 34% 24%) 55%,hsl(36 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-86866589#703",
+    website: "http://www.pfps.ntpc.edu.tw",
     verified_on: null,
   },
   {
@@ -459,6 +501,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(21 40% 36%),hsl(26 40% 24%) 55%,hsl(30 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-29620462#101",
+    website: "http://www.t-sports.ntpc.gov.tw",
     verified_on: null,
   },
   {
@@ -479,6 +523,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(13 34% 36%),hsl(18 34% 24%) 55%,hsl(22 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-89699596",
+    website: "https://www.hrcm.ntpc.gov.tw/",
     verified_on: null,
   },
   {
@@ -499,6 +545,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(19 46% 36%),hsl(24 46% 24%) 55%,hsl(28 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-26792038",
+    website: "http://www.ykes.ntpc.edu.tw",
     verified_on: null,
   },
   {
@@ -519,6 +567,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(11 34% 36%),hsl(16 34% 24%) 55%,hsl(20 38% 15%))',
     source: 'manual',
     booking_url: "https://vbs.sports.taipei/venues/?K=87",
+    phone: "02-25702330#6508",
+    website: "https://vbs.sports.taipei/venues/",
     verified_on: "2026-08-23",
   },
   {
@@ -539,6 +589,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(22 34% 36%),hsl(27 34% 24%) 55%,hsl(31 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25702330#6535",
+    website: "https://sports.gov.taipei/",
     verified_on: null,
   },
   {
@@ -559,6 +611,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(17 34% 36%),hsl(22 34% 24%) 55%,hsl(26 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "(02)28819471#5606",
+    website: "http://www.scu.edu.tw/physical/",
     verified_on: null,
   },
   {
@@ -579,6 +633,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(27 34% 36%),hsl(32 34% 24%) 55%,hsl(36 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25702330",
+    website: "https://sports.gov.taipei/",
     verified_on: null,
   },
   {
@@ -599,6 +655,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(6 40% 36%),hsl(11 40% 24%) 55%,hsl(15 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28824564#2325",
+    website: "http://www.mcu.edu.tw",
     verified_on: null,
   },
   {
@@ -619,6 +677,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(20 52% 36%),hsl(25 52% 24%) 55%,hsl(29 56% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28824564#2325",
+    website: "http://www.mcu.edu.tw",
     verified_on: null,
   },
   {
@@ -639,6 +699,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(8 40% 36%),hsl(13 40% 24%) 55%,hsl(17 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-27321104#83511",
+    website: "http://www.ntue.edu.tw/",
     verified_on: null,
   },
   {
@@ -659,6 +721,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(11 46% 36%),hsl(16 46% 24%) 55%,hsl(20 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-27333141#7168",
+    website: "http://www.ntust.edu.tw",
     verified_on: null,
   },
   {
@@ -679,6 +743,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(11 52% 36%),hsl(16 52% 24%) 55%,hsl(20 56% 15%))',
     source: 'manual',
     booking_url: "https://vbs.sports.taipei/venues/?K=174",
+    phone: "02-25702330#6504",
+    website: "https://vbs.sports.taipei/",
     verified_on: "2026-08-23",
   },
   {
@@ -699,6 +765,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(17 46% 36%),hsl(22 46% 24%) 55%,hsl(26 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25956489",
+    website: null,
     verified_on: null,
   },
   {
@@ -719,6 +787,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(9 34% 36%),hsl(14 34% 24%) 55%,hsl(18 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25702330#6520",
+    website: "https://vbs.sports.taipei/",
     verified_on: null,
   },
   {
@@ -739,6 +809,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(12 46% 36%),hsl(17 46% 24%) 55%,hsl(21 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-27924772#404",
+    website: "http://www.smjh.tp.edu.tw",
     verified_on: null,
   },
   {
@@ -759,6 +831,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(26 46% 36%),hsl(31 46% 24%) 55%,hsl(35 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25702330",
+    website: "https://vbs.sports.taipei/venues/",
     verified_on: null,
   },
   {
@@ -779,6 +853,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(13 40% 36%),hsl(18 40% 24%) 55%,hsl(22 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-27991817#215",
+    website: "http://www.xhjhs.tp.edu.tw",
     verified_on: null,
   },
   {
@@ -799,6 +875,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(11 46% 36%),hsl(16 46% 24%) 55%,hsl(20 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25702330",
+    website: "https://sports.tms.gov.tw/",
     verified_on: null,
   },
   {
@@ -819,6 +897,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(8 46% 36%),hsl(13 46% 24%) 55%,hsl(17 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25702330",
+    website: "https://sports.tms.gov.tw/",
     verified_on: null,
   },
   {
@@ -839,6 +919,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(27 40% 36%),hsl(32 40% 24%) 55%,hsl(36 44% 15%))',
     source: 'manual',
     booking_url: "https://www.tsc.taipei/場館介紹/室外網球場outdoor/",
+    phone: "02-27951166",
+    website: "https://sports.gov.taipei/",
     verified_on: "2026-08-23",
   },
   {
@@ -859,6 +941,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(21 46% 36%),hsl(26 46% 24%) 55%,hsl(30 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25702330",
+    website: "https://sports.gov.taipei/",
     verified_on: null,
   },
   {
@@ -879,6 +963,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(16 34% 36%),hsl(21 34% 24%) 55%,hsl(25 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28234212#303",
+    website: "http://www.wles.tp.edu.tw",
     verified_on: null,
   },
   {
@@ -899,6 +985,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(8 34% 36%),hsl(13 34% 24%) 55%,hsl(17 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28232539#605",
+    website: "http://www.mdjh.tp.edu.tw",
     verified_on: null,
   },
   {
@@ -919,6 +1007,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(25 46% 36%),hsl(30 46% 24%) 55%,hsl(34 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28914537",
+    website: "http://www.ysps.tp.edu.tw",
     verified_on: null,
   },
   {
@@ -939,6 +1029,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(11 52% 36%),hsl(16 52% 24%) 55%,hsl(20 56% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28267000#2169",
+    website: "http://pe.web.ym.edu.tw/",
     verified_on: null,
   },
   {
@@ -959,6 +1051,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(22 40% 36%),hsl(27 40% 24%) 55%,hsl(31 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28267000#2169",
+    website: "http://pe.web.ym.edu.tw/",
     verified_on: null,
   },
   {
@@ -979,6 +1073,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(24 34% 36%),hsl(29 34% 24%) 55%,hsl(33 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-28961000#3663",
+    website: "http://www.tnua.edu.tw",
     verified_on: null,
   },
   {
@@ -999,6 +1095,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(16 34% 36%),hsl(21 34% 24%) 55%,hsl(25 38% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25795349",
+    website: "https://zh-tw.facebook.com/TPTennisCourt/",
     verified_on: null,
   },
   {
@@ -1019,6 +1117,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(8 52% 36%),hsl(13 52% 24%) 55%,hsl(17 56% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "07-27361661#2274",
+    website: "http://pe.tmu.edu.tw",
     verified_on: null,
   },
   {
@@ -1039,6 +1139,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(17 52% 36%),hsl(22 52% 24%) 55%,hsl(26 56% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25702330",
+    website: "https://sports.tms.gov.tw/",
     verified_on: null,
   },
   {
@@ -1059,6 +1161,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(27 46% 36%),hsl(32 46% 24%) 55%,hsl(36 50% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-26546773",
+    website: "http://www.cust.edu.tw/sports/",
     verified_on: null,
   },
   {
@@ -1079,6 +1183,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(19 40% 36%),hsl(24 40% 24%) 55%,hsl(28 44% 15%))',
     source: 'opendata',
     booking_url: null,
+    phone: "02-25702330",
+    website: "https://sports.tms.gov.tw/",
     verified_on: null,
   },
   {
@@ -1099,6 +1205,8 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(20 46% 36%),hsl(25 46% 24%) 55%,hsl(29 50% 15%))',
     source: 'manual',
     booking_url: "https://vbs.sports.taipei/venues/?K=609",
+    phone: "02-25702330",
+    website: "https://sports.tms.gov.tw/",
     verified_on: "2026-08-23",
   },
   {
@@ -1116,6 +1224,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(22 46% 36%),hsl(27 46% 24%) 55%,hsl(31 50% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=341',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1133,6 +1244,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(10 40% 36%),hsl(15 40% 24%) 55%,hsl(19 44% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=266',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1150,6 +1264,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(17 46% 36%),hsl(22 46% 24%) 55%,hsl(26 50% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=305',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1167,6 +1284,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(26 46% 36%),hsl(31 46% 24%) 55%,hsl(35 50% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=201',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1184,6 +1304,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(22 46% 36%),hsl(27 46% 24%) 55%,hsl(31 50% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=312',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1201,6 +1324,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(23 40% 36%),hsl(28 40% 24%) 55%,hsl(32 44% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=604',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1218,6 +1344,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(23 52% 36%),hsl(28 52% 24%) 55%,hsl(32 56% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=342',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1235,6 +1364,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(9 52% 36%),hsl(14 52% 24%) 55%,hsl(18 56% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=324',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1252,6 +1384,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(26 46% 36%),hsl(31 46% 24%) 55%,hsl(35 50% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=489',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1269,6 +1404,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(8 46% 36%),hsl(13 46% 24%) 55%,hsl(17 50% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=352',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1286,6 +1424,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(22 52% 36%),hsl(27 52% 24%) 55%,hsl(31 56% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=253',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1303,6 +1444,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(20 34% 36%),hsl(25 34% 24%) 55%,hsl(29 38% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=425',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1320,6 +1464,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(28 52% 36%),hsl(33 52% 24%) 55%,hsl(37 56% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=320',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1337,6 +1484,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(12 52% 36%),hsl(17 52% 24%) 55%,hsl(21 56% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=239',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
   {
@@ -1354,6 +1504,9 @@ export const REAL_CLUBS: Club[] = [
     photo: 'linear-gradient(150deg,hsl(10 34% 36%),hsl(15 34% 24%) 55%,hsl(19 38% 15%))',
     source: 'manual',
     booking_url: 'https://vbs.sports.taipei/venues/?K=210',
+    // 這幾個場是從體育局場館頁補進來的，不在開放資料裡，所以沒有電話與官網。
+    // 寧可留白，也不要填一支沒查證過的號碼。
+    phone: null, website: null,
     verified_on: '2026-08-23',
   },
 ]

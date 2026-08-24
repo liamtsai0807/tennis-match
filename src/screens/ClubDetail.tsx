@@ -9,7 +9,7 @@ import { useToast } from '../components/Toast.tsx'
 import { IconPin, IconStar, IconShare } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
 import { createBooking, getAvailability, getClub } from '../lib/db.ts'
-import { addDaysISO, friendlyDate, hourRange, mapsUrl, money, shortDate, slotLabel, SURFACE_LABEL, todayISO, weekday } from '../lib/format.ts'
+import { addDaysISO, friendlyDate, hourRange, mapsUrl, money, shortDate, slotLabel, SURFACE_LABEL, telHref, todayISO, weekday } from '../lib/format.ts'
 
 const DAYS_AHEAD = 14
 
@@ -99,40 +99,56 @@ export default function ClubDetail() {
               {club.source === 'opendata' && <span className="pill">細節未確認</span>}
             </div>
 
-            {/*
-              台灣沒有一家場館提供訂場 API，我們不代訂。能做又真的有用的，
-              是把人送到已經存在的官方系統；沒有系統的場至少送到地圖拿電話。
-            */}
-            <div style={{ marginTop: 14 }}>
-              {club.booking_url ? (
-                <a
-                  className="btn block"
-                  href={club.booking_url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  到官方系統訂場 ↗
-                </a>
-              ) : (
-                <a
-                  className="btn block"
-                  href={mapsUrl(club.name, club.address)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  在地圖上開啟 ↗
-                </a>
-              )}
-              <p className="note" style={{ margin: '8px 0 0', textAlign: 'center' }}>
-                {club.booking_url
-                  ? '訂場請到球館自己的系統，我們不代訂'
-                  : '這個場沒有線上訂場，電話與營業時間請看地圖'}
-              </p>
-            </div>
           </div>
         </div>
 
-        <div className="eyebrow" style={{ marginBottom: 8 }}>選日期</div>
+        {/*
+          全台沒有任何場館提供訂場 API，我們代訂不了，這件事不會改變。
+          所以這一段的責任是「把人送到真的訂得到的地方」，而且要是畫面上
+          最顯眼的動作——以前它是一顆灰色小按鈕，埋在日期選擇器上面，
+          結果使用者以為下面那個時段表就是訂場，按完才發現不算數。
+        */}
+        <div className="eyebrow" style={{ marginBottom: 8 }}>怎麼訂到這個場</div>
+        <div className="card pad stack-s" style={{ marginBottom: 22 }}>
+          {club.booking_url ? (
+            <>
+              <a className="btn primary block" href={club.booking_url} target="_blank" rel="noreferrer">
+                到官方系統訂場 ↗
+              </a>
+              <p className="note" style={{ margin: 0, textAlign: 'center' }}>
+                這個場可以線上訂。訂完記得回來按「已經訂好了」，球伴才知道。
+              </p>
+            </>
+          ) : club.phone ? (
+            <>
+              <a className="btn primary block" href={telHref(club.phone)}>
+                打電話訂場　{club.phone}
+              </a>
+              <p className="note" style={{ margin: 0, textAlign: 'center' }}>
+                這個場沒有線上訂場系統，只能電話預約。
+              </p>
+            </>
+          ) : (
+            <a className="btn primary block" href={mapsUrl(club.name, club.address)} target="_blank" rel="noreferrer">
+              在地圖上開啟 ↗
+            </a>
+          )}
+
+          {/* 主要動作以外的路，全部收在這裡，一個都不要漏掉 */}
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
+            {club.booking_url && club.phone && (
+              <a className="btn sm" href={telHref(club.phone)}>☎ {club.phone}</a>
+            )}
+            {club.website && (
+              <a className="btn sm" href={club.website} target="_blank" rel="noreferrer">官方網站 ↗</a>
+            )}
+            <a className="btn sm" href={mapsUrl(club.name, club.address)} target="_blank" rel="noreferrer">
+              地圖 ↗
+            </a>
+          </div>
+        </div>
+
+        <div className="eyebrow" style={{ marginBottom: 8 }}>和球伴喬時間</div>
         <div className="daystrip" style={{ marginBottom: 18 }}>
           {days.map((d) => (
             <button
@@ -148,7 +164,7 @@ export default function ClubDetail() {
         </div>
 
         <div className="eyebrow" style={{ marginBottom: 8 }}>
-          {friendlyDate(date)}・剩餘場地
+          {friendlyDate(date)}・哪些時段還沒有人卡
         </div>
         <div className="slots">
           {(data?.slots ?? []).map((s) => {
@@ -170,10 +186,16 @@ export default function ClubDetail() {
         </div>
 
         {hour !== null && (
-          <div style={{ marginTop: 18 }} className="stack">
-            <button className="btn primary block" onClick={() => setConfirming(true)}>
-              預約 {hourRange(hour)}・{money(club.price_per_hour)}
+          <div style={{ marginTop: 18 }} className="stack-s">
+            <button className="btn block" onClick={() => setConfirming(true)}>
+              {/* 價格不知道就別提——「・價格未提供」掛在按鈕上只是噪音 */}
+              記下 {hourRange(hour)}
+              {club.price_per_hour !== null && '・' + money(club.price_per_hour)}
             </button>
+            {/* 警語要在按下去之前就看得到。放進確認面板等於先騙人再澄清 */}
+            <p className="note" style={{ margin: 0, textAlign: 'center' }}>
+              這只是記在 App 裡讓球伴對得上時間，<b>不會真的訂到場地</b>。
+            </p>
           </div>
         )}
       </div>

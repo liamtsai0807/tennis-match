@@ -70,6 +70,20 @@ export function mapsUrl(name: string, address: string): string {
 }
 
 /**
+ * 把開放資料裡的電話變成可以直接撥的 tel: 連結。
+ *
+ * 資料長這樣：「02-25702330#6535」。分機不能直接塞進號碼裡，撥出去會失敗；
+ * tel: 用逗號表示「接通後停頓再撥」，iOS 與 Android 都吃這一套。
+ * 顯示用原字串，撥號用這一個——使用者要看得到分機號碼才知道自己在打給誰。
+ */
+export function telHref(phone: string): string {
+  const [main, ext] = phone.split(/[#＃]/)
+  const digits = main.replace(/[^\d+]/g, '')
+  const extDigits = (ext ?? '').replace(/\D/g, '')
+  return 'tel:' + digits + (extDigits ? ',' + extDigits : '')
+}
+
+/**
  * 時段還剩幾面。來自開放資料的球場沒有面數，我們只知道「有沒有被訂走」——
  * 說「剩 1 面」會讓人以為我們查證過總共幾面，其實沒有。
  */

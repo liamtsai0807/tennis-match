@@ -55,6 +55,10 @@ export interface Club extends LatLng {
    * 「App 說訂到了、現場卻不算數」這種比不做更糟的狀況。
    */
   booking_url: string | null
+  /** 場館管理人電話。訂不到場、或這個場根本沒有線上訂場時，唯一還能做的事。 */
+  phone: string | null
+  /** 場館官方網站。不一定訂得了場，但至少查得到公告與休館。 */
+  website: string | null
   /**
    * 收費的補充說明。真實球場的價格幾乎都是分級的——尖峰離峰、平日假日、
    * 室內室外、燈光費另計。price_per_hour 一個數字裝不下，硬塞會變成謊報。
