@@ -28,6 +28,19 @@ npm run dev
 打開 <http://localhost:5180>。用電腦看的話，開瀏覽器的手機模式（iPhone 尺寸）比較準。
 手機要連的話，終端機會印出一組 `http://192.168.x.x:5180`，同一個 Wi-Fi 就能開。
 
+接了本機 Supabase 的話還要：
+
+```bash
+open -a Docker && supabase start
+```
+
+**`supabase db reset` 之後即時更新會失效**，這是本機環境的老問題，不是程式的 bug：
+Kong 這個閘道抓著重啟前的舊上游連線，WebSocket 全部回 403。重啟它就好：
+
+```bash
+docker restart supabase_kong_tennis-pal
+```
+
 ## 流程
 
 **1. 登錄時先設定偏好**（四步，可隨時回頭改）
