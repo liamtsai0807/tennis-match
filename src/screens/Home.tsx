@@ -55,7 +55,7 @@ export default function Home() {
         <div className="greeting">嗨，{me.name}！</div>
 
         <Link to="/match" className="card tap hero" style={{ minHeight: 168, marginBottom: 14 }}>
-          <div className="art" style={{ background: 'linear-gradient(150deg,#1e6fd9,#0d3f8f 55%,#0a2d66)' }}>
+          <div className="art" style={{ background: 'linear-gradient(150deg,#c4522f,#8f3520 55%,#5c2415)' }}>
             <CourtArt />
           </div>
           <div className="badge"><IconPeople size={21} /></div>

@@ -130,13 +130,12 @@ export function BookingReport({
 
           {/* 編號刻意是選填。要人抄一串英數字回來，多數人不會做，
               而我們真正需要知道的只有「訂了沒」 */}
-          <div className="row" style={{ gap: 9 }}>
+          <div className="field">
             <input
               value={ref}
               maxLength={40}
               onChange={(e) => setRef(e.target.value)}
               placeholder="訂單編號（選填）"
-              style={{ flex: 1, minWidth: 0 }}
             />
           </div>
           <p className="note" style={{ margin: 0 }}>

@@ -70,7 +70,7 @@ export default function PlayerDetail() {
                   <b className="truncate">{club.name}</b>
                   <small>{club.district}・離{isMe ? '你' : '他'} {km(distanceKm(p, club))}</small>
                 </div>
-                {isShared && !isMe && <span className="pill blue">你也常去</span>}
+                {isShared && !isMe && <span className="pill accent">你也常去</span>}
               </Link>
             )
           })}

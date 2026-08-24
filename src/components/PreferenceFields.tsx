@@ -300,7 +300,7 @@ export function ClubsField({
               className="card pad row between"
               style={{
                 textAlign: 'left',
-                border: on ? '2px solid var(--blue)' : '2px solid transparent',
+                border: on ? '2px solid var(--accent)' : '2px solid transparent',
               }}
               aria-pressed={on}
               onClick={() => toggle(club.id)}
@@ -313,7 +313,7 @@ export function ClubsField({
                   {club.indoor ? '・室內' : ''}・{money(club.price_per_hour)}
                 </small>
               </div>
-              <span className={'pill ' + (on ? 'blue' : '')}>{on ? '已選' : '選'}</span>
+              <span className={'pill ' + (on ? 'accent' : '')}>{on ? '已選' : '選'}</span>
             </button>
           )
         })}

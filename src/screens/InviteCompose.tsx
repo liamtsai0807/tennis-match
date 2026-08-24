@@ -93,7 +93,7 @@ export default function InviteCompose() {
             </div>
           </div>
           <div className="row" style={{ gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
-            <span className="pill blue">{friendlyDate(date)} {BLOCKS[block].label}</span>
+            <span className="pill accent">{friendlyDate(date)} {BLOCKS[block].label}</span>
             {partnerFree
               ? <span className="pill ok">對方這個時段通常有空</span>
               : <span className="pill warn">對方這個時段通常沒空</span>}
@@ -113,14 +113,14 @@ export default function InviteCompose() {
                 className="card pad"
                 style={{
                   textAlign: 'left', display: 'block', width: '100%',
-                  border: on ? '2px solid var(--blue)' : '2px solid transparent',
+                  border: on ? '2px solid var(--accent)' : '2px solid transparent',
                 }}
                 aria-pressed={on}
                 onClick={() => { setClubId(on ? null : f.club.id); setHour(null) }}
               >
                 <div className="row between">
                   <b style={{ fontSize: 15.5, fontWeight: 800 }}>{f.club.name}</b>
-                  <span className={'pill ' + (f.prefMe && f.prefPartner ? 'ok' : 'blue')}>{f.tag}</span>
+                  <span className={'pill ' + (f.prefMe && f.prefPartner ? 'ok' : 'accent')}>{f.tag}</span>
                 </div>
                 <div className="row" style={{ gap: 10, marginTop: 6, fontSize: 12.5, color: 'var(--ink-2)' }}>
                   <span className="row" style={{ gap: 3 }}><IconPin size={13} />你 {km(f.fromMe)}</span>

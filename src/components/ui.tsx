@@ -14,7 +14,12 @@ export function Avatar({ player, size = 'md' }: { player?: Player | null; size?:
   return (
     <div
       className={cls}
-      style={{ background: `linear-gradient(135deg, hsl(${hue} 72% 58%), hsl(${hue + 22} 68% 42%))` }}
+      /*
+        參考設計裡除了主角之外全是黑白，所以頭像不能是彩虹。
+        保留每個人自己的色相（要認得出是誰），但把飽和度壓到 22%、
+        亮度壓暗，讓它們讀起來像同一組炭色，而不是七個競爭的顏色。
+      */
+      style={{ background: `linear-gradient(135deg, hsl(${hue} 22% 38%), hsl(${hue + 18} 26% 24%))` }}
     >
       {initials(player.name)}
     </div>

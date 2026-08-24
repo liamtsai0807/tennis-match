@@ -89,7 +89,7 @@ export default function InviteDetail() {
           </Link>
 
           {invite.message && (
-            <p className="note" style={{ marginTop: 14, marginBottom: 0, padding: 12, background: '#f6f7fa', borderRadius: 12 }}>
+            <p className="note" style={{ marginTop: 14, marginBottom: 0, padding: 12, background: 'var(--bg)', borderRadius: 12 }}>
               「{invite.message}」
             </p>
           )}

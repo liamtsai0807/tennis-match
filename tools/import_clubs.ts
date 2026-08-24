@@ -147,12 +147,21 @@ function slugId(name: string, address: string): string {
   return 'c-' + (h >>> 0).toString(36).padStart(7, '0')
 }
 
-/** 由 id 推出一個穩定的漸層底圖，不依賴外部圖床也不用每筆手挑顏色。 */
+/**
+ * 由 id 推出一個穩定的漸層底圖，不依賴外部圖床也不用每筆手挑顏色。
+ *
+ * 色相刻意鎖在 8–44 度這段紅土到赭石的範圍，飽和度也壓低。
+ * 原本是整個色環隨機取，配上黑白紅土的版面之後，一張洋紅色的球場卡
+ * 會比球場本身還搶眼——那是設計在跟內容爭注意力。
+ */
 function gradient(id: string): string {
-  let h = 0
-  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) % 360
-  const s = 52 + (h % 3) * 6
-  return `linear-gradient(150deg,hsl(${h} ${s}% 42%),hsl(${(h + 12) % 360} ${s}% 28%) 55%,hsl(${(h + 24) % 360} ${s}% 18%))`
+  let n = 0
+  for (const ch of id) n = (n * 31 + ch.charCodeAt(0)) % 997
+  // 6–28 度。原本開到 44，但色相一過 35、飽和度又低的時候會讀成橄欖綠，
+  // 那跟紅土是兩回事。收窄之後整排球場卡才像同一個材質的不同角度。
+  const h = 6 + (n % 23)
+  const s = 34 + (n % 4) * 6      // 34–52%：夠分辨，又不會變螢光
+  return `linear-gradient(150deg,hsl(${h} ${s}% 36%),hsl(${h + 5} ${s}% 24%) 55%,hsl(${h + 9} ${s + 4}% 15%))`
 }
 
 // ---------- 主流程 ----------

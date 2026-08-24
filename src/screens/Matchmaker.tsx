@@ -85,7 +85,7 @@ export default function Matchmaker() {
         </div>
 
         {!iAmFree && (
-          <div className="card pad" style={{ marginBottom: 14, background: '#fff8ec' }}>
+          <div className="card pad" style={{ marginBottom: 14, background: 'var(--accent-soft)' }}>
             <p className="note" style={{ margin: 0 }}>
               你設定的有空時段裡沒有「{friendlyDate(activeDate)} {BLOCKS[activeBlock].label}」。
               還是可以約，只是別忘了自己那天行不行。
@@ -99,7 +99,7 @@ export default function Matchmaker() {
           </div>
           {strict.length < 3 && (
             <button
-              className="pill blue"
+              className="pill accent"
               aria-pressed={loosen}
               onClick={() => setLoosen(!loosen)}
             >
@@ -128,7 +128,7 @@ export default function Matchmaker() {
                   <div className="grow" style={{ minWidth: 0 }}>
                     <div className="row between">
                       <b style={{ fontSize: 16, fontWeight: 800 }}>{f.player.name}</b>
-                      <span className={'pill ' + (f.score >= 70 ? 'ok' : f.score >= 45 ? 'blue' : '')}>
+                      <span className={'pill ' + (f.score >= 70 ? 'ok' : f.score >= 45 ? 'accent' : '')}>
                         合適度 {f.score}
                       </span>
                     </div>
@@ -145,7 +145,7 @@ export default function Matchmaker() {
                     ? <span className="pill ok"><IconClock size={12} />{BLOCKS[activeBlock].label}有空</span>
                     : <span className="pill"><IconClock size={12} />平常這時段沒空</span>}
                   {f.sharedClubIds.length > 0 && (
-                    <span className="pill blue">
+                    <span className="pill accent">
                       共同球場 {f.sharedClubIds
                         .map((id) => data!.clubs.find((c) => c.id === id)?.name.replace(/（.*）/, ''))
                         .filter(Boolean).join('、')}
