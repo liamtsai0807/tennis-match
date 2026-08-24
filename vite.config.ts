@@ -41,5 +41,12 @@ export default defineConfig({
   base: './',
   plugins: [react(), emitVersionFile()],
   define: { __BUILD__: JSON.stringify(BUILD) },
-  server: { host: true, port: 5180 },
+  server: {
+    host: true,
+    port: 5180,
+    // LINE 的 LIFF 只吃 https，本機開發時用 cloudflared 隧道掛上去。
+    // Vite 預設擋掉不認識的 Host，開頭那個點代表「這個網域和它所有子網域」——
+    // 隧道網址每次重開都會變，用萬用字元才不用一直回來改這裡。
+    allowedHosts: ['.trycloudflare.com'],
+  },
 })
