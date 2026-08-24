@@ -48,10 +48,15 @@ function seed(): LocalStore {
     hour: b.hour,
     created_at: new Date().toISOString(),
     status: 'confirmed' as const,
+    external_confirmed_at: null,
+    external_ref: null,
+    external_by: null,
   }))
   const invites: Invite[] = SEED_INVITES.map((i) => ({
     ...i,
     created_at: new Date().toISOString(),
+    // 示範資料裡那封別人寄來的邀約，訂場責任在發起人身上
+    booker_id: i.from_id,
   }))
   return { onboarded: false, me: null, bookings, invites }
 }
@@ -260,6 +265,10 @@ export async function createBooking(input: {
     hour: input.hour,
     created_at: new Date().toISOString(),
     status: 'confirmed',
+    // 這三欄要等使用者真的去官方系統訂完、回來按一下才會有值
+    external_confirmed_at: null,
+    external_ref: null,
+    external_by: null,
   }
 
   if (supabase) {
@@ -324,6 +333,8 @@ export async function sendInvite(input: {
     message: input.message,
     status: 'pending',
     created_at: new Date().toISOString(),
+    // 預設發起人去訂——場地和時間是他挑的。之後可以改成對方
+    booker_id: myId(),
   }
 
   if (supabase) {
@@ -389,6 +400,55 @@ export async function cancelInvite(id: string): Promise<void> {
   await setInviteStatus(id, 'cancelled')
   if (inv) await cancelBooking(inv.booking_id)
   notifyInvite(id, 'cancelled')
+}
+
+// ---------- 訂場回報 ----------
+
+/**
+ * 回報「我在官方系統訂好了」。
+ *
+ * 我們不代訂，也碰不到對方的系統，所以「訂到了沒」這件事只能靠使用者說。
+ * 主要動作刻意是一顆按鈕而不是打一串編號——要人抄英數字回來多數人不會做，
+ * 而我們真正需要的只有這個布林值。編號選填。
+ */
+export async function markBookedExternally(bookingId: string, ref?: string): Promise<void> {
+  const patch = {
+    external_confirmed_at: new Date().toISOString(),
+    external_ref: ref?.trim() ? ref.trim() : null,
+    external_by: myId(),
+  }
+  if (supabase) {
+    const { error } = await supabase.from('bookings').update(patch).eq('id', bookingId)
+    if (error) throw error
+    return
+  }
+  const s = read()
+  const b = s.bookings.find((x) => x.id === bookingId)
+  if (b) Object.assign(b, patch)
+  write(s)
+}
+
+/** 改成讓對方去訂。約好的兩個人常常都在等對方，這個動作就是為了戳破它。 */
+export async function setBooker(inviteId: string, playerId: string): Promise<void> {
+  if (supabase) {
+    const { error } = await supabase.from('invites').update({ booker_id: playerId }).eq('id', inviteId)
+    if (error) throw error
+    return
+  }
+  const s = read()
+  const inv = s.invites.find((x) => x.id === inviteId)
+  if (inv) inv.booker_id = playerId
+  write(s)
+}
+
+/** 某一筆邀約對應的預約。畫面要知道「場地到底訂了沒」。 */
+export async function getBooking(id: string): Promise<Booking | null> {
+  if (supabase) {
+    const { data, error } = await supabase.from('bookings').select('*').eq('id', id).maybeSingle()
+    if (error) throw error
+    return (data as Booking | null) ?? null
+  }
+  return read().bookings.find((b) => b.id === id) ?? null
 }
 
 // ---------- 訂閱 ----------

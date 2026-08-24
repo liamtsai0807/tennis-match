@@ -4,11 +4,12 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Header, Avatar, Empty, KV } from '../components/ui.tsx'
+import { BookingReport } from '../components/BookingReport.tsx'
 import { useToast } from '../components/Toast.tsx'
 import { IconClock, IconPin, IconChevron } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
 import {
-  acceptInvite, cancelInvite, declineInvite, getClub, getInvite, getPlayer, myId,
+  acceptInvite, cancelInvite, declineInvite, getBooking, getClub, getInvite, getPlayer, myId,
 } from '../lib/db.ts'
 import { distanceKm, km } from '../lib/geo.ts'
 import { friendlyDate, hourRange, money, ntrpLabel, SURFACE_LABEL } from '../lib/format.ts'
@@ -31,10 +32,11 @@ export default function InviteDetail() {
     const invite = await getInvite(inviteId)
     if (!invite) return { invite: null, club: null, me: null, other: null }
     const otherId = invite.from_id === myId() ? invite.to_id : invite.from_id
-    const [club, me, other] = await Promise.all([
+    const [club, me, other, booking] = await Promise.all([
       getClub(invite.club_id), getPlayer(myId()), getPlayer(otherId),
+      getBooking(invite.booking_id),
     ])
-    return { invite, club, me, other }
+    return { invite, club, me, other, booking }
   }, [inviteId])
 
   const invite = data?.invite
@@ -47,7 +49,7 @@ export default function InviteDetail() {
     )
   }
 
-  const { club, other, me } = data
+  const { club, other, me, booking } = data
   const incoming = invite.to_id === myId()
   const status = STATUS_LABEL[invite.status]
   const open = invite.status === 'pending'
@@ -111,10 +113,22 @@ export default function InviteDetail() {
           )}
         </div>
 
-        <div className="card pad" style={{ marginBottom: 16 }}>
+        <div className="card pad" style={{ marginBottom: 14 }}>
           <KV k="場地費" v={club ? money(club.price_per_hour) + '（現場均分）' : '—'} />
-          <KV k="場地狀態" v={open || invite.status === 'accepted' ? '已預訂' : '已退訂'} />
         </div>
+
+        {invite.status === 'accepted' && club && (
+          <BookingReport
+            invite={invite}
+            club={club}
+            booking={booking ?? null}
+            meId={myId()}
+            otherName={other.name}
+            busy={busy}
+            setBusy={setBusy}
+            toast={toast}
+          />
+        )}
 
         {open && incoming && (
           <div className="stack-s">

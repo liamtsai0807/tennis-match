@@ -11,6 +11,12 @@ import { rankPartners, isFreeOn, BLOCKS } from '../lib/match.ts'
 import { addDaysISO, friendlyDate, hourRange, todayISO } from '../lib/format.ts'
 import type { Booking, Club, Invite, Player } from '../lib/types.ts'
 
+/**
+ * 中華民國網球協會的線上報名系統。協會官網本身沒有公開的賽事列表，
+ * 唯一的入口就是這一頁，而且要登入才看得到賽事——所以畫面上要先講清楚。
+ */
+const CTTA_URL = 'https://ctta.dadada.com.tw/ctta/login.asp'
+
 export default function Home() {
   const { data } = useData(async () => {
     const [me, players, clubs, invites, bookings] = await Promise.all([
@@ -138,6 +144,28 @@ export default function Home() {
             )
           })}
         </div>
+
+        {/*
+          報名球賽走中華民國網球協會的線上報名系統。那是分級競賽（C 級、青少年組），
+          跟我們主打的休閒媒合不是同一件事，所以擺在最下面而不是搶版位——
+          而且要先在協會那邊註冊會員才看得到賽事，這一點要先講。
+        */}
+        <div className="section-title">想比賽</div>
+        <a
+          className="card pad tap row between"
+          href={CTTA_URL}
+          target="_blank"
+          rel="noreferrer"
+          style={{ alignItems: 'center', gap: 12 }}
+        >
+          <div className="grow" style={{ minWidth: 0 }}>
+            <b style={{ fontSize: 15.5, fontWeight: 800 }}>報名球賽 ↗</b>
+            <div className="note" style={{ marginTop: 2 }}>
+              中華民國網球協會的報名系統，自己挑適合的等級與分組。要先在協會註冊會員。
+            </div>
+          </div>
+          <IconChevron size={18} />
+        </a>
 
         <p className="note" style={{ textAlign: 'center', marginTop: 26, color: 'var(--ink-3)' }}>
           打球前記得暖身，量力而為 🎾

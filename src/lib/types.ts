@@ -116,6 +116,17 @@ export interface Booking {
   hour: number              // 起始整點，一次一小時
   created_at: string
   status: 'confirmed' | 'cancelled'
+  /**
+   * 官方系統那邊訂好的時間。null = 還沒訂，或這個場根本不用訂。
+   *
+   * App 內的 booking 一直只是「我們自己記著這個時段」，不是真的訂到場——
+   * 台灣沒有任何場館提供訂場 API，真正的訂場一定發生在別人的系統裡。
+   */
+  external_confirmed_at: string | null
+  /** 官方系統給的訂單編號，選填。現場真的對不上時才用得到。 */
+  external_ref: string | null
+  /** 回報訂場的人。可能不是原本的 user_id——中途換人去訂很常見。 */
+  external_by: string | null
 }
 
 /**
@@ -133,4 +144,10 @@ export interface Invite {
   message: string
   status: 'pending' | 'accepted' | 'declined' | 'cancelled'
   created_at: string
+  /**
+   * 誰負責去官方系統訂場。預設發起人——場地和時間是他挑的。
+   * 沒有這一欄就沒辦法提醒特定的人，只能兩個都吵，
+   * 那反而更容易兩邊都以為對方會處理。
+   */
+  booker_id: string
 }
