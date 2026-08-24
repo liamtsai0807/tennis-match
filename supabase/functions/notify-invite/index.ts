@@ -11,16 +11,19 @@
  * 那樣就算使用者按完立刻關掉 App，通知還是送得出去。
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { acceptedFlex, endedFlex, invitedFlex, liffLink } from '../_shared/flex.ts'
 
 const LINE_PUSH = 'https://api.line.me/v2/bot/message/push'
 
 type Kind = 'invited' | 'accepted' | 'declined' | 'cancelled'
 
-const WORDING: Record<Kind, (who: string) => { title: string; body: string }> = {
-  invited: (who) => ({ title: '有人約你打球', body: `${who} 想跟你約一場` }),
-  accepted: (who) => ({ title: '約成了', body: `${who} 接受了你的邀約` }),
-  declined: (who) => ({ title: '對方婉拒了', body: `${who} 這次不方便，場地已經退掉` }),
-  cancelled: (who) => ({ title: '邀約取消了', body: `${who} 取消了這場，場地已經退掉` }),
+/** 「8/29 (六) 19:00–20:00」。伺服器端沒有使用者的時區，日期就照字串處理。 */
+function whenText(date: string, hour: number): string {
+  const [, m, d] = date.split('-')
+  const wd = '日一二三四五六'[new Date(date + 'T00:00:00Z').getUTCDay()]
+  const hh = String(hour).padStart(2, '0')
+  const nn = String(hour + 1).padStart(2, '0')
+  return `${Number(m)}/${Number(d)} (${wd}) ${hh}:00–${nn}:00`
 }
 
 function json(body: unknown, status = 200): Response {
@@ -48,9 +51,7 @@ Deno.serve(async (req) => {
     return json({ error: '請求不是合法的 JSON' }, 400)
   }
   const { invite_id, kind } = payload
-  if (!invite_id || !kind || !(kind in WORDING)) {
-    return json({ error: '缺少 invite_id 或 kind' }, 400)
-  }
+  if (!invite_id || !kind) return json({ error: '缺少 invite_id 或 kind' }, 400)
 
   // service role 才讀得到雙方的資料——通知要知道收件人是誰，
   // 而那筆資料在 RLS 底下對呼叫者是看不見的
@@ -68,8 +69,11 @@ Deno.serve(async (req) => {
   const toId = kind === 'invited' ? invite.to_id : invite.from_id
   const fromId = kind === 'invited' ? invite.from_id : invite.to_id
 
-  const { data: people } = await admin
-    .from('players').select('id, name, line_user_id').in('id', [toId, fromId])
+  const [{ data: people }, { data: club }, { data: booking }] = await Promise.all([
+    admin.from('players').select('id, name, ntrp, district, line_user_id').in('id', [toId, fromId]),
+    admin.from('clubs').select('name, price_per_hour, booking_url').eq('id', invite.club_id).maybeSingle(),
+    admin.from('bookings').select('external_confirmed_at').eq('id', invite.booking_id).maybeSingle(),
+  ])
   const to = people?.find((p) => p.id === toId)
   const from = people?.find((p) => p.id === fromId)
 
@@ -81,6 +85,7 @@ Deno.serve(async (req) => {
   }
 
   const token = Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN')
+  const liffId = Deno.env.get('LINE_LIFF_ID')
   if (!token) {
     await note('skipped', '尚未設定 LINE_CHANNEL_ACCESS_TOKEN')
     return json({ ok: true, skipped: '尚未設定 LINE' })
@@ -90,15 +95,31 @@ Deno.serve(async (req) => {
     return json({ ok: true, skipped: '收件人還沒綁定 LINE' })
   }
 
-  const { title, body } = WORDING[kind](from?.name ?? '對方')
+  const when = whenText(invite.date, invite.hour)
+  const person = { name: from?.name ?? '對方', ntrp: from?.ntrp ?? null, district: from?.district ?? null }
+  const clubInfo = { name: club?.name ?? '球場', price_per_hour: club?.price_per_hour ?? null }
+  // 沒有 LIFF ID 就連回網頁版，按鈕至少還是能用的
+  const inviteUrl = liffId
+    ? liffLink(liffId, '/invites/' + invite_id)
+    : (Deno.env.get('APP_URL') ?? 'https://liff.line.me') + '/#/invites/' + invite_id
+
+  const message =
+    kind === 'invited'
+      ? invitedFlex({ from: person, club: clubInfo, whenText: when, message: invite.message ?? '', score: null, inviteUrl })
+      : kind === 'accepted'
+        ? acceptedFlex({
+            other: person, club: clubInfo, whenText: when,
+            bookerIsYou: invite.booker_id === toId,
+            // 免費又沒有線上系統的場不用訂，不要叫人去做沒有的事
+            needsBooking: !booking?.external_confirmed_at && !(club?.price_per_hour === 0 && !club?.booking_url),
+            inviteUrl,
+          })
+        : endedFlex({ other: person, club: clubInfo, whenText: when, cancelled: kind === 'cancelled', inviteUrl })
+
   const res = await fetch(LINE_PUSH, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({
-      to: to.line_user_id,
-      // altText 是通知列與不支援 Flex 的環境會看到的字，一定要自己讀得懂
-      messages: [{ type: 'text', text: `${title}\n${body}` }],
-    }),
+    body: JSON.stringify({ to: to.line_user_id, messages: [message] }),
   })
 
   if (!res.ok) {

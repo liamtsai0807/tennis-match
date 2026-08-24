@@ -224,6 +224,27 @@ ENV
 supabase functions serve --env-file supabase/functions/.env
 ```
 
+**訂場提醒**要另外排一次班（一天一次，台北時間晚上九點）：
+
+```bash
+supabase status
+```
+
+拿到 service_role key 之後，在 SQL Editor 或 psql 執行一次：
+
+```sql
+select schedule_booking_reminder(
+  'http://host.docker.internal:54321/functions/v1/remind-bookings',
+  '<service_role key>'
+);
+```
+
+雲端就把網址換成 `https://<專案ref>.supabase.co/functions/v1/remind-bookings`。
+排程沒寫死在 migration 裡，因為它需要 service role key——那是機密，不能進 git。
+
+看排程：`select * from cron.job;`
+看執行紀錄：`select * from cron.job_run_details order by start_time desc limit 10;`
+
 **沒設定的時候一律乾淨降級**：登入畫面不顯示 LINE 按鈕、推播回
 `{"skipped":"尚未設定 LINE"}` 並把原因記進 `notifications` 表，
 送邀約本身完全不受影響。
