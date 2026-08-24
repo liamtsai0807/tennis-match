@@ -6,8 +6,9 @@
  * LINE 支援 OIDC，所以可以自己驗證它的 ID token，再用 admin API
  * 建立或找出對應的 Supabase 使用者。
  *
- * channel secret 只有這裡看得到。前端只碰得到 LIFF id 和 ID token，
- * 那兩個都不是機密。
+ * 這條路不需要 channel secret：LINE 的 verify 端點只要 id_token 加 client_id，
+ * 所以整個專案沒有任何地方讀 secret。要設定的只有 LINE_LOGIN_CHANNEL_ID，
+ * 而 channel id 跟 LIFF id 都不是機密（LIFF id 本來就會出現在網址裡）。
  *
  * 沒設定 channel 時回明確的錯誤，不要假裝成功——登入靜靜失敗最難查。
  */
