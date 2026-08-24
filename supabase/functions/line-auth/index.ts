@@ -52,7 +52,12 @@ Deno.serve(async (req) => {
     body: new URLSearchParams({ id_token: idToken, client_id: channelId }),
   })
   if (!verify.ok) {
-    return json({ error: 'LINE 不認這個 id_token：' + (await verify.text()).slice(0, 200) }, 401)
+    const detail = (await verify.text()).slice(0, 300)
+    // 印出來，不然這一步失敗時前端只看得到一個沒有內容的 401
+    console.error('[line-auth] LINE 拒絕 id_token', {
+      status: verify.status, detail, client_id: channelId,
+    })
+    return json({ error: 'LINE 不認這個 id_token：' + detail }, 401)
   }
   const profile = await verify.json() as { sub: string; name?: string; email?: string }
 
@@ -77,7 +82,10 @@ Deno.serve(async (req) => {
     // 已經註冊過就不是錯誤，找出原本那個人
     const { data: list } = await admin.auth.admin.listUsers()
     userId = list?.users.find((u) => u.email === email)?.id
-    if (!userId) return json({ error: createErr.message }, 500)
+    if (!userId) {
+      console.error('[line-auth] 建立使用者失敗且找不到既有帳號', createErr.message)
+      return json({ error: createErr.message }, 500)
+    }
   }
 
   // 把 LINE 的使用者 id 記到球友資料上，推播才知道要往哪裡送
@@ -91,10 +99,16 @@ Deno.serve(async (req) => {
   const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
     type: 'magiclink', email,
   })
-  if (linkErr) return json({ error: linkErr.message }, 500)
+  if (linkErr) {
+    console.error('[line-auth] generateLink 失敗', linkErr.message)
+    return json({ error: linkErr.message }, 500)
+  }
 
   const hashed = link?.properties?.hashed_token
-  if (!hashed) return json({ error: '產不出 session' }, 500)
+  if (!hashed) {
+    console.error('[line-auth] generateLink 沒有回傳 hashed_token')
+    return json({ error: '產不出 session' }, 500)
+  }
 
   const anon = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
@@ -103,7 +117,10 @@ Deno.serve(async (req) => {
   const { data: sess, error: otpErr } = await anon.auth.verifyOtp({
     type: 'magiclink', token_hash: hashed,
   })
-  if (otpErr) return json({ error: otpErr.message }, 500)
+  if (otpErr) {
+    console.error('[line-auth] verifyOtp 失敗', otpErr.message)
+    return json({ error: otpErr.message }, 500)
+  }
 
   return json({
     access_token: sess.session?.access_token,

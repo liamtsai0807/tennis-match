@@ -98,6 +98,26 @@ export function inLiff(): boolean {
  *
  * 沒設定時直接丟明確的錯誤，不要靜靜失敗——按了沒反應比報錯更難查。
  */
+/**
+ * 把 Edge Function 的錯誤變成看得懂的一句話。
+ *
+ * supabase-js 遇到非 2xx 會丟 FunctionsHttpError，它的 message 是固定的
+ * 「Edge Function returned a non-2xx status code」——對排查一點幫助都沒有。
+ * 真正的原因在 error.context（那是原始的 Response）的 body 裡。
+ */
+async function describeFunctionError(error: unknown): Promise<string> {
+  const ctx = (error as { context?: Response })?.context
+  const fallback = (error as Error)?.message ?? '登入失敗'
+  if (!ctx || typeof ctx.text !== 'function') return fallback
+  try {
+    const raw = await ctx.text()
+    const detail = (JSON.parse(raw) as { error?: string })?.error ?? raw
+    return detail ? `${ctx.status}：${detail}` : fallback
+  } catch {
+    return fallback
+  }
+}
+
 export async function signInWithLine(): Promise<void> {
   if (!isLineConfigured) {
     throw new Error('LINE 登入還沒設定（缺 VITE_LINE_LIFF_ID）')
@@ -112,7 +132,9 @@ export async function signInWithLine(): Promise<void> {
   const { data, error } = await client().functions.invoke('line-auth', {
     body: { id_token: idToken },
   })
-  if (error) throw error
+  // supabase-js 只給「Edge Function returned a non-2xx status code」，
+  // 真正的原因在回應的 body 裡。不挖出來的話，畫面上永遠只有那句廢話。
+  if (error) throw new Error(await describeFunctionError(error))
   if (!data?.access_token || !data?.refresh_token) {
     throw new Error('line-auth 沒有回傳 session')
   }
