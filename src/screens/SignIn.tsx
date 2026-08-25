@@ -6,7 +6,7 @@
  */
 import { useState } from 'react'
 import { useToast } from '../components/Toast.tsx'
-import { inLiff, isLineConfigured, sendEmailCode, signInWithGoogle, signInWithLine, verifyEmailCode } from '../lib/auth.ts'
+import { inLiff, isLineConfigured, isProviderEnabled, sendEmailCode, signInWithGoogle, signInWithLine, verifyEmailCode } from '../lib/auth.ts'
 import { LOCAL_MAILBOX_URL, isLocalBackend } from '../lib/supabase.ts'
 
 export default function SignIn() {
@@ -139,9 +139,15 @@ export default function SignIn() {
         </button>
       )}
 
-      <button className="btn block signin-google" disabled={busy} onClick={google}>
-        用 Google 帳號登入
-      </button>
+      {/*
+        後端沒開 Google 就不要顯示。按下去不是跳提示，是整個離開 App
+        落到 Supabase 的一頁 JSON 錯誤——使用者根本不知道發生什麼事。
+      */}
+      {isProviderEnabled('google') && (
+        <button className="btn block signin-google" disabled={busy} onClick={google}>
+          用 Google 帳號登入
+        </button>
+      )}
 
       <p className="note signin-terms">
         登入即表示你同意我們保存你填的偏好設定，用來媒合球伴。

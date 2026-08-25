@@ -17,6 +17,39 @@ const listeners = new Set<(s: Session | null) => void>()
  * 開始渲染畫面之前先解析一次 session。
  * 少了這一步，第一輪 render 會以為沒登入，把已經登入的人閃到登入頁再閃回來。
  */
+/**
+ * 後端實際開了哪些第三方登入。
+ *
+ * 為什麼要問：signInWithOAuth() 不會先檢查，它直接把瀏覽器導去 Supabase 的
+ * authorize 端點；provider 沒開的話使用者不是看到提示，是**看到一頁 JSON**：
+ *   {"code":400,"error_code":"validation_failed","msg":"Unsupported provider..."}
+ * 這比按了沒反應更糟——人已經離開 App 了，還不知道發生什麼事。
+ *
+ * 而且本機 config.toml 開的 provider 不會同步到雲端專案，所以「本機好好的、
+ * 上線就壞」是這條路的預設行為。只顯示真的能用的按鈕。
+ */
+let providers: Record<string, boolean> | null = null
+
+export function isProviderEnabled(name: string): boolean {
+  // 問不到就照舊顯示——網路一時失敗不該讓功能消失
+  if (providers === null) return true
+  return providers[name] === true
+}
+
+async function loadProviders(): Promise<void> {
+  const url = (import.meta.env.VITE_SUPABASE_URL ?? '').trim()
+  const key = (import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
+  if (!url || !key) return
+  try {
+    const res = await fetch(url + '/auth/v1/settings', { headers: { apikey: key } })
+    if (!res.ok) return
+    const body = await res.json() as { external?: Record<string, boolean> }
+    providers = body.external ?? null
+  } catch {
+    // 維持 null＝照舊顯示
+  }
+}
+
 export async function initAuth(): Promise<void> {
   if (!supabase) return
   const { data } = await supabase.auth.getSession()
@@ -25,6 +58,7 @@ export async function initAuth(): Promise<void> {
     session = next
     for (const fn of [...listeners]) fn(next)
   })
+  await loadProviders()
 }
 
 export function currentSession(): Session | null {
