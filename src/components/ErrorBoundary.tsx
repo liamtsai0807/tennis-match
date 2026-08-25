@@ -7,6 +7,7 @@
  */
 import { Component, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
+import { report } from '../lib/report.ts'
 
 interface Props {
   children: ReactNode
@@ -26,8 +27,15 @@ class Boundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: { componentStack: string }): void {
-    // 先留在 console。之後接上錯誤回報服務時，只要換掉這一行。
     console.error('[畫面錯誤]', error, info.componentStack)
+    // 一定要真的送出去。這裡原本只寫 console，而畫面上那顆「回報問題時
+    // 附上這段」只是把文字顯示出來——使用者按了、以為回報了，我們卻什麼
+    // 都沒收到，於是繼續猜。有些環境（LINE 的 webview）接不上開發者工具，
+    // 這是唯一的觀測手段。
+    report('screen-crash', error, {
+      path: window.location.hash || '/',
+      stack: info.componentStack.trim().split('\n').slice(0, 3).join(' | ').slice(0, 300),
+    })
   }
 
   componentDidUpdate(prev: Props): void {
@@ -63,9 +71,13 @@ class Boundary extends Component<Props, State> {
           <button className="btn primary" onClick={this.goHome}>回首頁</button>
         </div>
 
-        {/* 版本加訊息一起附上——回報問題時第一個要問的就是「你哪一版」 */}
+        {/*
+          文案要誠實：這一段是「已經自動送出去了」，不是「請你幫忙回報」。
+          原本寫「回報問題時附上這段」，但那時候 componentDidCatch 只寫
+          console——使用者展開了、以為回報了，我們卻什麼都沒收到。
+        */}
         <details className="screen-error-detail">
-          <summary>回報問題時附上這段</summary>
+          <summary>細節已自動回報，這是內容</summary>
           <pre>{`版本 ${__BUILD__}\n${error.message}`}</pre>
         </details>
       </div>

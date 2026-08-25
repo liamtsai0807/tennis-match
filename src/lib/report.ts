@@ -13,6 +13,7 @@
  *   3. **只寫不讀。** 資料表的 RLS 只開 anon insert。
  */
 import { supabase } from './supabase.ts'
+import { callFunction } from './callFunction.ts'
 
 export interface ReportFacts {
   [key: string]: string | number | boolean | null
@@ -21,17 +22,18 @@ export interface ReportFacts {
 export function report(stage: string, err: unknown, facts: ReportFacts = {}): void {
   if (!supabase) return
   const e = err as { name?: string; message?: string }
-  void supabase
-    .from('client_errors')
-    .insert({
-      build: typeof __BUILD__ === 'string' ? __BUILD__ : null,
-      stage,
-      name: e?.name ?? null,
-      message: e?.message ?? String(err),
-      ua: navigator.userAgent.slice(0, 300),
-      facts,
-    })
-    .then(({ error }) => {
-      if (error) console.warn('[回報] 送不出去：' + error.message)
-    })
+  // 走 report 這支 Edge Function 而不是直接寫 PostgREST：PostgREST 需要
+  // apikey 標頭，會觸發 CORS preflight，而「預檢失敗」正是我們要查的
+  // 那個 bug——用一條同樣可能壞掉的路去回報，等於什麼都收不到。
+  // 實際發生過：資料表一直是空的，我們卻以為是「沒有錯誤」。
+  void callFunction('report', {
+    build: typeof __BUILD__ === 'string' ? __BUILD__ : null,
+    stage,
+    name: e?.name ?? null,
+    message: e?.message ?? String(err),
+    ua: navigator.userAgent.slice(0, 300),
+    facts,
+  }, { noPreflight: true }).catch((x: unknown) => {
+    console.warn('[回報] 送不出去：' + ((x as Error).message ?? x))
+  })
 }

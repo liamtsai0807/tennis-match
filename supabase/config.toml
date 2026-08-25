@@ -448,3 +448,9 @@ enabled = true
 # 沒有預檢就沒有那個問題。
 [functions.line-auth]
 verify_jwt = false
+
+# 匿名可寫的診斷端點。verify_jwt 關掉的理由跟 line-auth 一樣：
+# 前端不必送 Authorization，請求就成為 CORS 的「簡單請求」，不會發預檢——
+# 而「預檢失敗」正是這支函式要幫忙查的東西。
+[functions.report]
+verify_jwt = false

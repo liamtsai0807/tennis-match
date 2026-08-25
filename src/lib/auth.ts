@@ -227,7 +227,9 @@ export async function signInWithLine(): Promise<void> {
     throw new Error('LINE 登入還沒設定（缺 VITE_LINE_LIFF_ID）')
   }
   if (!liffReady()) {
-    throw new Error('LINE 登入還沒準備好，請重新整理再試一次')
+    const e = new Error('LINE 登入還沒準備好，請重新整理再試一次')
+    report('line:liff-not-ready', e, { hasSdk: typeof window !== 'undefined' && 'liff' in window })
+    throw e
   }
 
   // 還沒登入 LINE 就先去登入。這一步會離開頁面，回來時會再走一次這個流程，
