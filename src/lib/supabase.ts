@@ -47,6 +47,22 @@ function proxiedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Res
       headers,
       body: typeof init?.body === 'string' ? init.body : null,
     }),
+  }).then(async (res) => {
+    /*
+     * 把 Content-Range 還原回來。伺服器端故意改了名字送——原名轉送的話，
+     * iOS 的 WebKit 看到 200 帶著 Content-Range 會判成格式錯誤的回應，
+     * fetch 以「Load failed」失敗。（proxy 第一版就是這樣壞的。）
+     *
+     * 這裡自己組一個 Response，所以標頭想放什麼就放什麼——瀏覽器對
+     * 程式產生的 Response 沒有那層限制。supabase-js 拿到的東西跟直連時
+     * 一模一樣，count 也照常運作。
+     */
+    const cr = res.headers.get('x-proxy-content-range')
+    if (!cr) return res
+    const h = new Headers(res.headers)
+    h.delete('x-proxy-content-range')
+    h.set('Content-Range', cr)
+    return new Response(await res.text(), { status: res.status, statusText: res.statusText, headers: h })
   })
 }
 

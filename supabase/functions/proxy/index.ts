@@ -68,15 +68,28 @@ Deno.serve(async (req) => {
     return json({ error: '轉送失敗：' + ((e as Error).message || '') }, 502)
   }
 
-  // 原樣回傳狀態碼與內容，讓 supabase-js 照它原本的方式解讀。
-  // 只補上 allow-origin——瀏覽器要看到它才肯把回應交給頁面。
   const text = await upstream.text()
-  const out = new Headers({ 'Access-Control-Allow-Origin': '*' })
+  const out = new Headers({
+    'Access-Control-Allow-Origin': '*',
+    // 前端要讀得到下面那個自訂標頭，得先在這裡放行
+    'Access-Control-Expose-Headers': 'x-proxy-content-range',
+  })
   const ct = upstream.headers.get('content-type')
   if (ct) out.set('Content-Type', ct)
-  // PostgREST 的分頁資訊在這裡，少了它 count 會拿不到
+
+  /*
+   * PostgREST 的分頁筆數在 Content-Range，少了它 supabase-js 的 count 會拿不到。
+   * 但**不能原名轉送**：Content-Range 是給 206 Partial Content 用的標頭，
+   * 出現在 200 上，iOS 的 WebKit 會把整個回應判成格式錯誤，fetch 直接以
+   * 「Load failed」失敗。
+   *
+   * 這正是這支 proxy 第一版在 LINE 裡失效的原因，而且極難查：同樣形狀的
+   * 請求打 report 函式成功、打 proxy 失敗，兩邊回應的唯一差別就是這一行。
+   *
+   * 改成換個名字帶回去，由前端在組合 Response 時還原。
+   */
   const cr = upstream.headers.get('content-range')
-  if (cr) out.set('Content-Range', cr)
+  if (cr) out.set('x-proxy-content-range', cr)
 
   return new Response(text, { status: upstream.status, headers: out })
 })
