@@ -211,6 +211,8 @@ export async function signInWithLine(): Promise<void> {
   // 會讓瀏覽器擋在 CORS preflight。理由寫在 callFunction.ts。
   const data = await callFunction<{ access_token?: string; refresh_token?: string }>(
     'line-auth', { id_token: idToken },
+    // 不發預檢。LINE 的 iOS webview 就是卡在那一步，理由寫在 callFunction.ts
+    { noPreflight: true },
   )
   if (!data?.access_token || !data?.refresh_token) {
     throw new Error('line-auth 沒有回傳 session')

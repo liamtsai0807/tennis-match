@@ -433,3 +433,18 @@ enabled = true
 # declarative_schema_path = "./schemas"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+# ─────────────────────────────────────────────────────────────
+# line-auth 是登入端點，不能要求「先有 Supabase session 才能登入」——那是循環。
+#
+# 它唯一的憑據是 LINE 簽發的 id_token，由函式自己拿去跟 LINE 驗證（見
+# supabase/functions/line-auth/index.ts）。前端能附上的只有 anon key，
+# 而 anon key 本來就是公開的，所以 verify_jwt 在這裡沒有擋住任何人，
+# 只多了一個失敗模式。
+#
+# 關掉它還有一個實際好處：前端就不必送 Authorization 標頭，請求變成
+# CORS 的「簡單請求」，瀏覽器**完全不會發預檢**。LINE 的 iOS webview
+# 在預檢那一步失敗（伺服器端怎麼測都正常，只有那個環境會現形），
+# 沒有預檢就沒有那個問題。
+[functions.line-auth]
+verify_jwt = false

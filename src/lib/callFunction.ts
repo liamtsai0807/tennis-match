@@ -27,26 +27,49 @@ export class FunctionError extends Error {
   }
 }
 
+export interface CallOptions {
+  /**
+   * 送成 CORS 的「簡單請求」：不帶 Authorization、Content-Type 用 text/plain，
+   * 於是**瀏覽器完全不會發預檢**。
+   *
+   * 為什麼需要這條路：LINE 的 iOS webview 在預檢那一步失敗，而伺服器端
+   * 從每個角度測都正常——預檢回 200、標頭齊全、換成 LINE 的 UA 也一樣，
+   * 桌面瀏覽器與 curl 全都通。那個環境沒辦法從外面觀察，與其繼續猜，
+   * 不如讓那一步根本不存在。
+   *
+   * 只有 verify_jwt 關掉的函式能用（沒有 Authorization 就過不了閘道），
+   * 目前是 line-auth——它是登入端點，本來就不該要求「先登入才能登入」。
+   * 伺服器端讀 body 用的是 req.json()，跟 Content-Type 無關，所以照樣解析得到。
+   */
+  noPreflight?: boolean
+}
+
 /**
  * 送一個 JSON 請求給 Edge Function，回傳解析後的 JSON。
  * 非 2xx 會丟 FunctionError，訊息帶狀態碼與伺服器給的原因。
  */
-export async function callFunction<T = unknown>(name: string, body: unknown): Promise<T> {
+export async function callFunction<T = unknown>(
+  name: string, body: unknown, options: CallOptions = {},
+): Promise<T> {
   if (!supabase) throw new Error('沒有設定後端')
   if (!URL_ || !KEY) throw new Error('後端設定不完整')
 
-  // 登入中的人用自己的 token，沒登入就用 anon——兩者都是合法 JWT，
-  // 而 Edge Function 的 verify_jwt 只在意「是不是這個專案簽的」。
-  const token = (await supabase.auth.getSession()).data.session?.access_token ?? KEY
+  let headers: Record<string, string>
+  if (options.noPreflight) {
+    // text/plain 是 CORS 的安全清單值之一，配上「沒有自訂標頭」就不會觸發預檢
+    headers = { 'Content-Type': 'text/plain;charset=UTF-8' }
+  } else {
+    // 登入中的人用自己的 token，沒登入就用 anon——兩者都是合法 JWT，
+    // 而 Edge Function 的 verify_jwt 只在意「是不是這個專案簽的」。
+    const token = (await supabase.auth.getSession()).data.session?.access_token ?? KEY
+    headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+  }
 
   let res: Response
   try {
     res = await fetch(`${URL_}/functions/v1/${name}`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(body),
     })
   } catch (e) {
