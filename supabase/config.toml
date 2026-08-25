@@ -454,3 +454,9 @@ verify_jwt = false
 # 而「預檢失敗」正是這支函式要幫忙查的東西。
 [functions.report]
 verify_jwt = false
+
+# 轉送用。理由跟 line-auth、report 一樣：關掉 verify_jwt，前端才不必送
+# Authorization 標頭，請求就成為 CORS 的「簡單請求」，不會觸發預檢。
+# 它自己不提升任何權限——Authorization 原封不動轉送，RLS 照常生效。
+[functions.proxy]
+verify_jwt = false
