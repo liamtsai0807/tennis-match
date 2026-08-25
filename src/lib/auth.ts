@@ -29,11 +29,35 @@ const listeners = new Set<(s: Session | null) => void>()
  * 上線就壞」是這條路的預設行為。只顯示真的能用的按鈕。
  */
 let providers: Record<string, boolean> | null = null
+const providerListeners = new Set<() => void>()
 
+/**
+ * 這個 provider 現在能不能用。**還不知道時回 false。**
+ *
+ * 兩個方向都會錯，但錯的代價差很多：
+ *   多顯示 → 使用者按下去整個離開 App，落在一頁 JSON 上，不知道發生什麼事
+ *   少顯示 → 少一個選項，而 email 與 LINE 都還在
+ * 所以寧可先不顯示，等問到答案再出現。
+ */
 export function isProviderEnabled(name: string): boolean {
-  // 問不到就照舊顯示——網路一時失敗不該讓功能消失
-  if (providers === null) return true
-  return providers[name] === true
+  return providers?.[name] === true
+}
+
+/**
+ * 讓畫面跟著 provider 狀態更新。
+ *
+ * 原本是「載入完才渲染」，靠的是啟動鏈上每一步都乖乖照順序跑完。實際上
+ * 只要有一步提早結束或被打斷，畫面就會用 null 狀態渲染，而且**永遠不會
+ * 再更新**——因為那不是 React 的狀態。正式站上就是這樣，本機卻正常，
+ * 查了很久。改成訂閱之後，答案什麼時候到，畫面就什麼時候跟上。
+ */
+export function useProviders(): void {
+  const [, bump] = useState(0)
+  useEffect(() => {
+    const fn = () => bump((n) => n + 1)
+    providerListeners.add(fn)
+    return () => { providerListeners.delete(fn) }
+  }, [])
 }
 
 async function loadProviders(): Promise<void> {
@@ -45,6 +69,7 @@ async function loadProviders(): Promise<void> {
     if (!res.ok) return
     const body = await res.json() as { external?: Record<string, boolean> }
     providers = body.external ?? null
+    for (const fn of [...providerListeners]) fn()
   } catch {
     // 維持 null＝照舊顯示
   }

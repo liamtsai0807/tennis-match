@@ -6,11 +6,13 @@
  */
 import { useState } from 'react'
 import { useToast } from '../components/Toast.tsx'
-import { inLiff, isLineConfigured, isProviderEnabled, sendEmailCode, signInWithGoogle, signInWithLine, verifyEmailCode } from '../lib/auth.ts'
+import { inLiff, isLineConfigured, isProviderEnabled, useProviders, sendEmailCode, signInWithGoogle, signInWithLine, verifyEmailCode } from '../lib/auth.ts'
 import { LOCAL_MAILBOX_URL, isLocalBackend } from '../lib/supabase.ts'
 
 export default function SignIn() {
   const toast = useToast()
+  // provider 清單是非同步問到的，問到之後這個畫面要跟著更新
+  useProviders()
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
