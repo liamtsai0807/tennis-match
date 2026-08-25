@@ -1,11 +1,9 @@
 name: 部署到 GitHub Pages
 
-# 目前全端都跑在本機，GitHub 只當原始碼倉庫，所以自動部署先關掉。
-# 要上線時把下面兩行的註解拿掉即可恢復「push 到 main 就部署」。
-# on:
-#   push:
-#     branches: [main]
 on:
+  push:
+    branches: [main]
+  # 手動也能觸發，改了 Secrets 之後不必空推一個 commit 才重新部署
   workflow_dispatch:
 
 permissions:
@@ -43,8 +41,30 @@ jobs:
       - name: 型別檢查
         run: npx tsc -b
 
+      # Vite 的環境變數是**建置時**烤進 bundle 的，不是執行期讀的。
+      # 少了這一段，部署出去的 App 會安靜地跑成離線示範模式：畫面全都在，
+      # 但存的東西只留在那台裝置上，而且不會有任何錯誤訊息。
+      #
+      # anon key 照設計就是公開的（真正的防線是 RLS），但還是放 Secrets，
+      # 免得日後有人把它跟 service_role key 搞混。
       - name: 建置
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_LINE_LIFF_ID: ${{ vars.VITE_LINE_LIFF_ID }}
+
+      # 沒設好就擋下來。與其部署一個「看起來正常、其實存不進資料」的版本，
+      # 不如讓部署失敗——後者五分鐘查得出來，前者可能一週後才有人發現。
+      - name: 確認有接到後端
+        run: |
+          if ! grep -rqF "supabase.co" dist/assets/*.js; then
+            echo "::error::建置產物裡沒有 Supabase 網址。"
+            echo "::error::請到 repo Settings → Secrets and variables → Actions 設定："
+            echo "::error::  Variables: VITE_SUPABASE_URL, VITE_LINE_LIFF_ID"
+            echo "::error::  Secrets:   VITE_SUPABASE_ANON_KEY"
+            exit 1
+          fi
 
       - uses: actions/configure-pages@v5
 
