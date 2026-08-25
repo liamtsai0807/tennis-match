@@ -41,6 +41,23 @@ export async function probeNetwork(): Promise<void> {
     }),
   }))
 
+  /*
+   * 兩個對照實驗，用來隔離「是那支函式的問題，還是請求內容的問題」。
+   *
+   * proxySmall：打 proxy，但 payload 很小（不帶金鑰，預期回 401）。
+   *             通了 → 函式本身沒問題，是內容大小或內容本身的關係。
+   * reportBig ：打 report，但塞一段跟 proxy 差不多大的 payload。
+   *             失敗 → 就是大小的問題，跟哪一支函式無關。
+   */
+  const proxySmall = await probe(() => fetch(URL_ + '/functions/v1/proxy', {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: JSON.stringify({ path: '/rest/v1/clubs?select=id&limit=1', method: 'GET' }),
+  }))
+  const reportBig = await probe(() => fetch(URL_ + '/functions/v1/report', {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: JSON.stringify({ stage: 'probe-big', message: 'x'.repeat(700) }),
+  }))
+
   const [simple, apikeyQS, withHeaders] = await Promise.all([
     probe(() => fetch(URL_ + '/functions/v1/report', {
       method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
@@ -50,5 +67,7 @@ export async function probeNetwork(): Promise<void> {
     probe(() => fetch(URL_ + '/rest/v1/clubs?select=id&limit=1', { headers: { apikey: KEY } })),
   ])
 
-  report('probe', new Error('網路探針'), { simple, apikeyQS, withHeaders, inClient, viaProxy })
+  report('probe', new Error('網路探針'), {
+    simple, apikeyQS, withHeaders, inClient, viaProxy, proxySmall, reportBig,
+  })
 }
