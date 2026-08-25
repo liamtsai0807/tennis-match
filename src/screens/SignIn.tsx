@@ -17,6 +17,11 @@ export default function SignIn() {
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
+  /**
+   * 最後一次登入失敗的完整內容。toast 會消失、也會截斷，而這個環境
+   * （LINE 的 webview）接不上開發者工具——留在畫面上，一張截圖就講得完。
+   */
+  const [lastError, setLastError] = useState<string | null>(null)
 
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 
@@ -47,10 +52,17 @@ export default function SignIn() {
 
   async function line() {
     setBusy(true)
+    setLastError(null)
     try {
       await signInWithLine()
     } catch (e) {
-      toast((e as Error).message, 'bad')
+      const err = e as { name?: string; message?: string; status?: number }
+      toast(err.message ?? '登入失敗', 'bad')
+      setLastError([
+        err.name ?? 'Error',
+        err.status ? 'status=' + err.status : null,
+        err.message ?? String(e),
+      ].filter(Boolean).join(' · '))
       setBusy(false)
     }
   }
@@ -156,6 +168,10 @@ export default function SignIn() {
         登入之後才進得去，可是登入失敗才是最需要知道它們的時候。
         使用者截一張圖，就同時說明了跑哪一版、連哪個後端。
       */}
+      {lastError && (
+        <pre className="signin-error">{lastError}</pre>
+      )}
+
       <p className="note signin-build">
         {__BUILD__} · {backendHost}
       </p>

@@ -9,7 +9,8 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase.ts'
 import { callFunction } from './callFunction.ts'
-import { liffIdToken, liffLoggedIn, liffLogin, liffReady } from './liff.ts'
+import { report } from './report.ts'
+import { isInLineClient, liffIdToken, liffLoggedIn, liffLogin, liffReady } from './liff.ts'
 
 let session: Session | null = null
 const listeners = new Set<(s: Session | null) => void>()
@@ -205,15 +206,33 @@ export async function signInWithLine(): Promise<void> {
   }
 
   const idToken = liffIdToken()
-  if (!idToken) throw new Error('拿不到 LINE 的 ID token，請重新開啟')
+  if (!idToken) {
+    report('line:no-id-token', new Error('getIDToken() 回 null'), {
+      inClient: isInLineClient(), loggedIn: liffLoggedIn(),
+    })
+    throw new Error('拿不到 LINE 的 ID token，請重新開啟')
+  }
 
   // 不走 supabase.functions.invoke()——它會自己加標頭，而多出來的標頭
   // 會讓瀏覽器擋在 CORS preflight。理由寫在 callFunction.ts。
-  const data = await callFunction<{ access_token?: string; refresh_token?: string }>(
-    'line-auth', { id_token: idToken },
-    // 不發預檢。LINE 的 iOS webview 就是卡在那一步，理由寫在 callFunction.ts
-    { noPreflight: true },
-  )
+  let data: { access_token?: string; refresh_token?: string }
+  try {
+    data = await callFunction<{ access_token?: string; refresh_token?: string }>(
+      'line-auth', { id_token: idToken },
+      // 不發預檢。LINE 的 iOS webview 就是卡在那一步，理由寫在 callFunction.ts
+      { noPreflight: true },
+    )
+  } catch (e) {
+    // 那個 webview 接不上開發者工具，只能讓 App 自己把細節送回來。
+    // token 的長度可以講，內容一個字都不能記。
+    report('line:call-function', e, {
+      inClient: isInLineClient(),
+      loggedIn: liffLoggedIn(),
+      idTokenLen: idToken.length,
+      status: (e as { status?: number })?.status ?? null,
+    })
+    throw e
+  }
   if (!data?.access_token || !data?.refresh_token) {
     throw new Error('line-auth 沒有回傳 session')
   }
