@@ -5,7 +5,7 @@
  */
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from './supabase.ts'
-import { currentLineUserId, requireUserId } from './auth.ts'
+import { currentLineUserId, optionalUserId, requireUserId } from './auth.ts'
 import { notifyInvite } from './notify.ts'
 import { CLUBS, COURTS, PLAYERS, SEED_BOOKINGS, SEED_INVITES, ME } from './mockData.ts'
 import type { Booking, Club, Court, Invite, Player } from './types.ts'
@@ -18,6 +18,16 @@ export const OFFLINE = !isSupabaseConfigured
  */
 export function myId(): string {
   return OFFLINE ? ME : requireUserId()
+}
+
+/** 沒登入時回 null，給「登入與否都要能顯示」的畫面用。 */
+export function myIdOrNull(): string | null {
+  return OFFLINE ? ME : optionalUserId()
+}
+
+/** 還沒登入的人也要能逛。這是「先給價值，再要資料」的實作面。 */
+export function isSignedIn(): boolean {
+  return myIdOrNull() !== null
 }
 
 const KEY = 'tennispal.v2'
@@ -117,7 +127,11 @@ export function resetDemoData() {
  */
 export async function isOnboarded(): Promise<boolean> {
   if (supabase) {
-    const { data, error } = await supabase.from('players').select('id').eq('id', myId()).maybeSingle()
+    // 沒登入當然還沒設定過偏好。不要在這裡丟例外——這個函式在很多畫面
+    // 都會被呼叫到，而那些畫面本來就該讓沒登入的人看
+    const id = myIdOrNull()
+    if (!id) return false
+    const { data, error } = await supabase.from('players').select('id').eq('id', id).maybeSingle()
     if (error) throw error
     return data !== null
   }
@@ -146,7 +160,10 @@ function blankPlayer(id: string): Player {
 /** 還沒設定過偏好時回傳草稿而不是 null——畫面才有東西可以編輯。 */
 export async function getMe(): Promise<Player> {
   if (supabase) {
-    const id = myId()
+    // 訪客也要拿得到一份草稿：球場列表要用它的座標排序，個人頁要有東西可以看。
+    // 這比丟「尚未登入」好——那會讓整個畫面掛掉，而使用者只是想看看球場。
+    const id = myIdOrNull()
+    if (!id) return blankPlayer('guest')
     const { data, error } = await supabase.from('players').select('*').eq('id', id).maybeSingle()
     if (error) throw error
     return (data as Player | null) ?? blankPlayer(id)
@@ -206,7 +223,7 @@ export async function listCourts(clubId: string): Promise<Court[]> {
 /** 其他球友。我自己的資料一律走 getMe()，避免兩份不同步。 */
 export async function listPlayers(): Promise<Player[]> {
   if (supabase) {
-    const { data, error } = await supabase.from('players').select('*').neq('id', myId())
+    const { data, error } = await supabase.from('players').select('*').neq('id', myIdOrNull() ?? '')
     if (error) throw error
     return data as Player[]
   }
@@ -214,7 +231,7 @@ export async function listPlayers(): Promise<Player[]> {
 }
 
 export async function getPlayer(id: string): Promise<Player | null> {
-  if (id === myId()) return getMe()
+  if (id === myIdOrNull()) return getMe()
   return (await listPlayers()).find((p) => p.id === id) ?? null
 }
 
@@ -244,7 +261,7 @@ export async function getAvailability(clubId: string, date: string): Promise<Slo
   const club = await getClub(clubId)
   if (!club) return []
   const bookings = (await bookingsFor(clubId, date)).filter((b) => b.status === 'confirmed')
-  const me = myId()
+  const me = myIdOrNull() ?? ''
   const slots: Slot[] = []
   for (let h = club.open_hour; h < club.close_hour; h++) {
     const atHour = bookings.filter((b) => b.hour === h)
@@ -306,7 +323,7 @@ export async function createBooking(input: {
 export async function listMyBookings(): Promise<Booking[]> {
   if (supabase) {
     const { data, error } = await supabase.from('bookings').select('*')
-      .eq('user_id', myId()).order('date').order('hour')
+      .eq('user_id', myIdOrNull() ?? '').order('date').order('hour')
     if (error) throw error
     return data as Booking[]
   }
@@ -378,7 +395,7 @@ export async function sendInvite(input: {
 export async function listInvites(): Promise<Invite[]> {
   if (supabase) {
     const { data, error } = await supabase.from('invites').select('*')
-      .or('from_id.eq.' + myId() + ',to_id.eq.' + myId())
+      .or('from_id.eq.' + (myIdOrNull() ?? '') + ',to_id.eq.' + (myIdOrNull() ?? ''))
     if (error) throw error
     return (data as Invite[]).sort(byDateHour)
   }

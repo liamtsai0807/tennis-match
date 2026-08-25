@@ -5,7 +5,7 @@ import { Header, Empty } from '../components/ui.tsx'
 import { IconPin, IconStar } from '../components/icons.tsx'
 import { useToast } from '../components/Toast.tsx'
 import { useData } from '../lib/useData.ts'
-import { getMe, listClubs } from '../lib/db.ts'
+import { getMe, isSignedIn, listClubs } from '../lib/db.ts'
 import { money, SURFACE_LABEL } from '../lib/format.ts'
 import { distanceKm, km } from '../lib/geo.ts'
 import { getMyLocation, locationErrorMessage, type LocationError } from '../lib/location.ts'
@@ -31,12 +31,25 @@ export default function Clubs() {
   // 雙北有六十幾個球場，沒有排序等於叫使用者自己翻。
   // 原本靠評分排，但真實資料沒有評分欄位，全是 null 就等於沒排——改用離你多遠。
   // 「你」預設是登錄時選的行政區中心；按了「用目前位置」才換成真的座標。
+  /**
+   * 距離要有可信的原點才算得出來。
+   *
+   * 沒登入又沒給定位時，我們**不知道**使用者在哪——訪客草稿的座標是
+   * 借來的預設值，拿它算出「離你 3.2 公里」就是在編。寧可不排序、
+   * 不顯示距離，然後把「用目前位置」這顆按鈕講清楚。
+   */
   const { data } = useData(async () => {
     const [clubs, me] = await Promise.all([listClubs(), getMe()])
-    const origin = here ?? me
+    const origin = here ?? (isSignedIn() ? me : null)
+    if (!origin) {
+      return clubs
+        .map((c) => ({ ...c, dist: null as number | null }))
+        .sort((a, b) => a.district.localeCompare(b.district, 'zh-TW')
+          || a.name.localeCompare(b.name, 'zh-TW'))
+    }
     return clubs
-      .map((c) => ({ ...c, dist: distanceKm(origin, c) }))
-      .sort((a, b) => a.dist - b.dist)
+      .map((c) => ({ ...c, dist: distanceKm(origin, c) as number | null }))
+      .sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0))
   }, [here])
 
   async function useHere() {
@@ -80,7 +93,9 @@ export default function Clubs() {
         */}
         <div className="row between" style={{ marginBottom: 12 }}>
           <small className="note">
-            {here ? '照你目前的位置排序' : '照你設定的行政區排序'}
+            {here ? '照你目前的位置排序'
+              : isSignedIn() ? '照你設定的行政區排序'
+                : '照行政區排列。要看「離我最近」就按右邊'}
           </small>
           {here ? (
             <button className="btn sm" onClick={() => { setHere(null); toast('改回用設定的行政區排序') }}>
@@ -130,7 +145,7 @@ export default function Clubs() {
                 <div style={{ padding: '12px 14px 14px' }}>
                   <b style={{ fontSize: 16.5, fontWeight: 800 }}>{c.name}</b>
                   <div className="row" style={{ gap: 4, marginTop: 3, color: 'var(--ink-2)', fontSize: 12.5 }}>
-                    <IconPin size={14} /> {c.district}・{km(c.dist)}
+                    <IconPin size={14} /> {c.district}{c.dist !== null && '・' + km(c.dist)}
                   </div>
                   <div className="row" style={{ gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
                     {c.surface && <span className="pill">{SURFACE_LABEL[c.surface]}</span>}

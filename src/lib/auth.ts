@@ -114,6 +114,16 @@ export function currentLineUserId(): string | null {
   return meta?.line_user_id ?? null
 }
 
+/**
+ * 目前登入者的 id，沒登入回 null。
+ *
+ * 大部分畫面不該因為「還沒登入」就爆掉——球場資料是公開的政府開放資料，
+ * 沒有任何理由要求帳號才看得到。只有真的需要身分的動作才用 requireUserId()。
+ */
+export function optionalUserId(): string | null {
+  return session?.user.id ?? null
+}
+
 export function requireUserId(): string {
   const id = session?.user.id
   if (!id) throw new Error('尚未登入')
@@ -189,6 +199,29 @@ export function inLiff(): boolean {
  *
  * 沒設定時直接丟明確的錯誤，不要靜靜失敗——按了沒反應比報錯更難查。
  */
+/**
+ * 在 LINE App 裡自動登入。
+ *
+ * 使用者是從 LINE 的圖文選單進來的——我們早就知道他是誰。再要他按一次
+ * 「用 LINE 登入」是多餘的儀式，而且那顆按鈕還是他遇到錯誤的地方。
+ *
+ * 只在「真的在 LINE App 內」而且「LINE 那側已登入」時才做，其餘環境
+ * （一般瀏覽器、PWA）維持使用者主動按——那裡自動跳轉會把只想用 Email
+ * 的人綁架走，先前就犯過這個錯。
+ *
+ * 失敗完全不擋路：訪客本來就能瀏覽球場，登入只是解鎖更多功能。
+ */
+export async function autoSignInInLine(): Promise<void> {
+  if (!supabase || currentSession()) return
+  if (!liffReady() || !isInLineClient() || !liffLoggedIn()) return
+  try {
+    await signInWithLine()
+  } catch (e) {
+    console.warn('[auth] LINE 自動登入沒成功，改由使用者自己按：' + (e as Error).message)
+    report('line:auto-signin', e, { inClient: true })
+  }
+}
+
 export async function signInWithLine(): Promise<void> {
   if (!isLineConfigured) {
     throw new Error('LINE 登入還沒設定（缺 VITE_LINE_LIFF_ID）')

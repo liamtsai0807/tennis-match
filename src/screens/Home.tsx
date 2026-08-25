@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import { Header, Avatar } from '../components/ui.tsx'
 import { IconCourt, IconPeople, IconChevron, IconClock, IconPin } from '../components/icons.tsx'
 import { useData } from '../lib/useData.ts'
-import { getMe, listClubs, listInvites, listMyBookings, listPlayers, myId } from '../lib/db.ts'
+import { getMe, isSignedIn, listClubs, listInvites, listMyBookings, listPlayers, myIdOrNull } from '../lib/db.ts'
 import { rankPartners, isFreeOn, BLOCKS } from '../lib/match.ts'
 import { addDaysISO, friendlyDate, hourRange, todayISO } from '../lib/format.ts'
 import type { Booking, Club, Invite, Player } from '../lib/types.ts'
@@ -27,11 +27,15 @@ export default function Home() {
 
   if (!data) return <><Header /><div className="page" /></>
 
+  // 還沒登入的人看到的是「先去看球場」，不是登入表單。
+  // 球場是政府開放資料，訂場發生在別人的系統裡——那條路完全不需要帳號。
+  if (!isSignedIn()) return <GuestHome clubCount={data.clubs.length} />
+
   const { me, players, clubs, invites, bookings } = data
   const today = todayISO()
 
-  const incoming = invites.filter((i) => i.to_id === myId() && i.status === 'pending')
-  const outgoing = invites.filter((i) => i.from_id === myId() && i.status === 'pending')
+  const incoming = invites.filter((i) => i.to_id === myIdOrNull() && i.status === 'pending')
+  const outgoing = invites.filter((i) => i.from_id === myIdOrNull() && i.status === 'pending')
   const confirmed = invites
     .filter((i) => i.status === 'accepted' && i.date >= today)
     .slice(0, 3)
@@ -184,11 +188,61 @@ function nextFreeDate(me: Player, block: Parameters<typeof isFreeOn>[2]): string
   return todayISO()
 }
 
+/**
+ * 訪客首頁。
+ *
+ * 刻意不放登入表單：使用者是從圖文選單「找附近球場」進來的，
+ * 那件事現在就做得到。登入是為了解鎖「找球伴」，等他真的想找再說。
+ */
+function GuestHome({ clubCount }: { clubCount: number }) {
+  return (
+    <>
+      <Header />
+      <div className="page">
+        <div className="greeting">想打球？</div>
+
+        <Link to="/clubs" className="card tap hero" style={{ minHeight: 168, marginBottom: 14 }}>
+          <div className="art" style={{ background: 'linear-gradient(150deg,#c4522f,#8f3520 55%,#5c2415)' }}>
+            <CourtArt />
+          </div>
+          <div className="badge"><IconCourt size={21} /></div>
+          <div className="label">
+            <b>找附近球場</b>
+            <span>雙北 {clubCount} 個場地・可線上訂或直接打電話</span>
+          </div>
+        </Link>
+
+        <div className="card pad" style={{ marginBottom: 14 }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>不用登入就能做的事</div>
+          <p className="note" style={{ margin: 0 }}>
+            查球場、看收費與開放時間、跳到官方系統訂場、打電話問。
+            這些都是公開資料，不需要帳號。
+          </p>
+        </div>
+
+        <div className="section-title">登入之後才有的</div>
+        <Link to="/match" className="card tap pad">
+          <div className="row" style={{ gap: 12 }}>
+            <div className="grow">
+              <b style={{ fontSize: 16, fontWeight: 800 }}>找程度相近的球伴</b>
+              <p className="note" style={{ margin: '4px 0 0' }}>
+                要先知道你的程度、有空的時段、常去哪裡，才媒合得出東西。
+                登入後會問你四個問題，一分鐘。
+              </p>
+            </div>
+            <IconChevron size={18} />
+          </div>
+        </Link>
+      </div>
+    </>
+  )
+}
+
 function InviteRow({
   invite, clubs, players, side,
 }: { invite: Invite; clubs: Club[]; players: Player[]; side: 'from' | 'to' | 'other' }) {
   const club = clubs.find((c) => c.id === invite.club_id)
-  const otherId = invite.from_id === myId() ? invite.to_id : invite.from_id
+  const otherId = invite.from_id === myIdOrNull() ? invite.to_id : invite.from_id
   const other = players.find((p) => p.id === otherId)
   const label = side === 'from' ? '約你' : side === 'to' ? '等回覆' : '約成了'
   return (

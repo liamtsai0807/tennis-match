@@ -3,7 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { registerServiceWorker } from './lib/appUpdate.ts'
-import { initAuth } from './lib/auth.ts'
+import { autoSignInInLine, initAuth } from './lib/auth.ts'
 import { initLiff } from './lib/liff.ts'
 import './styles.css'
 
@@ -30,6 +30,9 @@ const warn = (where: string) => (e: unknown) => {
 initLiff()
   .catch(warn('LIFF 初始化'))
   .then(() => initAuth().catch(warn('讀取登入狀態')))
+  // 在 LINE 裡就直接登入，不要再要使用者按一次——我們早就知道他是誰。
+  // 失敗不擋路：訪客照樣可以逛球場。
+  .then(() => autoSignInInLine().catch(warn('LINE 自動登入')))
   .finally(() => {
     createRoot(document.getElementById('root')!).render(
       <StrictMode>

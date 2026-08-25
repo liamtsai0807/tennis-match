@@ -49,10 +49,15 @@ function ScrollToTop() {
 }
 
 /**
- * 沒登入就只看得到登入畫面。離線示範模式沒有帳號的概念，直接放行。
- * session 在 main.tsx 已經解析完才開始渲染，所以這裡不會閃一下登入頁。
+ * 需要身分的頁面才擋。
+ *
+ * 原本是整個 App 一道牆：不登入什麼都看不到。那是錯的——圖文選單第一格
+ * 寫「找附近球場」，使用者點下去卻拿到登入表單；而球場資料是政府開放
+ * 資料，我們也本來就訂不到場，那條路完全不需要帳號。
+ *
+ * 現在只有真的要「以某個人的身分」做的事才擋：找球伴、邀約、我的。
  */
-function AuthGate({ children }: { children: React.ReactNode }) {
+function RequireAuth({ children }: { children: React.ReactNode }) {
   const session = useSession()
   if (OFFLINE) return <>{children}</>
   if (!session) return <SignIn />
@@ -60,8 +65,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * 還沒填過偏好就一律導到登錄流程。
- * 媒合完全靠那些偏好在運作，沒填的話進到任何頁面都只會看到空畫面。
+ * 只有媒合相關的頁面需要偏好設定。
+ *
+ * 原本是全站一律導去登錄流程，包含只想看球場的人。但那四步的存在理由
+ * 是餵媒合演算法——不找球伴的人，一題都不必回答。
  */
 function OnboardingGate({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
@@ -95,29 +102,34 @@ export default function App() {
       <ToastProvider>
         <ScrollToTop />
         <div className="app">
-          <AuthGate>
-          <OnboardingGate>
-            <ErrorBoundary>
-              <Routes>
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/" element={<Home />} />
-                <Route path="/match" element={<Matchmaker />} />
-                <Route path="/match/:playerId" element={<InviteCompose />} />
-                <Route path="/invites/:inviteId" element={<InviteDetail />} />
-                <Route path="/clubs" element={<Clubs />} />
-                <Route path="/clubs/:clubId" element={<ClubDetail />} />
-                <Route path="/player/:playerId" element={<PlayerDetail />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/profile/preferences" element={<Preferences />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </ErrorBoundary>
-          </OnboardingGate>
+          <ErrorBoundary>
+            <Routes>
+              {/* 公開：不需要帳號就能用。球場是政府開放資料，
+                  而真正的訂場發生在別人的系統裡，我們只是把人送過去 */}
+              <Route path="/" element={<Home />} />
+              <Route path="/clubs" element={<Clubs />} />
+              <Route path="/clubs/:clubId" element={<ClubDetail />} />
+
+              {/* 要有身分，但不需要填完偏好 */}
+              <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+              <Route path="/profile/preferences" element={<RequireAuth><Preferences /></RequireAuth>} />
+              <Route path="/player/:playerId" element={<RequireAuth><PlayerDetail /></RequireAuth>} />
+              <Route path="/invites/:inviteId" element={<RequireAuth><InviteDetail /></RequireAuth>} />
+              <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
+
+              {/* 媒合：要有身分，也要填完偏好——沒有那些資料就媒合不出東西 */}
+              <Route path="/match" element={
+                <RequireAuth><OnboardingGate><Matchmaker /></OnboardingGate></RequireAuth>} />
+              <Route path="/match/:playerId" element={
+                <RequireAuth><OnboardingGate><InviteCompose /></OnboardingGate></RequireAuth>} />
+
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </ErrorBoundary>
           <UpdateBanner />
           <InstallPrompt />
           {OFFLINE && <div className="backend-flag">離線示範模式</div>}
           <TabRegion />
-          </AuthGate>
         </div>
       </ToastProvider>
     </HashRouter>
