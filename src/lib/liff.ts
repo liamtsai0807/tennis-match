@@ -81,12 +81,38 @@ function applyDeepLink(): void {
 }
 
 /**
+ * LIFF SDK 自己會把 `?liff.state=/clubs` 變成真的導頁到 `<base>/clubs`——
+ * 那是 init() 內部做的，applyDeepLink() 根本沒機會先跑。
+ *
+ * 靜態主機上那個路徑沒有檔案，GitHub Pages 會回 404。我們用 404.html
+ * （index.html 的複本）把 App 撈回來，但網址還停在 /tennis-match/clubs，
+ * 而 HashRouter 只看 # 後面，結果是進了首頁而不是球場頁。
+ *
+ * 所以這裡要把「多出來的那段路徑」轉回 hash。BASE_URL 由建置時的 base 決定，
+ * 本機是 '/'，GitHub Pages 是 '/tennis-match/'。
+ *
+ * 本機開發抓不到這個問題：Vite 對任何路徑都回 index.html，看起來一切正常。
+ */
+function pathToHash(): void {
+  if (window.location.hash) return          // 已經有 hash 路由，不要動
+  const base = import.meta.env.BASE_URL || '/'
+  const path = window.location.pathname
+  if (!path.startsWith(base)) return
+  const rest = path.slice(base.length).replace(/^\/+/, '')
+  if (!rest) return                          // 就在根目錄，正常進首頁
+  window.history.replaceState(null, '', base + window.location.search + '#/' + rest)
+}
+
+/**
  * 在 LINE 裡就初始化 LIFF。回傳「現在是不是在 LIFF 裡」。
  *
  * 任何一步失敗都只記在 console，不擋 App 啟動：LIFF 掛掉的時候，
  * 使用者至少還能用 Email 登入，總比整個開不起來好。
  */
 export async function initLiff(): Promise<boolean> {
+  // 一定要在最前面。SDK 的導頁是整頁重新載入，await 後面的程式碼不會執行——
+  // 真正把路徑撈回來的是「重新載入之後的這一次」。
+  pathToHash()
   if (!LIFF_ID) return false
   try {
     if (!sdk()) await loadScript(SDK)
@@ -104,6 +130,8 @@ export async function initLiff(): Promise<boolean> {
     await liff.init({ liffId: LIFF_ID })
     ready = true
     applyDeepLink()
+    // init() 可能已經把我們導到 <base>/clubs 這種路徑上了，撈回 hash 路由
+    pathToHash()
     return true
   } catch (e) {
     console.warn('[LIFF] 初始化失敗，改用一般網頁模式：' + (e as Error).message)

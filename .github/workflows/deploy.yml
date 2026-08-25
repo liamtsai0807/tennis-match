@@ -64,6 +64,10 @@ jobs:
       - name: 建置
         run: npm run build
         env:
+          # Pages 部署在 /<repo 名>/ 底下，資源路徑要用絕對的。
+          # 相對路徑在 /tennis-match/profile/preferences 這種深度會解析錯，
+          # 而 LIFF 的深連結一定會產生那種路徑。用 repo 名推，不要寫死。
+          VITE_BASE: /${{ github.event.repository.name }}/
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_LINE_LIFF_ID: ${{ vars.VITE_LINE_LIFF_ID }}
@@ -78,6 +82,19 @@ jobs:
           if ! grep -rqF "${{ vars.VITE_SUPABASE_URL }}" dist/assets/*.js; then
             echo "::error::建置產物裡找不到 ${{ vars.VITE_SUPABASE_URL }}"
             echo "::error::App 會跑成離線示範模式，部署中止。"
+            exit 1
+          fi
+
+      # LIFF 的深連結會導頁到 <base>/clubs 這種靜態主機上不存在的路徑。
+      # 404.html 是把 App 撈回來的唯一機制，少了它圖文選單每一格都是 404。
+      - name: 確認 404 後備頁存在
+        run: |
+          if [ ! -f dist/404.html ]; then
+            echo "::error::dist/404.html 不見了，LIFF 深連結會全部 404。"
+            exit 1
+          fi
+          if ! cmp -s dist/index.html dist/404.html; then
+            echo "::error::404.html 跟 index.html 不一樣，應該要是複本。"
             exit 1
           fi
 
