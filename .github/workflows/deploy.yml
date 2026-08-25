@@ -41,9 +41,23 @@ jobs:
       - name: 型別檢查
         run: npx tsc -b
 
+      # 建置前先擋。沒設好就部署出去的話，App 會安靜地退回離線示範模式：
+      # 畫面全都在、點得完所有流程，但東西只存在那台裝置，而且不會有任何
+      # 錯誤訊息。這種壞法可能一週後才有人發現，不如當場失敗。
+      - name: 確認建置設定齊全
+        run: |
+          missing=""
+          [ -z "${{ vars.VITE_SUPABASE_URL }}" ] && missing="$missing VITE_SUPABASE_URL(variable)"
+          [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ] && missing="$missing VITE_SUPABASE_ANON_KEY(secret)"
+          if [ -n "$missing" ]; then
+            echo "::error::缺少建置設定：$missing"
+            echo "::error::到 repo Settings → Secrets and variables → Actions 設定："
+            echo "::error::  Variables: VITE_SUPABASE_URL, VITE_LINE_LIFF_ID"
+            echo "::error::  Secrets:   VITE_SUPABASE_ANON_KEY"
+            exit 1
+          fi
+
       # Vite 的環境變數是**建置時**烤進 bundle 的，不是執行期讀的。
-      # 少了這一段，部署出去的 App 會安靜地跑成離線示範模式：畫面全都在，
-      # 但存的東西只留在那台裝置上，而且不會有任何錯誤訊息。
       #
       # anon key 照設計就是公開的（真正的防線是 RLS），但還是放 Secrets，
       # 免得日後有人把它跟 service_role key 搞混。
@@ -54,15 +68,16 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_LINE_LIFF_ID: ${{ vars.VITE_LINE_LIFF_ID }}
 
-      # 沒設好就擋下來。與其部署一個「看起來正常、其實存不進資料」的版本，
-      # 不如讓部署失敗——後者五分鐘查得出來，前者可能一週後才有人發現。
-      - name: 確認有接到後端
+      # 再確認那個網址真的進到產物裡了。
+      #
+      # 這裡比對的是完整網址，不是 "supabase.co"——@supabase/supabase-js 自己
+      # 的程式碼裡就有 "*.supabase.co" 這個字串，拿它當關鍵字的話永遠會中，
+      # 檢查等於沒做。（第一版就是這樣寫的，反向測試才抓出來。）
+      - name: 確認後端真的被烤進去
         run: |
-          if ! grep -rqF "supabase.co" dist/assets/*.js; then
-            echo "::error::建置產物裡沒有 Supabase 網址。"
-            echo "::error::請到 repo Settings → Secrets and variables → Actions 設定："
-            echo "::error::  Variables: VITE_SUPABASE_URL, VITE_LINE_LIFF_ID"
-            echo "::error::  Secrets:   VITE_SUPABASE_ANON_KEY"
+          if ! grep -rqF "${{ vars.VITE_SUPABASE_URL }}" dist/assets/*.js; then
+            echo "::error::建置產物裡找不到 ${{ vars.VITE_SUPABASE_URL }}"
+            echo "::error::App 會跑成離線示範模式，部署中止。"
             exit 1
           fi
 
