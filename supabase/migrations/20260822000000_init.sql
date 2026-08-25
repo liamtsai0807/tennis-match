@@ -89,8 +89,21 @@ create index if not exists invites_by_to   on invites (to_id, status);
 create index if not exists invites_by_from on invites (from_id, status);
 
 -- 有人接受或婉拒邀約時，對方要馬上看到。
-alter publication supabase_realtime add table invites;
-alter publication supabase_realtime add table bookings;
+-- 加進 realtime publication。重複加會直接報錯（不像 add column 有 if not exists），
+-- 所以先問一下——這份 SQL 會被 deploy_cloud.sql 收進去，而那一份的前提是
+-- 「貼幾次都不會壞」。
+do $$
+declare t text;
+begin
+  foreach t in array array['invites', 'bookings'] loop
+    if not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t
+    ) then
+      execute format('alter publication supabase_realtime add table %I', t);
+    end if;
+  end loop;
+end $$;
 
 -- ---------------------------------------------------------------
 -- 授權：PostgREST 是用 anon（未登入）這個角色連線的，新版 Supabase 不會自動把
