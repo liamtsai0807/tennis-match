@@ -31,6 +31,16 @@ export async function probeNetwork(): Promise<void> {
   if (sessionStorage.getItem('probed')) return
   sessionStorage.setItem('probed', '1')
 
+  // proxy 那條路要不要走、走了通不通——這兩個是目前唯一還沒量過的東西
+  const inClient = Boolean((window as { liff?: { isInClient?: () => boolean } }).liff?.isInClient?.())
+  const viaProxy = await probe(() => fetch(URL_ + '/functions/v1/proxy', {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: JSON.stringify({
+      path: '/rest/v1/clubs?select=id&limit=1', method: 'GET',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY },
+    }),
+  }))
+
   const [simple, apikeyQS, withHeaders] = await Promise.all([
     probe(() => fetch(URL_ + '/functions/v1/report', {
       method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
@@ -40,5 +50,5 @@ export async function probeNetwork(): Promise<void> {
     probe(() => fetch(URL_ + '/rest/v1/clubs?select=id&limit=1', { headers: { apikey: KEY } })),
   ])
 
-  report('probe', new Error('網路探針'), { simple, apikeyQS, withHeaders })
+  report('probe', new Error('網路探針'), { simple, apikeyQS, withHeaders, inClient, viaProxy })
 }

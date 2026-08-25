@@ -67,7 +67,10 @@ async function loadProviders(): Promise<void> {
   const key = (import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
   if (!url || !key) return
   try {
-    const res = await fetch(url + '/auth/v1/settings', { headers: { apikey: key } })
+    // 用 supabase client 的 fetch，不要自己呼叫全域的 fetch——client 那個
+    // 在需要時會繞過 CORS 預檢，自己叫的不會，於是在 LINE 裡永遠失敗。
+    const f = (supabase as unknown as { rest?: { fetch?: typeof fetch } })?.rest?.fetch ?? fetch
+    const res = await f(url + '/auth/v1/settings', { headers: { apikey: key } })
     if (!res.ok) return
     const body = await res.json() as { external?: Record<string, boolean> }
     providers = body.external ?? null
