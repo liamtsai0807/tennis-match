@@ -10,6 +10,7 @@
  * 通知送不出去是遺憾，讓送邀約整個失敗才是災難。
  */
 import { supabase } from './supabase.ts'
+import { callFunction } from './callFunction.ts'
 
 export type NotifyKind = 'invited' | 'accepted' | 'declined' | 'cancelled'
 
@@ -20,17 +21,12 @@ export type NotifyKind = 'invited' | 'accepted' | 'declined' | 'cancelled'
 export function notifyInvite(inviteId: string, kind: NotifyKind): void {
   if (!supabase) return // 離線示範模式沒有對方，也沒有伺服器
 
-  void supabase.functions
-    .invoke('notify-invite', { body: { invite_id: inviteId, kind } })
-    .then(({ data, error }) => {
-      if (error) {
-        console.warn('[通知] 送不出去', error.message)
-        return
-      }
+  void callFunction<{ skipped?: string }>('notify-invite', { invite_id: inviteId, kind })
+    .then((data) => {
       // skipped 是正常狀況：還沒設定 LINE，或對方還沒綁定
       if (data?.skipped) console.info('[通知] 跳過：' + data.skipped)
     })
     .catch((e: unknown) => {
-      console.warn('[通知] 送不出去', e)
+      console.warn('[通知] 送不出去：' + ((e as Error).message ?? e))
     })
 }
