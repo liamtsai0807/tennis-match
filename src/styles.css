@@ -670,3 +670,12 @@ button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
   margin-bottom: 10px;
   box-shadow: 0 6px 18px rgba(6, 199, 85, .3);
 }
+
+/* 登入畫面底部的版本與後端。刻意很淡——平常沒人要看，但回報問題時是第一個要問的 */
+.signin-build {
+  text-align: center;
+  font-size: 11px;
+  opacity: .45;
+  font-variant-numeric: tabular-nums;
+  margin: 18px 0 0;
+}

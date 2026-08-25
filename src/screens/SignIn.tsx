@@ -7,7 +7,7 @@
 import { useState } from 'react'
 import { useToast } from '../components/Toast.tsx'
 import { inLiff, isLineConfigured, isProviderEnabled, useProviders, sendEmailCode, signInWithGoogle, signInWithLine, verifyEmailCode } from '../lib/auth.ts'
-import { LOCAL_MAILBOX_URL, isLocalBackend } from '../lib/supabase.ts'
+import { LOCAL_MAILBOX_URL, isLocalBackend, backendHost } from '../lib/supabase.ts'
 
 export default function SignIn() {
   const toast = useToast()
@@ -150,6 +150,15 @@ export default function SignIn() {
           用 Google 帳號登入
         </button>
       )}
+
+      {/*
+        版本與後端主機。登入前唯一能看到這兩個資訊的地方——「我的」頁在
+        登入之後才進得去，可是登入失敗才是最需要知道它們的時候。
+        使用者截一張圖，就同時說明了跑哪一版、連哪個後端。
+      */}
+      <p className="note signin-build">
+        {__BUILD__} · {backendHost}
+      </p>
 
       <p className="note signin-terms">
         登入即表示你同意我們保存你填的偏好設定，用來媒合球伴。

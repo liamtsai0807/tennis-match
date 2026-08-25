@@ -199,7 +199,10 @@ async function describeFunctionError(error: unknown): Promise<string> {
   const fallback = (error as Error)?.message ?? '登入失敗'
   if (!ctx || typeof ctx.text !== 'function') return fallback
   try {
-    const raw = await ctx.text()
+    // 先 clone。supabase-js 有可能已經讀過 body，直接 text() 會丟
+    // 「body stream already read」，然後我們就退回那句沒有內容的預設訊息——
+    // 等於白做。
+    const raw = await (typeof ctx.clone === 'function' ? ctx.clone() : ctx).text()
     const detail = (JSON.parse(raw) as { error?: string })?.error ?? raw
     return detail ? `${ctx.status}：${detail}` : fallback
   } catch {
