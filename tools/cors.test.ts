@@ -51,7 +51,7 @@ test('POST 與 OPTIONS 都在允許的方法裡', () => {
 test('前端會呼叫的 function 都用共用的 CORS，沒有自己寫一份', () => {
   const dir = new URL('../supabase/functions/', import.meta.url)
   // 前端透過 functions.invoke() 呼叫的那些
-  const browserFacing = ['line-auth', 'notify-invite']
+  const browserFacing = ['line-auth', 'notify-invite', 'report']
   for (const name of browserFacing) {
     const src = readFileSync(new URL(name + '/index.ts', dir), 'utf8')
     assert.ok(src.includes("_shared/cors.ts"),
@@ -70,7 +70,7 @@ test('沒有漏掉新的 function', () => {
     .map((d) => d.name)
   // 這裡不是要求每個都做 CORS——排程用的函式不需要——而是新增函式時
   // 會踩到這個斷言，逼人想一下「這支會不會被瀏覽器呼叫」
-  assert.deepEqual(fns.sort(), ['line-auth', 'notify-invite', 'remind-bookings'],
+  assert.deepEqual(fns.sort(), ['line-auth', 'notify-invite', 'remind-bookings', 'report'],
     '函式清單變了：新增的那支如果會被前端呼叫，要用 _shared/cors.ts')
 })
 
