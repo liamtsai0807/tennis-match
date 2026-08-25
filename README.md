@@ -115,19 +115,22 @@ docker restart supabase_kong_tennis-pal
 這是 PWA，不用經過 App Store 或 Play 商店：把 `dist/` 部署到任何支援 HTTPS 的
 靜態主機，使用者開連結就能裝到主畫面，有自己的圖示、全螢幕、沒網路也打得開。
 
-### 部署（GitHub Pages，自動）
+### 部署（GitHub Pages，已經接好了）
 
-push 到 `main` 就會自動建置上線，設定在 [.github/workflows/deploy.yml](.github/workflows/deploy.yml)。
-測試與型別檢查沒過就不會部署。
+**正式站：<https://liamtsai0807.github.io/tennis-match/>**
 
-第一次要做的設定：
+push 到 `main` 就自動建置上線，約 40 秒，設定在
+[.github/workflows/deploy.yml](.github/workflows/deploy.yml)。
+測試與型別檢查沒過就不會部署。要回滾就到 Actions 重跑舊 commit 的 workflow。
 
-1. 在 GitHub 建一個 repo（Public，或 Private + 付費方案才有 Pages）
-2. `git remote add origin <repo 網址>` 然後 `git push -u origin main`
-3. repo → Settings → Pages → **Source 選 GitHub Actions**（不要選 Deploy from a branch）
-4. Actions 分頁看它跑完，網址是 `https://<帳號>.github.io/<repo 名>/`
+前端的環境變數放在 repo 的 Settings → Secrets and variables → Actions：
+`VITE_SUPABASE_URL`、`VITE_LINE_LIFF_ID` 是 Variables，
+`VITE_SUPABASE_ANON_KEY` 是 Secret。
 
-之後每次改完 push 就好。要回滾就到 Actions 重跑舊 commit 的 workflow。
+**Vite 的環境變數是建置時烤進 bundle 的**，改了要重新部署才生效。workflow 有兩道
+檢查擋住漏設定：建置前確認不是空的，建置後確認那個網址真的進到產物裡。
+少了這兩道，App 會安靜地退回離線示範模式——畫面全都在、點得完所有流程，
+但東西只存在那台裝置，而且不會有任何錯誤訊息。
 
 想自己建一份來看：
 

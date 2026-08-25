@@ -7,58 +7,35 @@
 
 ---
 
-## 一、先把環境叫起來
+## 一、現在有兩套環境
 
-**這是最常卡住的地方。** 服務全部是本機的，Mac 重開或 Docker 關掉就全沒了，
-而且 LINE 那一側會跟著壞——症狀是圖文選單六格全都打不開。
+| | 網址 | 資料 |
+| --- | --- | --- |
+| **正式站** | <https://liamtsai0807.github.io/tennis-match/> | 雲端 Supabase `reqsorkruyojhrsjeksu` |
+| **本機開發** | <http://localhost:5180> | 本機 Supabase（Docker） |
 
-順序不能顛倒：
+**正式站的網址是固定的，不會再變。** push 到 `main` 就自動建置部署，約 40 秒上線。
+要在 LINE 裡測就直接測正式站——**不需要 cloudflared 隧道了**，那整套已經退場。
+
+版本字串（日期-git 短雜湊）顯示在「我的」頁最下面，也在 `/version.json`，
+回報問題時第一個就看那個。
+
+### 本機開發
 
 ```bash
 open -a Docker && supabase start
 ```
 
 ```bash
-supabase functions serve --env-file supabase/functions/.env
-```
-
-```bash
 npm run dev
 ```
 
-要在 LINE 裡測的話，還要兩條 https 隧道（LIFF 只吃 https）：
+本機的 `.env` 指向本機 Supabase，所以**開發時不會動到正式資料**。
+要改 Edge Function 才需要另外開：
 
 ```bash
-cloudflared tunnel --url http://localhost:5180 --edge-ip-version 4 --protocol http2
+supabase functions serve --env-file supabase/functions/.env
 ```
-
-```bash
-cloudflared tunnel --url http://localhost:54321 --edge-ip-version 4 --protocol http2
-```
-
-`--edge-ip-version 4 --protocol http2` 不是可有可無：預設的 QUIC over IPv6
-在這台機器上會週期性斷線，斷的那 40 秒使用者看到的是 Cloudflare 1033。
-
-隧道跑起來之後**每次都要做兩件事**（網址每次重開都會變）：
-
-1. `.env` 的 `VITE_SUPABASE_URL` 換成 54321 那條的網址
-2. LINE Developers → Login channel `2011230134` → LIFF → Endpoint URL
-   換成 5180 那條的網址
-
-**忘記第 1 件**：App 開得起來但撈不到任何資料。手機上的 `127.0.0.1` 指的是手機
-自己，而且 https 頁面呼叫 http 會被當混合內容擋掉。
-
-**忘記第 2 件**：圖文選單六格全部打不開。
-
-拿隧道網址不用去翻終端機，cloudflared 自己有 metrics 端點：
-
-```bash
-for pt in $(lsof -nP -iTCP -sTCP:LISTEN | grep -i cloudflar | awk '{print $NF}' | sed 's/.*://'); do curl -s "http://127.0.0.1:$pt/quicktunnel"; echo; done
-```
-
-> **這整套的脆弱性是已知的、還沒解的問題。** 真正的出路是把前端部署到
-> GitHub Pages（網址固定，LIFF endpoint 永遠不用再改）並改用雲端 Supabase。
-> 部署流程已經寫好在 `.github/workflows/deploy.yml`，還沒接上。
 
 `supabase db reset` 之後即時更新會失效——Kong 抓著舊的上游連線，WebSocket 全回 403：
 
@@ -66,7 +43,19 @@ for pt in $(lsof -nP -iTCP -sTCP:LISTEN | grep -i cloudflar | awk '{print $NF}' 
 docker restart supabase_kong_tennis-pal
 ```
 
----
+### 動到雲端的時候
+
+改了 schema：先加 migration，本機 `supabase db reset` 驗過，再
+`node --experimental-strip-types tools/gen_deploy_sql.ts`，把
+`supabase/deploy_cloud.sql` 貼進雲端 SQL Editor。那一份是冪等的，貼幾次都不會壞，
+而且**刻意不含示範球友**——雲端是真人在用的。
+
+改了 Edge Function：`supabase functions deploy`。
+改了 LINE 憑證：`supabase secrets set --env-file supabase/functions/.env`。
+
+前端的環境變數在 GitHub repo 的 Settings → Secrets and variables → Actions：
+`VITE_SUPABASE_URL`、`VITE_LINE_LIFF_ID` 是 Variables，`VITE_SUPABASE_ANON_KEY` 是 Secret。
+**Vite 的環境變數是建置時烤進 bundle 的**，改完要重新部署才會生效。
 
 ## 二、這個專案的硬規則
 
@@ -161,12 +150,18 @@ Flex 訊息結構。改那三塊一定要跑 `npm test`。
 ## 五、目前的狀態
 
 能動的：登錄與偏好、媒合、選球場、送邀約、LINE 登入（LIFF）、推播（Flex）、
-訂場提醒排程、圖文選單、PWA 安裝與更新提示。
+圖文選單、PWA 安裝與更新提示，以及 push 到 main 就自動部署。
 
 還沒解的：
 
-- **前端沒有固定網址**（見第一節）——這是現在最大的痛點
 - **沒有真實的場地空檔**。要誠實回答「哪個場現在有空」，只能去讀官方系統的時段頁
-  （21 個台北市體育局的場抓得到）。牽涉爬別人網站的頻率與條款，還沒決定要不要走
+  （21 個台北市體育局的場抓得到）。牽涉爬別人網站的頻率與條款，還沒決定要不要走。
+  這是目前最大的產品缺口
+- **訂場提醒的排程還沒在雲端掛上**。要在雲端 SQL Editor 執行一次
+  `select schedule_booking_reminder('<雲端 function 網址>', '<service_role key>');`
+  service_role key 不能進 git，所以這一步沒辦法自動化
+- **雲端還沒有任何球友**。deploy_cloud.sql 刻意不放假人，所以第一個註冊的人
+  會發現媒合是空的——這是對的行為，但要知道
 - **推播額度**：LINE 免費方案每月 200 則，一次邀約約用掉 2–3 則
-- 本機的登入信不會真的寄出去，全部進 Mailpit（<http://127.0.0.1:54324>）
+- 本機的登入信不會真的寄出去，全部進 Mailpit（<http://127.0.0.1:54324>）；
+  雲端寄信目前走 Supabase 內建服務，每小時只有幾封，上線前要接真的 SMTP
