@@ -5,6 +5,7 @@ import App from './App.tsx'
 import { registerServiceWorker } from './lib/appUpdate.ts'
 import { autoSignInInLine, initAuth } from './lib/auth.ts'
 import { initLiff } from './lib/liff.ts'
+import { probeNetwork } from './lib/probe.ts'
 import './styles.css'
 
 /**
@@ -33,6 +34,8 @@ initLiff()
   // 在 LINE 裡就直接登入，不要再要使用者按一次——我們早就知道他是誰。
   // 失敗不擋路：訪客照樣可以逛球場。
   .then(() => autoSignInInLine().catch(warn('LINE 自動登入')))
+  // 量一次「哪一類跨網域請求在這個環境能用」。不擋流程，只回報。
+  .then(() => probeNetwork().catch(() => {}))
   .finally(() => {
     createRoot(document.getElementById('root')!).render(
       <StrictMode>
