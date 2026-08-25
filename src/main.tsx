@@ -17,13 +17,26 @@ import './styles.css'
  *
  * 兩者都失敗也照樣渲染，讓 App 自己去顯示錯誤。
  */
-initLiff().then(initAuth).finally(() => {
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  )
-})
+const warn = (where: string) => (e: unknown) => {
+  // 這兩步失敗不該擋住畫面，但一定要留痕跡——曾經因為前一步靜靜地 reject，
+  // 導致 initAuth 整個被跳過，登入畫面於是顯示了一顆後端根本沒開的按鈕，
+  // 而 console 什麼都沒有，查了很久。
+  console.warn('[啟動] ' + where + ' 失敗：' + ((e as Error)?.message ?? String(e)))
+}
+
+// 兩步各自 catch，前一步倒了後一步照樣要跑。
+// 用 .then(initAuth) 串接的話，initLiff 一 reject 就會連 initAuth 一起跳過，
+// 而 .finally 還是會渲染——畫面出得來，但身分和後端設定都沒載入。
+initLiff()
+  .catch(warn('LIFF 初始化'))
+  .then(() => initAuth().catch(warn('讀取登入狀態')))
+  .finally(() => {
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+  })
 
 /**
  * 註冊 service worker，讓 App 裝到主畫面後沒網路也打得開，並在有新版時提示。

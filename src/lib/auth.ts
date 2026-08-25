@@ -51,14 +51,25 @@ async function loadProviders(): Promise<void> {
 }
 
 export async function initAuth(): Promise<void> {
-  if (!supabase) return
-  const { data } = await supabase.auth.getSession()
-  session = data.session
-  supabase.auth.onAuthStateChange((_event, next) => {
-    session = next
-    for (const fn of [...listeners]) fn(next)
-  })
-  await loadProviders()
+  // 先發車，不要排在 session 後面。這兩件事沒有先後關係，而把它排在後面
+  // 的代價是：session 那一步只要出任何差錯，登入畫面就會顯示一顆後端
+  // 根本沒開的按鈕，使用者按下去會被丟到一頁 JSON。
+  const providersReady = loadProviders()
+
+  if (supabase) {
+    try {
+      const { data } = await supabase.auth.getSession()
+      session = data.session
+      supabase.auth.onAuthStateChange((_event, next) => {
+        session = next
+        for (const fn of [...listeners]) fn(next)
+      })
+    } catch (e) {
+      console.warn('[auth] 讀不到既有 session：' + (e as Error).message)
+    }
+  }
+
+  await providersReady
 }
 
 export function currentSession(): Session | null {
