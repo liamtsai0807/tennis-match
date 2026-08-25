@@ -1,12 +1,23 @@
 {
   // Cloudflare Worker 設定。dist/ 當靜態資源，/api/* 由 worker/index.ts 轉給 Supabase。
   //
-  // SUPABASE_URL 不寫在這裡——那是設定值，放在 Cloudflare 後台的環境變數，
-  // 才不會跟著程式碼進版控，也才能在不同環境給不同值。
+  // SUPABASE_URL 直接寫在這裡。
+  //
+  // 它不是機密——專案代號就藏在公開的 anon key 裡，任何人打開前端都看得到。
+  // 真正在保護資料的是 RLS 與金鑰，不是把網址藏起來。
+  //
+  // 寫進版控換到的是：部署自帶設定，沒有人需要記得去後台補一個變數。
+  // 第一次部署就是漏了它，Worker 回 500 而前端看起來完全正常——
+  // 那種「少一個設定就靜靜壞掉」正是這個專案已經踩過好幾次的坑。
+  //
+  // 要換環境時用 Cloudflare 後台的變數覆蓋即可，那邊的優先序比較高。
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tennis-match",
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-01",
+  "vars": {
+    "SUPABASE_URL": "https://reqsorkruyojhrsjeksu.supabase.co"
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

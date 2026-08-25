@@ -27,7 +27,9 @@ export default {
     if (url.pathname.startsWith('/api/')) {
       const base = (env.SUPABASE_URL ?? '').replace(/\/+$/, '')
       if (!base) {
-        return new Response(JSON.stringify({ error: '沒有設定 SUPABASE_URL' }), {
+        return new Response(JSON.stringify({
+          error: '沒有設定 SUPABASE_URL——檢查 wrangler.jsonc 的 vars，或 Cloudflare 後台的「執行時」變數（不是組建變數）',
+        }), {
           status: 500, headers: { 'Content-Type': 'application/json' },
         })
       }
