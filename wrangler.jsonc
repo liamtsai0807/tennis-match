@@ -1,0 +1,18 @@
+{
+  // Cloudflare Worker 設定。dist/ 當靜態資源，/api/* 由 worker/index.ts 轉給 Supabase。
+  //
+  // SUPABASE_URL 不寫在這裡——那是設定值，放在 Cloudflare 後台的環境變數，
+  // 才不會跟著程式碼進版控，也才能在不同環境給不同值。
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tennis-match",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // 找不到的路徑一律回 index.html。LIFF SDK 會把 ?liff.state=/clubs
+    // 變成真的導頁到 /clubs，沒有這個設定圖文選單每一格都是 404。
+    "not_found_handling": "single-page-application"
+  },
+  "observability": { "enabled": true }
+}
