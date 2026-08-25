@@ -150,16 +150,21 @@ Flex 訊息結構。改那三塊一定要跑 `npm test`。
 ## 五、目前的狀態
 
 能動的：登錄與偏好、媒合、選球場、送邀約、LINE 登入（LIFF）、推播（Flex）、
-圖文選單、PWA 安裝與更新提示，以及 push 到 main 就自動部署。
+圖文選單、PWA 安裝與更新提示、訂場提醒排程（雲端 pg_cron，台北時間每晚九點），
+以及 push 到 main 就自動部署。
+
+雲端排程掛在 `cron.job` 的 `booking-reminder`。看執行紀錄：
+`select * from cron.job_run_details order by start_time desc limit 10;`
 
 還沒解的：
 
 - **沒有真實的場地空檔**。要誠實回答「哪個場現在有空」，只能去讀官方系統的時段頁
   （21 個台北市體育局的場抓得到）。牽涉爬別人網站的頻率與條款，還沒決定要不要走。
   這是目前最大的產品缺口
-- **訂場提醒的排程還沒在雲端掛上**。要在雲端 SQL Editor 執行一次
-  `select schedule_booking_reminder('<雲端 function 網址>', '<service_role key>');`
-  service_role key 不能進 git，所以這一步沒辦法自動化
+- **有三把憑證外流在對話紀錄裡**（LINE access token、LINE channel secret、
+  Supabase service_role key），整條路確認正常之後要一次換掉。
+  換 service_role 會連 anon key 一起失效，所以同步要做的事：更新 GitHub 的
+  `VITE_SUPABASE_ANON_KEY`、重新部署、用新 key 重跑一次 `schedule_booking_reminder`
 - **雲端還沒有任何球友**。deploy_cloud.sql 刻意不放假人，所以第一個註冊的人
   會發現媒合是空的——這是對的行為，但要知道
 - **推播額度**：LINE 免費方案每月 200 則，一次邀約約用掉 2–3 則
