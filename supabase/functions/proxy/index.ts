@@ -48,6 +48,11 @@ Deno.serve(async (req) => {
   }
 
   const path = p.path ?? ''
+
+  // 診斷用：不碰上游，直接回一個乾淨的 200。
+  // 用來分辨「proxy 回 200 這件事本身行不行」與「轉送上游的回應行不行」。
+  if (path === '/__ping') return json({ ok: true })
+
   if (!path.startsWith('/') || !ALLOWED.some((re) => re.test(path))) {
     return json({ error: '不允許的目的地：' + path.slice(0, 80) }, 400)
   }

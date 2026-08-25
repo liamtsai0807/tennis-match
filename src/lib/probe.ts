@@ -49,6 +49,28 @@ export async function probeNetwork(): Promise<void> {
    * reportBig ：打 report，但塞一段跟 proxy 差不多大的 payload。
    *             失敗 → 就是大小的問題，跟哪一支函式無關。
    */
+  /*
+   * 2×2：把「請求裡有沒有 JWT」和「回應是不是帶資料的 200」拆開。
+   *
+   *   proxyPing   小 payload → 乾淨的 200（不碰上游）
+   *   proxyAuth404 帶兩份 JWT → 上游回 404
+   *   proxySmall  小 payload → 上游回 401
+   *   viaProxy    帶兩份 JWT → 上游回 200 加資料   ← 只有這個失敗
+   *
+   * 四格填完就知道是哪一維在作怪。
+   */
+  const proxyPing = await probe(() => fetch(URL_ + '/functions/v1/proxy', {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: JSON.stringify({ path: '/__ping' }),
+  }))
+  const proxyAuth404 = await probe(() => fetch(URL_ + '/functions/v1/proxy', {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: JSON.stringify({
+      path: '/rest/v1/__no_such_table?select=id', method: 'GET',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY },
+    }),
+  }))
+
   const proxySmall = await probe(() => fetch(URL_ + '/functions/v1/proxy', {
     method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
     body: JSON.stringify({ path: '/rest/v1/clubs?select=id&limit=1', method: 'GET' }),
@@ -69,5 +91,6 @@ export async function probeNetwork(): Promise<void> {
 
   report('probe', new Error('網路探針'), {
     simple, apikeyQS, withHeaders, inClient, viaProxy, proxySmall, reportBig,
+    proxyPing, proxyAuth404,
   })
 }
