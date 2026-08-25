@@ -1,3 +1,5 @@
+# 這份是 GitHub Pages 的部署。前端正在搬到 Cloudflare Pages（同源 API），
+# 搬完之後這一份就可以刪掉——留著會產生兩個網址，而 LIFF 只能指一個。
 name: 部署到 GitHub Pages
 
 on:

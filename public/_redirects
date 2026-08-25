@@ -1,0 +1,7 @@
+# 靜態主機對不存在的路徑要回 index.html，App 才撈得回來。
+#
+# 為什麼需要：LIFF SDK 會把 ?liff.state=/clubs 變成真的導頁到 /clubs，
+# 而那個路徑沒有對應的檔案。少了這一行，圖文選單每一格都是 404。
+#
+# /api/* 不受影響——Pages Function 的優先序高於這裡的規則。
+/*    /index.html   200

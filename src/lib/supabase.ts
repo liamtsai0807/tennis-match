@@ -1,7 +1,21 @@
 /** ===== supabase.ts ===== */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const url = (import.meta.env.VITE_SUPABASE_URL ?? '').trim()
+const configured = (import.meta.env.VITE_SUPABASE_URL ?? '').trim()
+
+/**
+ * 後端網址。設成相對路徑（例如 `/api`）就代表「走同源」。
+ *
+ * 同源是整個 CORS 問題的解法，不是繞過：前端與 API 在同一個網域時，
+ * 瀏覽器根本不會啟動 CORS，也就沒有 preflight 可以失敗。跨網域那一段
+ * 在伺服器端完成（見 functions/api/[[path]].ts），那裡沒有這回事。
+ *
+ * 本機開發維持絕對網址指向本機 Supabase，行為不變。
+ */
+const url = configured.startsWith('/') && typeof window !== 'undefined'
+  ? window.location.origin + configured.replace(/\/+$/, '')
+  : configured
+
 const key = (import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
 
 /** 兩個環境變數都有填才算設定完成；否則整個 App 走離線示範資料。 */
@@ -106,8 +120,11 @@ function utf8ToBase64(str: string): string {
 }
 
 function needsProxy(): boolean {
-  return typeof window !== 'undefined'
-    && Boolean((window as { liff?: { isInClient?: () => boolean } }).liff?.isInClient?.())
+  if (typeof window === 'undefined') return false
+  // 同源就沒有 CORS，也就沒有繞路的理由。這是搬到能做同源 API 的主機之後
+  // 的正常狀態——下面那整套 hack 只是在還沒同源時的過渡。
+  if (url.startsWith(window.location.origin)) return false
+  return Boolean((window as { liff?: { isInClient?: () => boolean } }).liff?.isInClient?.())
 }
 
 export const supabase: SupabaseClient | null = isSupabaseConfigured
