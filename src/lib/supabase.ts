@@ -41,11 +41,29 @@ function proxiedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Res
     method: 'POST',
     // text/plain 是 CORS 安全清單值，配上沒有自訂標頭 → 不觸發預檢
     headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    /*
+     * 整包 payload 先 base64 再送。
+     *
+     * 實測：只要請求 body 裡出現 JWT 樣式的字串，在 iOS 的 LINE webview 裡
+     * fetch 就以「Load failed」失敗；換成同樣長度的純 x 則完全正常——
+     * 是內容不是長度。2×2 對照的四格：
+     *
+     *       請求含 JWT   回應      結果
+     *       ✗            200       ok
+     *       ✗            401       ok
+     *       ✓            404       Load failed
+     *       ✓            200       Load failed
+     *
+     * base64 之後就不再長得像 token。這不是加密、也沒有要當安全機制——
+     * 傳輸的機密性一直都是 TLS 在負責。
+     */
     body: JSON.stringify({
-      path: raw.slice(url.length),
-      method: init?.method ?? (input instanceof Request ? input.method : 'GET'),
-      headers,
-      body: typeof init?.body === 'string' ? init.body : null,
+      b64: btoa(JSON.stringify({
+        path: raw.slice(url.length),
+        method: init?.method ?? (input instanceof Request ? input.method : 'GET'),
+        headers,
+        body: typeof init?.body === 'string' ? init.body : null,
+      })),
     }),
   }).then(async (res) => {
     /*

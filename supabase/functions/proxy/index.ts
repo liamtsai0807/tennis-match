@@ -42,7 +42,24 @@ Deno.serve(async (req) => {
 
   let p: Payload
   try {
-    p = await req.json()
+    const body = await req.json() as Payload & { b64?: string }
+    /*
+     * 前端會把整包 payload base64 之後才送。
+     *
+     * 為什麼：實測發現只要請求 body 裡出現 JWT 樣式的字串，在 iOS 的
+     * LINE webview 裡 fetch 就以「Load failed」失敗——換成同樣長度的
+     * 純 x 則完全正常。是內容不是長度。2×2 對照的結果：
+     *
+     *       請求含 JWT   回應       結果
+     *       ✗            200        ok
+     *       ✗            401        ok
+     *       ✓            404        Load failed
+     *       ✓            200        Load failed
+     *
+     * base64 之後那個字串就不再長得像 token。仍然完全不是加密，
+     * 也沒有要當成安全機制——傳輸的機密性靠的是 TLS。
+     */
+    p = body.b64 ? JSON.parse(atob(body.b64)) as Payload : body
   } catch {
     return json({ error: '不是合法的 JSON' }, 400)
   }
@@ -60,6 +77,15 @@ Deno.serve(async (req) => {
   const headers = new Headers()
   for (const [k, v] of Object.entries(p.headers ?? {})) {
     if (FORWARD.includes(k.toLowerCase())) headers.set(k, v)
+  }
+  // 匿名請求不必把 anon key 從前端搬過來——它是公開的，而且伺服器端本來就有。
+  // 少送一份 token 樣式的字串，就少一次被中間環節擋掉的機會。
+  if (!headers.has('apikey')) {
+    const anon = Deno.env.get('SUPABASE_ANON_KEY')
+    if (anon) {
+      headers.set('apikey', anon)
+      if (!headers.has('authorization')) headers.set('Authorization', 'Bearer ' + anon)
+    }
   }
 
   let upstream: Response

@@ -71,6 +71,17 @@ export async function probeNetwork(): Promise<void> {
     }),
   }))
 
+  // 確認 base64 那條路真的解掉問題：同樣帶兩份 JWT，只是包成 base64
+  const proxyB64 = await probe(() => fetch(URL_ + '/functions/v1/proxy', {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: JSON.stringify({
+      b64: btoa(JSON.stringify({
+        path: '/rest/v1/clubs?select=id&limit=1', method: 'GET',
+        headers: { apikey: KEY, Authorization: 'Bearer ' + KEY },
+      })),
+    }),
+  }))
+
   const proxySmall = await probe(() => fetch(URL_ + '/functions/v1/proxy', {
     method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
     body: JSON.stringify({ path: '/rest/v1/clubs?select=id&limit=1', method: 'GET' }),
@@ -91,6 +102,6 @@ export async function probeNetwork(): Promise<void> {
 
   report('probe', new Error('網路探針'), {
     simple, apikeyQS, withHeaders, inClient, viaProxy, proxySmall, reportBig,
-    proxyPing, proxyAuth404,
+    proxyPing, proxyAuth404, proxyB64,
   })
 }
