@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "node --experimental-strip-types tools/match.test.ts && node --experimental-strip-types tools/level.test.ts && node --experimental-strip-types tools/flex.test.ts && node --experimental-strip-types tools/richmenu.test.ts"
+    "test": "node --experimental-strip-types tools/match.test.ts && node --experimental-strip-types tools/level.test.ts && node --experimental-strip-types tools/flex.test.ts && node --experimental-strip-types tools/richmenu.test.ts && node --experimental-strip-types tools/cors.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

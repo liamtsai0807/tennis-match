@@ -13,15 +13,10 @@
  * 沒設定 channel 時回明確的錯誤，不要假裝成功——登入靜靜失敗最難查。
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { corsPreflight, json } from '../_shared/cors.ts'
 
 const LINE_VERIFY = 'https://api.line.me/oauth2/v2.1/verify'
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-  })
-}
 
 /**
  * 這個錯誤代表「這個人以前就註冊過」，也就是回訪，不是失敗。
@@ -33,14 +28,7 @@ function isAlreadyRegistered(err: { code?: string; status?: number; message?: st
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, content-type',
-      },
-    })
-  }
+  if (req.method === 'OPTIONS') return corsPreflight()
 
   const channelId = Deno.env.get('LINE_LOGIN_CHANNEL_ID')
   if (!channelId) return json({ error: '伺服器還沒設定 LINE_LOGIN_CHANNEL_ID' }, 501)

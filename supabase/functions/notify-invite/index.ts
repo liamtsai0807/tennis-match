@@ -11,6 +11,7 @@
  * 那樣就算使用者按完立刻關掉 App，通知還是送得出去。
  */
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { corsPreflight, json } from '../_shared/cors.ts'
 import { acceptedFlex, endedFlex, invitedFlex, liffLink } from '../_shared/flex.ts'
 
 const LINE_PUSH = 'https://api.line.me/v2/bot/message/push'
@@ -26,23 +27,10 @@ function whenText(date: string, hour: number): string {
   return `${Number(m)}/${Number(d)} (${wd}) ${hh}:00–${nn}:00`
 }
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-  })
-}
 
 Deno.serve(async (req) => {
   // 瀏覽器會先送 preflight，擋掉的話前端連呼叫都呼叫不到
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, content-type',
-      },
-    })
-  }
+  if (req.method === 'OPTIONS') return corsPreflight()
 
   let payload: { invite_id?: string; kind?: Kind }
   try {
