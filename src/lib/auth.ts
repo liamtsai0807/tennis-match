@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase.ts'
+import { liffIdToken, liffLoggedIn, liffLogin, liffReady } from './liff.ts'
 
 let session: Session | null = null
 const listeners = new Set<(s: Session | null) => void>()
@@ -94,9 +95,17 @@ export const isLineConfigured = Boolean(
   (import.meta.env.VITE_LINE_LIFF_ID ?? '').trim(),
 )
 
-/** 現在是不是跑在 LINE 的 App 裡（LIFF）。不是的話 LINE 登入按鈕不該出現。 */
+/**
+ * LINE 登入這條路現在能不能用。
+ *
+ * 判斷的是「LIFF 初始化成功了」，不是「在不在 LINE App 裡」——外部瀏覽器
+ * 開 LIFF 網址一樣登入得了，只是要多跳一次 LINE 的授權頁。
+ *
+ * 原本這裡看的是 window 上有沒有 liff 這個屬性，但 SDK 的 script 一載進來
+ * 那個屬性就在了，init 還沒跑完就回 true，按下去只會拿到 null token。
+ */
 export function inLiff(): boolean {
-  return typeof window !== 'undefined' && 'liff' in window
+  return liffReady()
 }
 
 /**
@@ -132,11 +141,19 @@ export async function signInWithLine(): Promise<void> {
   if (!isLineConfigured) {
     throw new Error('LINE 登入還沒設定（缺 VITE_LINE_LIFF_ID）')
   }
-  if (!inLiff()) {
-    throw new Error('LINE 登入只能在 LINE 裡開啟時使用')
+  if (!liffReady()) {
+    throw new Error('LINE 登入還沒準備好，請重新整理再試一次')
   }
-  const liff = (window as unknown as { liff: { getIDToken(): string | null } }).liff
-  const idToken = liff.getIDToken()
+
+  // 還沒登入 LINE 就先去登入。這一步會離開頁面，回來時會再走一次這個流程，
+  // 那時候就拿得到 token 了。刻意等到使用者按下按鈕才做——初始化時就自動跳，
+  // 會把只想用 Email 或 Google 的人一起綁架走。
+  if (!liffLoggedIn()) {
+    liffLogin()
+    return
+  }
+
+  const idToken = liffIdToken()
   if (!idToken) throw new Error('拿不到 LINE 的 ID token，請重新開啟')
 
   const { data, error } = await client().functions.invoke('line-auth', {

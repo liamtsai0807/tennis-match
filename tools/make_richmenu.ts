@@ -80,26 +80,30 @@ const html = `<!doctype html>
 <div class="grid">${CELLS.map(cellHtml).join('')}</div>
 `
 
-if (!CHROME) {
+// 被 import 時（例如 richmenu.test.ts 要拿 CELLS）不要真的去跑 Chrome 產圖——
+// 測試不該需要裝瀏覽器，也不該改到版控裡的 public/richmenu.png
+if (import.meta.filename !== process.argv[1]) {
+  // 只提供 CELLS 給別人 import，其餘什麼都不做
+} else if (!CHROME) {
   console.error('找不到 Chrome / Chromium / Edge，無法產生底圖。')
   console.error('已經有 public/richmenu.png 的話不用重產；要改版面才需要裝其中一個。')
   process.exit(1)
+} else {
+  const tmpHtml = new URL('richmenu.tmp.html', import.meta.url)
+  const out = new URL('../public/richmenu.png', import.meta.url)
+  writeFileSync(tmpHtml, html)
+
+  execFileSync(CHROME, [
+    '--headless',
+    '--disable-gpu',
+    '--hide-scrollbars',
+    '--force-device-scale-factor=1',
+    `--window-size=${W},${H}`,
+    `--screenshot=${out.pathname}`,
+    tmpHtml.href,
+  ], { stdio: 'pipe' })
+
+  unlinkSync(tmpHtml)
+  console.log(`已產生 public/richmenu.png（${W}×${H}，${CELLS.length} 格）`)
+  console.log('接著跑 tools/setup_richmenu.ts 上傳到 LINE。')
 }
-
-const tmpHtml = new URL('richmenu.tmp.html', import.meta.url)
-const out = new URL('../public/richmenu.png', import.meta.url)
-writeFileSync(tmpHtml, html)
-
-execFileSync(CHROME, [
-  '--headless',
-  '--disable-gpu',
-  '--hide-scrollbars',
-  '--force-device-scale-factor=1',
-  `--window-size=${W},${H}`,
-  `--screenshot=${out.pathname}`,
-  tmpHtml.href,
-], { stdio: 'pipe' })
-
-unlinkSync(tmpHtml)
-console.log(`已產生 public/richmenu.png（${W}×${H}，${CELLS.length} 格）`)
-console.log('接著跑 tools/setup_richmenu.ts 上傳到 LINE。')

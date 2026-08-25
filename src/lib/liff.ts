@@ -23,6 +23,36 @@ function sdk(): Liff | null {
   return (window as unknown as { liff?: Liff }).liff ?? null
 }
 
+/**
+ * liff.init() 有沒有成功跑完。
+ *
+ * 不能改用「window 上有沒有 liff」來判斷——SDK 的 script 一載進來那個屬性就在了，
+ * 但還沒 init 之前呼叫任何 API 都會炸。這個旗標才是「LIFF 真的可以用了」。
+ */
+let ready = false
+
+export function liffReady(): boolean {
+  return ready
+}
+
+/** 是不是在 LINE App 內開啟。外部瀏覽器開 LIFF 網址時這裡是 false。 */
+export function isInLineClient(): boolean {
+  return ready && (sdk()?.isInClient() ?? false)
+}
+
+export function liffLoggedIn(): boolean {
+  return ready && (sdk()?.isLoggedIn() ?? false)
+}
+
+/** 使用者按下「用 LINE 登入」才呼叫。會離開頁面跳去 LINE，回來時網址不變。 */
+export function liffLogin(): void {
+  sdk()?.login()
+}
+
+export function liffIdToken(): string | null {
+  return ready ? sdk()?.getIDToken() ?? null : null
+}
+
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const el = document.createElement('script')
@@ -63,9 +93,16 @@ export async function initLiff(): Promise<boolean> {
     const liff = sdk()
     if (!liff) return false
 
-    // withLoginOnExternalBrowser：在外部瀏覽器打開 LIFF 網址時也能登入，
-    // 不然使用者從電腦點連結會卡住
-    await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: true })
+    // 這裡刻意**不**加 withLoginOnExternalBrowser。
+    //
+    // 加了的話，任何在一般瀏覽器開啟的人，App 都還沒渲染就會被踢去 LINE 登入頁——
+    // 包含用電腦測試、把 PWA 裝到主畫面後從桌面開、以及只想用 Email 或 Google
+    // 登入的人。SignIn 上那兩顆按鈕等於永遠按不到。
+    //
+    // 改成不自動登入：App 一定先渲染自己的登入畫面，要不要走 LINE 由使用者按下去
+    // 才決定（signInWithLine() 會在需要時呼叫 liff.login()）。
+    await liff.init({ liffId: LIFF_ID })
+    ready = true
     applyDeepLink()
     return true
   } catch (e) {

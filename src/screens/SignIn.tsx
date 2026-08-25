@@ -128,8 +128,10 @@ export default function SignIn() {
       <div className="signin-or"><span>或</span></div>
 
       {/*
-        LINE 登入只在「設定好了」而且「真的在 LINE 裡開啟」時才出現。
-        在一般瀏覽器顯示這顆按鈕，按下去只會得到一句錯誤——那比沒有更糟。
+        LINE 登入只在「設定好了」而且「LIFF 初始化成功」時才出現，
+        在一般瀏覽器也算——外部瀏覽器一樣登入得了，只是要多跳一次 LINE 授權頁。
+        判斷的是 init 跑完沒，不是 window 上有沒有 liff 這個屬性：
+        SDK 的 script 一載進來屬性就在了，那時候按下去只會拿到 null token。
       */}
       {isLineConfigured && inLiff() && (
         <button className="btn block signin-line" disabled={busy} onClick={line}>

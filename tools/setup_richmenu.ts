@@ -19,10 +19,10 @@ import { readFileSync, existsSync } from 'node:fs'
 const API = 'https://api.line.me/v2/bot'
 const DATA_API = 'https://api-data.line.me/v2/bot'
 
-const W = 2500
-const H = 1686
-const COLS = 3
-const ROWS = 2
+export const W = 2500
+export const H = 1686
+export const COLS = 3
+export const ROWS = 2
 
 // ---------- 讀設定 ----------
 
@@ -67,7 +67,7 @@ const ACTIONS: Array<{ label: string; uri: string }> = [
  * 把六格切成點擊範圍。
  * 最後一欄／最後一列要吃掉除不盡的餘數，不然右邊和下面會留一條點不到的縫。
  */
-function areas() {
+export function areas() {
   const cw = Math.floor(W / COLS)
   const ch = Math.floor(H / ROWS)
   return ACTIONS.map((a, i) => {
@@ -155,7 +155,10 @@ async function main() {
   console.log('\n完成。回 LINE 把對話關掉再打開就會看到。')
 }
 
-main().catch((e) => {
-  console.error(String(e instanceof Error ? e.message : e))
-  process.exit(1)
-})
+// 被 import 時（例如測試）不要真的送出去，只有直接執行才跑
+if (import.meta.filename === process.argv[1]) {
+  main().catch((e) => {
+    console.error(String(e instanceof Error ? e.message : e))
+    process.exit(1)
+  })
+}
