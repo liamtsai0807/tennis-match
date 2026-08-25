@@ -58,7 +58,7 @@ function proxiedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Res
      * 傳輸的機密性一直都是 TLS 在負責。
      */
     body: JSON.stringify({
-      b64: btoa(JSON.stringify({
+      b64: utf8ToBase64(JSON.stringify({
         path: raw.slice(url.length),
         method: init?.method ?? (input instanceof Request ? input.method : 'GET'),
         headers,
@@ -91,6 +91,20 @@ function proxiedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Res
  * 一次網路來回，而第一個請求往往就在那之前發出去了。LIFF 這個條件是
  * 確定的、同步的，而且範圍剛好：目前只有這個環境有問題。
  */
+/**
+ * UTF-8 安全的 base64。
+ *
+ * btoa() 只吃 Latin-1，遇到中文直接丟 InvalidCharacterError——而這個 App 的
+ * 資料裡到處都是中文球場名。第一版直接用 btoa，探針立刻就炸給我看了
+ * （proxyB64 回 InvalidCharacterError 而不是網路錯誤）。
+ */
+function utf8ToBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin)
+}
+
 function needsProxy(): boolean {
   return typeof window !== 'undefined'
     && Boolean((window as { liff?: { isInClient?: () => boolean } }).liff?.isInClient?.())

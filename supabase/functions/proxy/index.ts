@@ -36,6 +36,14 @@ interface Payload {
   body?: string | null
 }
 
+/** atob() 回的是 Latin-1，中文要再解一次 UTF-8 才會對。 */
+function base64ToUtf8(b64: string): string {
+  const bin = atob(b64)
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return new TextDecoder().decode(bytes)
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsPreflight()
   if (!BASE) return json({ error: '伺服器沒有設定 SUPABASE_URL' }, 500)
@@ -59,7 +67,7 @@ Deno.serve(async (req) => {
      * base64 之後那個字串就不再長得像 token。仍然完全不是加密，
      * 也沒有要當成安全機制——傳輸的機密性靠的是 TLS。
      */
-    p = body.b64 ? JSON.parse(atob(body.b64)) as Payload : body
+    p = body.b64 ? JSON.parse(base64ToUtf8(body.b64)) as Payload : body
   } catch {
     return json({ error: '不是合法的 JSON' }, 400)
   }
