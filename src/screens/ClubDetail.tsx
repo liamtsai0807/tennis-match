@@ -164,26 +164,32 @@ export default function ClubDetail() {
         </div>
 
         <div className="eyebrow" style={{ marginBottom: 8 }}>
-          {friendlyDate(date)}・哪些時段還沒有人卡
+          {friendlyDate(date)}・{club.open_hour}:00–{club.close_hour}:00
         </div>
         <div className="slots">
           {(data?.slots ?? []).map((s) => {
+            // 只有「已經過去」跟「我自己記過」會擋。別人記過不擋——
+            // 那是別人的紀錄，不代表這個場館的場地被訂走了
             const past = isToday && s.hour <= nowHour
-            const full = s.free === 0 || past
+            const label = past ? '已過' : slotLabel(s)
             return (
               <button
                 key={s.hour}
-                className={'slot' + (full ? ' full' : '')}
+                className={'slot' + (past ? ' full' : '')}
                 aria-pressed={hour === s.hour}
-                disabled={full}
+                disabled={past || s.minePresent}
                 onClick={() => setHour(s.hour === hour ? null : s.hour)}
               >
                 <b>{String(s.hour).padStart(2, '0')}:00</b>
-                <small>{past ? '已過' : slotLabel(s.free, club.source)}</small>
+                {label && <small>{label}</small>}
               </button>
             )
           })}
         </div>
+        <p className="note" style={{ margin: '10px 0 0' }}>
+          這裡只顯示 TennisPal 裡有沒有人記過這個時段。
+          <b>場地實際還有沒有空，要到上面的官方系統或打電話確認。</b>
+        </p>
 
         {hour !== null && (
           <div style={{ marginTop: 18 }} className="stack-s">

@@ -152,17 +152,19 @@ export default function InviteCompose() {
               {hourOptions.map((h) => {
                 const slot = (slots ?? []).find((s) => s.hour === h)
                 const past = date === todayISO() && h <= new Date().getHours()
-                const full = !slot || slot.free === 0 || past
+                // 自己已經記過的時段不能再選；別人記過的照樣可選
+                const blocked = !slot || past || slot.minePresent
+                const label = past ? '已過' : slot ? slotLabel(slot) : ''
                 return (
                   <button
                     key={h}
-                    className={'slot' + (full ? ' full' : '')}
+                    className={'slot' + (blocked ? ' full' : '')}
                     aria-pressed={hour === h}
-                    disabled={full}
+                    disabled={blocked}
                     onClick={() => setHour(hour === h ? null : h)}
                   >
                     <b>{String(h).padStart(2, '0')}:00</b>
-                    <small>{past ? '已過' : slotLabel(slot?.free ?? 0, chosen.club.source)}</small>
+                    {label && <small>{label}</small>}
                   </button>
                 )
               })}

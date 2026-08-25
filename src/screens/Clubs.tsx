@@ -3,10 +3,13 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Header, Empty } from '../components/ui.tsx'
 import { IconPin, IconStar } from '../components/icons.tsx'
+import { useToast } from '../components/Toast.tsx'
 import { useData } from '../lib/useData.ts'
 import { getMe, listClubs } from '../lib/db.ts'
 import { money, SURFACE_LABEL } from '../lib/format.ts'
 import { distanceKm, km } from '../lib/geo.ts'
+import { getMyLocation, locationErrorMessage, type LocationError } from '../lib/location.ts'
+import type { LatLng } from '../lib/types.ts'
 
 const FILTERS: Array<{ id: string; label: string }> = [
   { id: 'all', label: '全部' },
@@ -18,16 +21,35 @@ const FILTERS: Array<{ id: string; label: string }> = [
 ]
 
 export default function Clubs() {
-  // 雙北有五十幾個球場，沒有排序等於叫使用者自己翻。
-  // 原本靠評分排，但真實資料沒有評分欄位，全是 null 就等於沒排——改用離你多遠。
-  const { data } = useData(async () => {
-    const [clubs, me] = await Promise.all([listClubs(), getMe()])
-    return clubs
-      .map((c) => ({ ...c, dist: distanceKm(me, c) }))
-      .sort((a, b) => a.dist - b.dist)
-  }, [])
+  const toast = useToast()
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState('all')
+  /** 目前位置。null = 還沒問或問不到，這時退回登錄時選的行政區中心 */
+  const [here, setHere] = useState<LatLng | null>(null)
+  const [locating, setLocating] = useState(false)
+
+  // 雙北有六十幾個球場，沒有排序等於叫使用者自己翻。
+  // 原本靠評分排，但真實資料沒有評分欄位，全是 null 就等於沒排——改用離你多遠。
+  // 「你」預設是登錄時選的行政區中心；按了「用目前位置」才換成真的座標。
+  const { data } = useData(async () => {
+    const [clubs, me] = await Promise.all([listClubs(), getMe()])
+    const origin = here ?? me
+    return clubs
+      .map((c) => ({ ...c, dist: distanceKm(origin, c) }))
+      .sort((a, b) => a.dist - b.dist)
+  }, [here])
+
+  async function useHere() {
+    setLocating(true)
+    try {
+      setHere(await getMyLocation())
+      toast('已改用你目前的位置排序')
+    } catch (e) {
+      toast(locationErrorMessage(e as LocationError), 'bad')
+    } finally {
+      setLocating(false)
+    }
+  }
 
   const clubs = useMemo(() => {
     let list = data ?? []
@@ -50,6 +72,25 @@ export default function Clubs() {
             placeholder="搜尋球館或地區，例如「大安」"
             inputMode="search"
           />
+        </div>
+
+        {/*
+          定位不在進畫面時就要——一開 App 就跳系統對話框是最快讓人按「不允許」
+          的方式，而按過之後就要叫使用者自己去改系統設定才問得到第二次。
+        */}
+        <div className="row between" style={{ marginBottom: 12 }}>
+          <small className="note">
+            {here ? '照你目前的位置排序' : '照你設定的行政區排序'}
+          </small>
+          {here ? (
+            <button className="btn sm" onClick={() => { setHere(null); toast('改回用設定的行政區排序') }}>
+              改回行政區
+            </button>
+          ) : (
+            <button className="btn sm" disabled={locating} onClick={useHere}>
+              {locating ? '定位中…' : '用目前位置'}
+            </button>
+          )}
         </div>
 
         <div className="chips" style={{ marginBottom: 14 }}>
@@ -99,6 +140,13 @@ export default function Clubs() {
                     {/* 來自開放資料的球場只有名稱、地址、座標是確定的，講清楚比留白好 */}
                     {c.source === 'opendata' && <span className="pill">細節未確認</span>}
                     {c.source === 'manual' && <span className="pill ok">已查證</span>}
+                    {/* 「可預約」那種假空檔拿掉之後，卡片上要補真的、能拿來決定
+                        點不點進去的資訊：這個場到底能怎麼訂 */}
+                    {c.booking_url
+                      ? <span className="pill accent">可線上訂</span>
+                      : c.phone
+                        ? <span className="pill">電話預約</span>
+                        : null}
                     <span className="spacer" />
                     <b style={{ fontSize: 14.5 }}>
                       {money(c.price_per_hour)}

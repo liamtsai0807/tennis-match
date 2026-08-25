@@ -224,6 +224,25 @@ ENV
 supabase functions serve --env-file supabase/functions/.env
 ```
 
+**圖文選單**要裝一次（沒有它，使用者打開 LINE 只會看到一個空白輸入框，
+要用這個服務得自己去找 LIFF 連結）：
+
+```bash
+node --experimental-strip-types tools/make_richmenu.ts
+```
+
+```bash
+node --experimental-strip-types tools/setup_richmenu.ts
+```
+
+第一支產底圖（2500×1686，六格），第二支上傳並設為所有人的預設。
+`--dry` 可以先看要送什麼。憑證跟 Edge Function 共用 `supabase/functions/.env`。
+
+底圖用無頭 Chrome 排版截圖——那六格要寫中文，手刻 PNG 畫不出來。
+Chrome 只在**產圖**時用到，產完的 PNG 進版控，之後要上傳的人不需要有 Chrome。
+改了 `make_richmenu.ts` 的格子順序，`setup_richmenu.ts` 的 `ACTIONS` 要跟著改，
+否則按下去會跑錯地方。
+
 **訂場提醒**要另外排一次班（一天一次，台北時間晚上九點）：
 
 ```bash

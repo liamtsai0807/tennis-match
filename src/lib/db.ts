@@ -220,23 +220,39 @@ export async function getPlayer(id: string): Promise<Player | null> {
 
 // ---------- 預約 ----------
 
+/**
+ * 一個整點的狀態。
+ *
+ * 這裡刻意沒有「還剩幾面」——我們根本不知道。原本的版本用
+ * 「球場面數 − TennisPal 裡的預約數」算出剩餘量，兩個數字都是假的：
+ * 開放資料沒有面數，匯入時一律填 1；而 TennisPal 的預約只是使用者自己
+ * 記下的時段，跟場館的實際訂位一點關係都沒有。結果就是市府系統早就
+ * 訂滿的場，在我們這裡顯示「可預約」，使用者照著跑過去撲空。
+ *
+ * 顯示錯的資訊比不顯示更糟，所以現在只回報真的查得到的兩件事。
+ */
 export interface Slot {
   hour: number
-  total: number
-  taken: number
-  free: number
+  /** 我自己已經在這個時段記過這個球場 */
+  minePresent: boolean
+  /** 其他 TennisPal 使用者記過這個時段。不代表場館訂滿了 */
+  othersPresent: boolean
 }
 
-/** 某球館某一天每個整點還剩幾面場。 */
+/** 某球館某一天，每個整點在 TennisPal 裡有沒有人記過。不是場館的實際空位。 */
 export async function getAvailability(clubId: string, date: string): Promise<Slot[]> {
   const club = await getClub(clubId)
   if (!club) return []
-  const courts = await listCourts(clubId)
-  const bookings = await bookingsFor(clubId, date)
+  const bookings = (await bookingsFor(clubId, date)).filter((b) => b.status === 'confirmed')
+  const me = myId()
   const slots: Slot[] = []
   for (let h = club.open_hour; h < club.close_hour; h++) {
-    const taken = bookings.filter((b) => b.hour === h && b.status === 'confirmed').length
-    slots.push({ hour: h, total: courts.length, taken, free: Math.max(0, courts.length - taken) })
+    const atHour = bookings.filter((b) => b.hour === h)
+    slots.push({
+      hour: h,
+      minePresent: atHour.some((b) => b.user_id === me),
+      othersPresent: atHour.some((b) => b.user_id !== me),
+    })
   }
   return slots
 }
@@ -258,7 +274,8 @@ export async function createBooking(input: {
     .filter((b) => b.hour === input.hour && b.status === 'confirmed')
     .map((b) => b.court_id)
   const free = courts.find((c) => !taken.includes(c.id))
-  if (!free) throw new Error('這個時段已經被訂滿了，換一個時間吧')
+  // 「被訂滿」是場館的狀態，我們不知道。這裡真正的意思是「已經有人記過」
+  if (!free) throw new Error('這個時段已經有人記下了，換一個時間吧')
 
   const booking: Booking = {
     id: uid('bk'),

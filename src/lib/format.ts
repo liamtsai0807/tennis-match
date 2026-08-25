@@ -1,6 +1,6 @@
 /** ===== format.ts ===== */
 import { levelLabel } from './level.ts'
-import type { Ntrp, Surface, ClubSource } from './types.ts'
+import type { Ntrp, Surface } from './types.ts'
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -84,12 +84,16 @@ export function telHref(phone: string): string {
 }
 
 /**
- * 時段還剩幾面。來自開放資料的球場沒有面數，我們只知道「有沒有被訂走」——
- * 說「剩 1 面」會讓人以為我們查證過總共幾面，其實沒有。
+ * 一個時段底下那行小字。
+ *
+ * 只講 TennisPal 裡的狀態，一個字都不要碰場館的實際空位——那個我們不知道。
+ * 「可預約」「剩 2 面」「額滿」全部拿掉了：前兩個是騙人，第三個會讓人
+ * 放棄一個其實訂得到的場。沒有人記過就什麼都不說，留白比亂講好。
  */
-export function slotLabel(free: number, source: ClubSource): string {
-  if (free === 0) return '額滿'
-  return source === 'opendata' ? '可預約' : '剩 ' + free + ' 面'
+export function slotLabel(slot: { minePresent: boolean; othersPresent: boolean }): string {
+  if (slot.minePresent) return '你記過'
+  if (slot.othersPresent) return '有人記過'
+  return ''
 }
 
 /** null = 還不知道價格。不要顯示成 NT$0，那會被當成免費。 */
