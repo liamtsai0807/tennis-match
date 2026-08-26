@@ -9,6 +9,7 @@ import { IconHome, IconSearch, IconPeople, IconUser } from './components/icons.t
 import { OFFLINE, isOnboarded } from './lib/db.ts'
 import { authReady, useSession } from './lib/auth.ts'
 import SignIn from './screens/SignIn.tsx'
+import { Loading } from './components/Loading.tsx'
 
 /*
  * 首屏只帶三個畫面：首頁、球場列表、球場詳情。
@@ -70,7 +71,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   if (OFFLINE) return <>{children}</>
   // session 還在解析時什麼都不要決定。直接顯示 SignIn 的話，已經登入的人
   // 每次冷啟動都會看到登入畫面閃一下——那比多等 0.3 秒更像壞掉。
-  if (!authReady()) return <div className="page" />
+  if (!authReady()) return <Loading what="確認登入狀態" />
   if (!session) return <SignIn />
   return <>{children}</>
 }
@@ -101,7 +102,8 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  if (done === null) return null
+  // 不要留白。這一步要問資料庫，網路慢或失敗時會停在這裡
+  if (done === null) return <Loading what="讀取偏好設定" />
   if (!done && pathname !== '/onboarding') return <Navigate to="/onboarding" replace />
   if (done && pathname === '/onboarding') return <Navigate to="/" replace />
   return <>{children}</>
@@ -115,7 +117,7 @@ export default function App() {
         <div className="app">
           <ErrorBoundary>
             {/* 切出去的畫面在載入時給一塊空白，不要跳版面 */}
-            <Suspense fallback={<div className="page" />}>
+            <Suspense fallback={<Loading what="載入畫面" />}>
             <Routes>
               {/* 公開：不需要帳號就能用。球場是政府開放資料，
                   而真正的訂場發生在別人的系統裡，我們只是把人送過去 */}

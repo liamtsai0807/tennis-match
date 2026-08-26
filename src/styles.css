@@ -693,3 +693,12 @@ button.card { width: 100%; font: inherit; color: inherit; text-align: left; }
   word-break: break-all;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
+
+/* 「還在確認」的畫面。不要留白——留白時使用者看到的是「當掉了」 */
+.loading-screen {
+  min-height: 70vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px;
+}
+.loading-ball { font-size: 40px; animation: bob 1.1s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }

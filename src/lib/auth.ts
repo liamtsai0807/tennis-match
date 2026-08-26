@@ -112,10 +112,16 @@ export async function initAuth(): Promise<void> {
     }
   }
 
-  await providersReady
-  authResolved = true
-  // 通知畫面：可以停止顯示「確認中」了
-  for (const fn of [...listeners]) fn(session)
+  // 一定要走到這裡。放 finally 是因為：上面任何一步丟例外，authResolved
+  // 就永遠是 false，而畫面在「還沒確認」時是不做判斷的——結果是**永久空白**。
+  // 使用者從圖文選單點「找球伴」看到的就是那個。
+  try {
+    await providersReady
+  } finally {
+    authResolved = true
+    // 通知畫面：可以停止顯示「確認中」了
+    for (const fn of [...listeners]) fn(session)
+  }
 }
 
 export function currentSession(): Session | null {
