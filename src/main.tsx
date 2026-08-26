@@ -5,6 +5,7 @@ import App from './App.tsx'
 import { registerServiceWorker } from './lib/appUpdate.ts'
 import { autoSignInInLine, initAuth } from './lib/auth.ts'
 import { initLiff } from './lib/liff.ts'
+import { reportPerf } from './lib/report.ts'
 import './styles.css'
 
 /**
@@ -46,6 +47,10 @@ initLiff()
         <App />
       </StrictMode>,
     )
+
+    // 量一次這台裝置實際的載入時間。使用者說「第一次兩三秒、第二次不到一秒」，
+    // 那種事不該靠口述——讓 App 自己把數字送回來。
+    reportPerf()
 
     // 這兩件事在背景做完，畫面會自己跟上
     void initAuth()

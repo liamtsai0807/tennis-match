@@ -14,7 +14,24 @@
     <title>TennisPal 網球夥伴</title>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      先畫一塊骨架，不要留白。
+
+      主 bundle 有 460 KB（React + supabase-js 就佔了大半），手機上光下載
+      加解析就要一兩秒。那段時間畫面完全空白，使用者的感受是「當掉了」，
+      而不是「在載入」。
+
+      這一段是行內樣式與內容，跟著 HTML 一起到，第一次繪製就看得到東西。
+      React 掛載時會直接覆蓋掉 #root 的內容，不需要額外清理。
+      背景色與字體要跟 App 一致，否則會閃一下。
+    -->
+    <div id="root">
+      <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#faf9f7;font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif">
+        <div style="font-size:44px;line-height:1">🎾</div>
+        <div style="font-size:19px;font-weight:800;color:#17150f;letter-spacing:.01em">TennisPal</div>
+        <div style="font-size:12.5px;color:#8f8880">載入中…</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

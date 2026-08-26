@@ -19,6 +19,40 @@ export interface ReportFacts {
   [key: string]: string | number | boolean | null
 }
 
+/**
+ * 回報一次這台裝置實際的載入時間。
+ *
+ * 為什麼要自己量：效能問題跟 bug 一樣，靠使用者口述「大概兩三秒」沒辦法
+ * 定位——不知道是網路、解析、還是我們自己擋住了渲染。而 LINE 的 webview
+ * 接不上開發者工具，只能讓 App 把數字送回來。
+ *
+ * 在 load 之後才跑，而且不 await：量測本身不該影響被量的東西。
+ */
+export function reportPerf(): void {
+  if (typeof performance === 'undefined') return
+  const done = () => {
+    setTimeout(() => {
+      const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+      if (!nav) return
+      const paint = performance.getEntriesByType('paint')
+        .find((p) => p.name === 'first-contentful-paint')
+      report('perf', new Error('載入時間'), {
+        ttfb: Math.round(nav.responseStart - nav.requestStart),
+        fcp: paint ? Math.round(paint.startTime) : null,
+        domReady: Math.round(nav.domContentLoadedEventEnd),
+        load: Math.round(nav.loadEventEnd),
+        // 有沒有走到 service worker 的快取。第二次以後應該要有，
+        // 沒有的話代表每次都在重新下載整包
+        cached: nav.transferSize === 0 || Boolean(navigator.serviceWorker?.controller),
+        transferKB: Math.round((nav.transferSize ?? 0) / 1024),
+        inClient: Boolean((window as { liff?: { isInClient?: () => boolean } }).liff?.isInClient?.()),
+      })
+    }, 0)
+  }
+  if (document.readyState === 'complete') done()
+  else window.addEventListener('load', done, { once: true })
+}
+
 export function report(stage: string, err: unknown, facts: ReportFacts = {}): void {
   if (!supabase) return
   const e = err as { name?: string; message?: string }
