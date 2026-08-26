@@ -70,7 +70,9 @@ async function loadProviders(): Promise<void> {
     // 用 supabase client 的 fetch，不要自己呼叫全域的 fetch——client 那個
     // 在需要時會繞過 CORS 預檢，自己叫的不會，於是在 LINE 裡永遠失敗。
     const f = (supabase as unknown as { rest?: { fetch?: typeof fetch } })?.rest?.fetch ?? fetch
-    const res = await f(url + '/auth/v1/settings', { headers: { apikey: key } })
+    // 這一支現在是背景跑的，但沒有上限的 fetch 會一直佔著連線
+    const res = await withTimeout(
+      f(url + '/auth/v1/settings', { headers: { apikey: key } }), 5000, 'auth/settings')
     if (!res.ok) return
     const body = await res.json() as { external?: Record<string, boolean> }
     providers = body.external ?? null
@@ -93,15 +95,33 @@ export function authReady(): boolean {
   return authResolved || !supabase
 }
 
+/**
+ * 給任何「可能永遠不回來」的等待加一個上限。
+ *
+ * 沒有逾時的 await 在畫面上的樣子就是永久載入中——而使用者分不出
+ * 「在載入」跟「壞掉」。實際踩到的是 supabase.auth.getSession()：
+ * 它不會丟例外，只是不回來。
+ */
+function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(what + ' 超過 ' + ms + 'ms 沒有回應')), ms)),
+  ])
+}
+
 export async function initAuth(): Promise<void> {
-  // 先發車，不要排在 session 後面。這兩件事沒有先後關係，而把它排在後面
-  // 的代價是：session 那一步只要出任何差錯，登入畫面就會顯示一顆後端
-  // 根本沒開的按鈕，使用者按下去會被丟到一頁 JSON。
-  const providersReady = loadProviders()
+  // 純背景。provider 清單只影響「要不要顯示 Google 按鈕」，
+  // 沒有理由讓整個畫面等它——畫面會訂閱，答案到了自己會更新。
+  void loadProviders()
 
   if (supabase) {
     try {
-      const { data } = await supabase.auth.getSession()
+      // 一定要有上限。getSession() 不會丟例外，但**會卡住不回來**：
+      // supabase-js 用 Web Locks API 保護 token，而那個 API 在受限的
+      // webview 裡不一定可靠。卡住的後果是 authReady() 永遠是 false，
+      // 需要登入的頁面就一直停在「確認登入狀態」——遙測抓到的正是這個。
+      const { data } = await withTimeout(supabase.auth.getSession(), 3000, 'getSession')
       session = data.session
       supabase.auth.onAuthStateChange((_event, next) => {
         session = next
@@ -109,19 +129,16 @@ export async function initAuth(): Promise<void> {
       })
     } catch (e) {
       console.warn('[auth] 讀不到既有 session：' + (e as Error).message)
+      report('auth:get-session', e, {
+        inClient: Boolean((window as { liff?: { isInClient?: () => boolean } }).liff?.isInClient?.()),
+      })
     }
   }
 
-  // 一定要走到這裡。放 finally 是因為：上面任何一步丟例外，authResolved
-  // 就永遠是 false，而畫面在「還沒確認」時是不做判斷的——結果是**永久空白**。
-  // 使用者從圖文選單點「找球伴」看到的就是那個。
-  try {
-    await providersReady
-  } finally {
-    authResolved = true
-    // 通知畫面：可以停止顯示「確認中」了
-    for (const fn of [...listeners]) fn(session)
-  }
+  // 不管上面發生什麼，這裡一定要走到。畫面在「還沒確認」時不做任何判斷，
+  // 所以這個旗標沒設起來就等於永久載入中。
+  authResolved = true
+  for (const fn of [...listeners]) fn(session)
 }
 
 export function currentSession(): Session | null {

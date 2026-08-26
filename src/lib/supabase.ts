@@ -131,6 +131,20 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
   ? createClient(url, key, {
       realtime: { params: { eventsPerSecond: 10 } },
       global: { fetch: proxiedFetch },
+      auth: {
+        /*
+         * 不要用 Web Locks。
+         *
+         * supabase-js 預設拿 navigator.locks 保護 token 的讀寫，而那個 API
+         * 在受限的 webview 裡不一定可靠——實測 getSession() 不丟例外、
+         * 就是不回來，於是「確認登入狀態」永遠不會結束，需要登入的頁面
+         * 一直停在載入中（遙測的 stuck 事件抓到的正是這個）。
+         *
+         * 這個 App 只有一個分頁在跑，沒有跨分頁競爭 token 的問題，
+         * 所以直接執行就好。
+         */
+        lock: async <R>(_name: string, _acquireTimeout: number, fn: () => Promise<R>) => fn(),
+      },
     })
   : null
 
