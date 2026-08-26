@@ -11,11 +11,19 @@
 
 | | 網址 | 資料 |
 | --- | --- | --- |
-| **正式站** | <https://liamtsai0807.github.io/tennis-match/> | 雲端 Supabase `reqsorkruyojhrsjeksu` |
+| **正式站** | <https://tennis-match.liam0807.workers.dev> | 雲端 Supabase `reqsorkruyojhrsjeksu` |
 | **本機開發** | <http://localhost:5180> | 本機 Supabase（Docker） |
 
-**正式站的網址是固定的，不會再變。** push 到 `main` 就自動建置部署，約 40 秒上線。
-要在 LINE 裡測就直接測正式站——**不需要 cloudflared 隧道了**，那整套已經退場。
+正式站跑在 **Cloudflare Workers**：`dist/` 是靜態資源，`/api/*` 由
+`worker/index.ts` 轉給 Supabase。push 到 `main` 就自動部署。
+
+**同源不是為了方便，是唯一可行的架構。** 前端與 API 分屬兩個網域時，每個
+帶自訂標頭的請求都要先做 CORS preflight，而 iOS 的 LINE LIFF webview 裡
+預檢一律在網路層失敗——伺服器端怎麼調 CORS 都沒用，預檢根本到不了伺服器。
+所以不要把 API 搬回別的網域，那會讓整個資料層在 LINE 裡再次不能用。
+
+（GitHub Pages 的部署已經退役，`.github/workflows/deploy.yml` 還在但不該再用——
+純靜態主機做不到同源 API。cloudflared 隧道那整套也退場了。）
 
 版本字串（日期-git 短雜湊）顯示在「我的」頁最下面，也在 `/version.json`，
 回報問題時第一個就看那個。
@@ -53,9 +61,12 @@ docker restart supabase_kong_tennis-pal
 改了 Edge Function：`supabase functions deploy`。
 改了 LINE 憑證：`supabase secrets set --env-file supabase/functions/.env`。
 
-前端的環境變數在 GitHub repo 的 Settings → Secrets and variables → Actions：
-`VITE_SUPABASE_URL`、`VITE_LINE_LIFF_ID` 是 Variables，`VITE_SUPABASE_ANON_KEY` 是 Secret。
-**Vite 的環境變數是建置時烤進 bundle 的**，改完要重新部署才會生效。
+前端的環境變數在 Cloudflare 後台（Workers & Pages → tennis-match → Settings）：
+`VITE_SUPABASE_URL` 設成 `/api`（相對路徑就代表走同源）、`VITE_SUPABASE_ANON_KEY`、
+`VITE_LINE_LIFF_ID`。**Vite 的環境變數是建置時烤進 bundle 的**，改完要重新部署。
+
+伺服器端的 `SUPABASE_URL` 寫在 `wrangler.jsonc` 的 `vars` 裡，不是後台——
+它不是機密，而且「少設一個變數就靜靜壞掉」這個坑已經踩過了。
 
 ## 二、這個專案的硬規則
 
@@ -165,8 +176,8 @@ Flex 訊息結構。改那三塊一定要跑 `npm test`。
   Supabase service_role key），整條路確認正常之後要一次換掉。
   換 service_role 會連 anon key 一起失效，所以同步要做的事：更新 GitHub 的
   `VITE_SUPABASE_ANON_KEY`、重新部署、用新 key 重跑一次 `schedule_booking_reminder`
-- **雲端還沒有任何球友**。deploy_cloud.sql 刻意不放假人，所以第一個註冊的人
-  會發現媒合是空的——這是對的行為，但要知道
+- **雲端只有一個球友**（第一個註冊的人）。deploy_cloud.sql 刻意不放假人，
+  所以媒合目前一定是空的——這是對的行為，但要有第二個真人才測得到媒合
 - **推播額度**：LINE 免費方案每月 200 則，一次邀約約用掉 2–3 則
 - 本機的登入信不會真的寄出去，全部進 Mailpit（<http://127.0.0.1:54324>）；
   雲端寄信目前走 Supabase 內建服務，每小時只有幾封，上線前要接真的 SMTP
