@@ -1,6 +1,6 @@
 /** ===== App.tsx ===== */
 import { HashRouter, Routes, Route, NavLink, useLocation, Navigate } from 'react-router-dom'
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { ToastProvider } from './components/Toast.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { InstallPrompt } from './components/InstallPrompt.tsx'
@@ -10,6 +10,7 @@ import { OFFLINE, isOnboarded } from './lib/db.ts'
 import { authReady, useSession } from './lib/auth.ts'
 import SignIn from './screens/SignIn.tsx'
 import { Loading } from './components/Loading.tsx'
+import { lazyScreen } from './lib/lazyScreen.ts'
 
 /*
  * 首屏只帶三個畫面：首頁、球場列表、球場詳情。
@@ -22,13 +23,13 @@ import Home from './screens/Home.tsx'
 import Clubs from './screens/Clubs.tsx'
 import ClubDetail from './screens/ClubDetail.tsx'
 
-const Onboarding = lazy(() => import('./screens/Onboarding.tsx'))
-const Matchmaker = lazy(() => import('./screens/Matchmaker.tsx'))
-const InviteCompose = lazy(() => import('./screens/InviteCompose.tsx'))
-const InviteDetail = lazy(() => import('./screens/InviteDetail.tsx'))
-const PlayerDetail = lazy(() => import('./screens/PlayerDetail.tsx'))
-const Profile = lazy(() => import('./screens/Profile.tsx'))
-const Preferences = lazy(() => import('./screens/Preferences.tsx'))
+const Onboarding = lazyScreen('Onboarding', () => import('./screens/Onboarding.tsx'))
+const Matchmaker = lazyScreen('Matchmaker', () => import('./screens/Matchmaker.tsx'))
+const InviteCompose = lazyScreen('InviteCompose', () => import('./screens/InviteCompose.tsx'))
+const InviteDetail = lazyScreen('InviteDetail', () => import('./screens/InviteDetail.tsx'))
+const PlayerDetail = lazyScreen('PlayerDetail', () => import('./screens/PlayerDetail.tsx'))
+const Profile = lazyScreen('Profile', () => import('./screens/Profile.tsx'))
+const Preferences = lazyScreen('Preferences', () => import('./screens/Preferences.tsx'))
 
 const TABS = [
   { to: '/', label: '首頁', Icon: IconHome, end: true },

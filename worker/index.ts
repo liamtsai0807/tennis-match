@@ -40,6 +40,27 @@ export default {
       return fetch(new Request(target, request))
     }
 
-    return env.ASSETS.fetch(request)
+    /*
+     * 靜態資源找不到時要回 404，不要走 SPA fallback。
+     *
+     * fallback 的用意是「深連結進來的頁面路徑要撈得回 App」，但它會一視同仁
+     * 地把 index.html 塞給任何找不到的路徑——包含 /assets/Profile-舊雜湊.js。
+     * 於是瀏覽器拿到 HTML 卻期待 JavaScript，錯誤訊息是
+     * 「'text/html' is not a valid JavaScript MIME type」，整個畫面崩潰。
+     *
+     * 什麼時候會發生：使用者開著舊版的頁面，中間我們部署了新版，舊的
+     * 分塊檔名就不存在了。有程式碼切分就一定會遇到。
+     *
+     * 回 404 不會讓那個情況變好，但會讓它**誠實**——前端才有辦法認出
+     * 「這是分塊掉了」並重新載入，而不是收到一團 HTML 不知所措。
+     */
+    const res = await env.ASSETS.fetch(request)
+    if (res.status === 200 && url.pathname.startsWith('/assets/')) {
+      const type = res.headers.get('content-type') ?? ''
+      if (type.includes('text/html')) {
+        return new Response('資源不存在（可能是舊版的分塊，請重新載入）', { status: 404 })
+      }
+    }
+    return res
   },
 }
