@@ -80,6 +80,19 @@ async function loadProviders(): Promise<void> {
   }
 }
 
+/**
+ * session 解析完了沒。
+ *
+ * 畫面現在不等 auth 就先渲染（等它會讓 LINE 裡每次進來都空白兩秒），
+ * 所以需要一個「還在確認中」的狀態——否則已經登入的人會先看到登入畫面
+ * 閃一下才跳進 App，每次冷啟動都閃一次，很像壞掉。
+ */
+let authResolved = false
+
+export function authReady(): boolean {
+  return authResolved || !supabase
+}
+
 export async function initAuth(): Promise<void> {
   // 先發車，不要排在 session 後面。這兩件事沒有先後關係，而把它排在後面
   // 的代價是：session 那一步只要出任何差錯，登入畫面就會顯示一顆後端
@@ -100,6 +113,9 @@ export async function initAuth(): Promise<void> {
   }
 
   await providersReady
+  authResolved = true
+  // 通知畫面：可以停止顯示「確認中」了
+  for (const fn of [...listeners]) fn(session)
 }
 
 export function currentSession(): Session | null {

@@ -1,25 +1,33 @@
 /** ===== App.tsx ===== */
 import { HashRouter, Routes, Route, NavLink, useLocation, Navigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { ToastProvider } from './components/Toast.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { InstallPrompt } from './components/InstallPrompt.tsx'
 import { UpdateBanner } from './components/UpdateBanner.tsx'
 import { IconHome, IconSearch, IconPeople, IconUser } from './components/icons.tsx'
 import { OFFLINE, isOnboarded } from './lib/db.ts'
-import { useSession } from './lib/auth.ts'
+import { authReady, useSession } from './lib/auth.ts'
 import SignIn from './screens/SignIn.tsx'
 
-import Onboarding from './screens/Onboarding.tsx'
+/*
+ * 首屏只帶三個畫面：首頁、球場列表、球場詳情。
+ *
+ * 那是使用者從圖文選單進來最常落地的地方，也是唯一不需要登入的路徑。
+ * 其餘畫面改成用到才載——整包 519 KB 在手機上光解析就要時間，而點進
+ * 每一格都要等兩秒以上，其中大半是在等根本還用不到的程式碼。
+ */
 import Home from './screens/Home.tsx'
-import Matchmaker from './screens/Matchmaker.tsx'
-import InviteCompose from './screens/InviteCompose.tsx'
-import InviteDetail from './screens/InviteDetail.tsx'
 import Clubs from './screens/Clubs.tsx'
 import ClubDetail from './screens/ClubDetail.tsx'
-import PlayerDetail from './screens/PlayerDetail.tsx'
-import Profile from './screens/Profile.tsx'
-import Preferences from './screens/Preferences.tsx'
+
+const Onboarding = lazy(() => import('./screens/Onboarding.tsx'))
+const Matchmaker = lazy(() => import('./screens/Matchmaker.tsx'))
+const InviteCompose = lazy(() => import('./screens/InviteCompose.tsx'))
+const InviteDetail = lazy(() => import('./screens/InviteDetail.tsx'))
+const PlayerDetail = lazy(() => import('./screens/PlayerDetail.tsx'))
+const Profile = lazy(() => import('./screens/Profile.tsx'))
+const Preferences = lazy(() => import('./screens/Preferences.tsx'))
 
 const TABS = [
   { to: '/', label: '首頁', Icon: IconHome, end: true },
@@ -60,6 +68,9 @@ function ScrollToTop() {
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const session = useSession()
   if (OFFLINE) return <>{children}</>
+  // session 還在解析時什麼都不要決定。直接顯示 SignIn 的話，已經登入的人
+  // 每次冷啟動都會看到登入畫面閃一下——那比多等 0.3 秒更像壞掉。
+  if (!authReady()) return <div className="page" />
   if (!session) return <SignIn />
   return <>{children}</>
 }
@@ -103,6 +114,8 @@ export default function App() {
         <ScrollToTop />
         <div className="app">
           <ErrorBoundary>
+            {/* 切出去的畫面在載入時給一塊空白，不要跳版面 */}
+            <Suspense fallback={<div className="page" />}>
             <Routes>
               {/* 公開：不需要帳號就能用。球場是政府開放資料，
                   而真正的訂場發生在別人的系統裡，我們只是把人送過去 */}
@@ -125,6 +138,7 @@ export default function App() {
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </Suspense>
           </ErrorBoundary>
           <UpdateBanner />
           <InstallPrompt />

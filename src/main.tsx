@@ -5,7 +5,6 @@ import App from './App.tsx'
 import { registerServiceWorker } from './lib/appUpdate.ts'
 import { autoSignInInLine, initAuth } from './lib/auth.ts'
 import { initLiff } from './lib/liff.ts'
-import { probeNetwork } from './lib/probe.ts'
 import './styles.css'
 
 /**
@@ -28,20 +27,30 @@ const warn = (where: string) => (e: unknown) => {
 // 兩步各自 catch，前一步倒了後一步照樣要跑。
 // 用 .then(initAuth) 串接的話，initLiff 一 reject 就會連 initAuth 一起跳過，
 // 而 .finally 還是會渲染——畫面出得來，但身分和後端設定都沒載入。
+/*
+ * 只等 LIFF，其餘都不擋畫面。
+ *
+ * 原本是等 LIFF → 讀 session → 自動登入 → 網路探針全部跑完才渲染，
+ * 加起來每次進來都空白兩秒以上。那幾件事裡只有 LIFF 非等不可：
+ * 它會把 ?liff.state= 轉成真的導頁，晚一步的話 Router 已經讀過網址，
+ * 深連結就會落在首頁而不是使用者點的那一格。
+ *
+ * 登入狀態改成背景解析，畫面用 authReady() 顯示「確認中」，
+ * 不會閃一下登入頁。訪客本來就能逛，不需要等任何身分確認。
+ */
 initLiff()
   .catch(warn('LIFF 初始化'))
-  .then(() => initAuth().catch(warn('讀取登入狀態')))
-  // 在 LINE 裡就直接登入，不要再要使用者按一次——我們早就知道他是誰。
-  // 失敗不擋路：訪客照樣可以逛球場。
-  .then(() => autoSignInInLine().catch(warn('LINE 自動登入')))
-  // 量一次「哪一類跨網域請求在這個環境能用」。不擋流程，只回報。
-  .then(() => probeNetwork().catch(() => {}))
   .finally(() => {
     createRoot(document.getElementById('root')!).render(
       <StrictMode>
         <App />
       </StrictMode>,
     )
+
+    // 這兩件事在背景做完，畫面會自己跟上
+    void initAuth()
+      .catch(warn('讀取登入狀態'))
+      .then(() => autoSignInInLine().catch(warn('LINE 自動登入')))
   })
 
 /**
